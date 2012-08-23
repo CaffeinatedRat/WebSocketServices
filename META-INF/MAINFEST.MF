@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: WebSocketServices/base64-3.8.1.jar
+
+

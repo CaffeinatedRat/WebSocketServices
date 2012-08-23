@@ -1,0 +1,9 @@
+#This is a sample config.yml
+websocket:
+  portNumber: 4000
+  debug: 0
+  verboseDebug: 0
+  maximumThreads: 32
+  handshakeTimeOutInMilliseconds: 1000
+  frameWaitTimeOutInMilliseconds: 15000
+

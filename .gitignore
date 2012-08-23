@@ -1,0 +1,24 @@
+# Eclipse stuff
+/.classpath
+/.project
+/.settings
+/WebSocketServices.jardesc
+
+# netbeans
+/nbproject
+
+# we use maven!
+/build.xml
+
+# maven
+/target
+
+# vim
+.*.sw[a-p]
+
+# various other potential build files
+/build
+/bin
+/dist
+/manifest.mf
+/plugins
