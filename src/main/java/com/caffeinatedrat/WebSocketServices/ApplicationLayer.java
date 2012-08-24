@@ -57,10 +57,28 @@ public class ApplicationLayer implements IApplicationLayer {
             StringBuilder stringBuffer = new StringBuilder();
             
             stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"version\": \"{0}\", \"bukkit-version\": \"{1}\"", this.minecraftServer.getVersion(), this.minecraftServer.getBukkitVersion()));
+            stringBuffer.append(MessageFormat.format("\"version\": \"{0}\", \"bukkitversion\": \"{1}\"", this.minecraftServer.getVersion(), this.minecraftServer.getBukkitVersion()));
             stringBuffer.append("}");
 
             response.data = stringBuffer.toString();
+            response.closeConnection = true;
+        }
+        else if(text.equalsIgnoreCase("NAME")){
+            this.minecraftServer.getName();
+            
+            //To-do: Extract into a json formatter.
+            StringBuilder stringBuffer = new StringBuilder();
+            
+            stringBuffer.append("{");
+            stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"servername\": \"{1}\"", this.minecraftServer.getName(), this.minecraftServer.getServerName()));
+            stringBuffer.append("}");
+
+            response.data = stringBuffer.toString();
+            response.closeConnection = true;
+        }
+        else
+        {
+            //Unknown command, close the connection.
             response.closeConnection = true;
         }
     }
