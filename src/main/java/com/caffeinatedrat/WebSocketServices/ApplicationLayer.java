@@ -39,10 +39,11 @@ public class ApplicationLayer implements IApplicationLayer {
             stringBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", this.minecraftServer.getMaxPlayers()));
             stringBuffer.append("\"Players\": [");
             
-            for(Player player : players)
+            for(int i = 0; i < players.length; i++)
             {
+                if(i > 0) stringBuffer.append(",");
                 stringBuffer.append("{");
-                stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}s\"", player.getName(), player.getPlayerTime()));
+                stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}s\"", players[i].getName(), players[i].getPlayerTime()));
                 stringBuffer.append("}");
             }
             
