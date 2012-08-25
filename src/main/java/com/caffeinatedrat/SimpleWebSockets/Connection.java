@@ -1,6 +1,27 @@
 /**
- * 
- */
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE AUTHOR AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 package com.caffeinatedrat.SimpleWebSockets;
 
 import java.io.*;
@@ -12,8 +33,10 @@ import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.*;
 
 /**
- * @author CaffeinatedRat
+ * Handles a single websocket connection with the server.
  *
+ * @version 1.0.0.0
+ * @author CaffeinatedRat
  */
 public class Connection extends Thread {
     
@@ -35,8 +58,7 @@ public class Connection extends Thread {
     /*
      * Returns the handshake timeout in milliseconds.
      */
-    public int getHandshakeTimeout()
-    {
+    public int getHandshakeTimeout() {
         return handshakeTimeOutInMilliseconds;
     }
     
@@ -44,8 +66,7 @@ public class Connection extends Thread {
      * Sets the handshake timeout in milliseconds.
      * @param timeout The timeout handshake in milliseconds.
      */
-    public void setHandshakeTimeout(int timeout)
-    {
+    public void setHandshakeTimeout(int timeout) {
         this.handshakeTimeOutInMilliseconds = timeout;
     }
     
@@ -53,8 +74,7 @@ public class Connection extends Thread {
      * Returns the amount of time in milliseconds that a connection will wait for a frame.
      * @return The frame timeout in milliseconds.
      */
-    public int getFrameWaitTimeout()
-    {
+    public int getFrameWaitTimeout() {
         return this.frameWaitTimeOutInMilliseconds;
     }
     
@@ -62,8 +82,7 @@ public class Connection extends Thread {
      * Sets the amount of time in milliseconds that a connection will wait for a frame.
      * @param timeout The frame timeout in milliseconds.
      */
-    public void setFrameWaitTimeOut(int timeout)
-    {
+    public void setFrameWaitTimeOut(int timeout) {
         this.frameWaitTimeOutInMilliseconds = timeout;
     }    
     
@@ -71,10 +90,11 @@ public class Connection extends Thread {
     // Constructors
     // ----------------------------------------------
     
-    public Connection(Socket socket, IApplicationLayer applicationLayer)
-    {
-        if(applicationLayer == null)
+    public Connection(Socket socket, IApplicationLayer applicationLayer) {
+        
+        if (applicationLayer == null) {
             throw new IllegalArgumentException("The applicationLayer is invalid (null).");
+        }
         
         this.socket = socket;
         this.applicationLayer = applicationLayer;
@@ -85,23 +105,24 @@ public class Connection extends Thread {
     // ----------------------------------------------
     
     @Override
-    public void run()
-    {
+    public void run() {
+
         Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
         
-        try
-        {
-            try
-            {
+        try {
+
+            try {
+
                 Handshake handshake = new Handshake(this.socket, this.handshakeTimeOutInMilliseconds);
                 handshake.setCheckOrigin(false);
-                if(handshake.processRequest())
-                {
+                
+                if (handshake.processRequest()) {
+                    
                     Logger.debug("Handshaking successful.");
                     
                     boolean continueListening = true;
-                    while(!socket.isClosed() && continueListening)
-                    {
+                    while ( (!socket.isClosed()) && (continueListening) ) {
+
                         //TO-DO: Add management of fragmented frames.
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
@@ -109,16 +130,16 @@ public class Connection extends Thread {
                         Frame frame = new Frame(this.socket, this.frameWaitTimeOutInMilliseconds);
                         frame.Read();
                         
-                        switch(frame.getOpCode())
-                        {
+                        switch (frame.getOpCode()) {
+
                             //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
                             case TEXT_DATA_FRAME:
                             {
                                 String text = frame.getPayloadAsString();
                                 Logger.debug(text);
                                 
-                                if(applicationLayer != null)
-                                {
+                                if (applicationLayer != null) {
+                                    
                                     //TO-DO: Add support for fragmentation.
                                     //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                                     Frame responseFrame = new Frame(this.socket);
@@ -132,6 +153,7 @@ public class Connection extends Thread {
                                     responseFrame.Write();
                                     
                                     continueListening = !response.closeConnection;
+                                    
                                 }
                                 // END OF if(applicationLayer != null)...
                             }
@@ -142,8 +164,8 @@ public class Connection extends Thread {
                             {
                                 byte[] data = frame.getPayloadAsBytes();
                                 
-                                if(applicationLayer != null)
-                                {
+                                if (applicationLayer != null) {
+                                    
                                     //TO-DO: Add support for fragmentation.
                                     //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                                     Frame responseFrame = new Frame(this.socket);
@@ -157,6 +179,7 @@ public class Connection extends Thread {
                                     responseFrame.Write();
                                     
                                     continueListening = !response.closeConnection;
+                                    
                                 }
                                 // END OF if(applicationLayer != null)...
                             }
@@ -166,8 +189,9 @@ public class Connection extends Thread {
                             //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
                             case CONNECTION_CLOSE_CONTROL_FRAME:
                             {
-                                if(applicationLayer != null)
+                                if (applicationLayer != null) {
                                     applicationLayer.onClose();
+                                }
                                 
                                 close();
                                 break;
@@ -177,8 +201,9 @@ public class Connection extends Thread {
                             //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.2
                             case PING_CONTROL_FRAME:
                             {
-                                if(applicationLayer != null)
+                                if (applicationLayer != null) {
                                     applicationLayer.onPing(frame.getPayloadAsBytes());
+                                }
                                 
                                 Frame responseFrame = new Frame(this.socket);
                                 responseFrame.setFinalFragment();
@@ -194,44 +219,47 @@ public class Connection extends Thread {
                             //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.3
                             case PONG_CONTROL_FRAME:
                             {
-                                if(applicationLayer != null)
+                                if (applicationLayer != null) {
                                     applicationLayer.onPong();
+                                }
                                 
                                 Logger.verboseDebug("A pong frame was received.");
                             }
                             break;
+                            
+                            default:
+                                break;
                         }
                         //END OF switch(frame.getOpCode())...
                     }
                     //END OF while(!socket.isClosed())...
                 }
-                else
-                {
+                else {
                     Logger.debug("Handshaking failure.");
                 }
                 //END OF if(handshake.processRequest())...
             }
-            catch(InvalidFrameException invalidFrame)
-            {
+            catch (InvalidFrameException invalidFrame) {
                 Logger.debug("The frame is invalid.");
             }
 
             Logger.debug("Connection terminated.");
             Logger.verboseDebug(MessageFormat.format("Thread {0} has spun down...", this.getName()));
         }
-        finally
-        {
+        finally {
             close();
         }
     }
     
     public void close()
     {
-        try
-        {
-            if (this.socket != null)
+        try {
+            if (this.socket != null) {
                 this.socket.close();
+            }
         }
-        catch(IOException io) { }
+        catch(IOException io) {
+            //Do nothing...
+        }
     }
 }

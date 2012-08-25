@@ -1,6 +1,27 @@
 /**
- * 
- */
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE AUTHOR AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 package com.caffeinatedrat.SimpleWebSockets;
 
 import java.io.*;
@@ -18,8 +39,10 @@ import com.caffeinatedrat.SimpleWebSockets.Util.WebSocketsReader;
 import net.iharder.Base64;
 
 /**
+ * Handles the websockets handshaking mechanism.
+ *
+ * @version 1.0.0.0
  * @author CaffeinatedRat
- * 
  */
 public class Handshake {
 
@@ -55,8 +78,7 @@ public class Handshake {
      * Returns an array of supported versions.
      * @return An array of supported versions.
      */
-    public static String[] getSupportedVersions()
-    {
+    public static String[] getSupportedVersions() {
         return WEBSOCKET_SUPPORTED_VERSIONS.split(",");
     }
     
@@ -64,8 +86,7 @@ public class Handshake {
      * Returns all of headers found in the handshake.
      * @return A map that contains the header and its value.
      */    
-    public Map<String, String> getHeaders()
-    {
+    public Map<String, String> getHeaders() {
         return headerFields;
     }
     
@@ -73,8 +94,7 @@ public class Handshake {
      * Sets the timeout value for the handshake.
      * @param timeout The time in milliseconds before the handshake fails.
      */
-    public void setTimeOut(int timeout)
-    {
+    public void setTimeOut(int timeout) {
         this.timeoutInMilliseconds = timeout; 
     }
 
@@ -82,8 +102,7 @@ public class Handshake {
      * Gets the timeout value for the handshake.
      * @return timeout The time in milliseconds before the handshake fails.
      */    
-    public int getTimeOut()
-    {
+    public int getTimeOut() {
         return this.timeoutInMilliseconds;
     }
 
@@ -91,8 +110,7 @@ public class Handshake {
      * Sets check origin flag.
      * @param checkOrigin The check origin flag.
      */            
-    public void setCheckOrigin(boolean checkOrigin)
-    {
+    public void setCheckOrigin(boolean checkOrigin) {
         this.checkOrigin = checkOrigin;
     }
     
@@ -100,8 +118,7 @@ public class Handshake {
      * Gets check origin flag.
      * @return The check origin flag.
      */        
-    public boolean getCheckOrigin()
-    {
+    public boolean getCheckOrigin() {
         return this.checkOrigin;
     }
     
@@ -109,13 +126,11 @@ public class Handshake {
     // Constructors
     // ----------------------------------------------
     
-    public Handshake(Socket socket)
-    {
+    public Handshake(Socket socket) {
         this(socket, 1000);
     }
     
-    public Handshake(Socket socket, int timeout)
-    {
+    public Handshake(Socket socket, int timeout) {
         this.socket = socket;
         this.timeoutInMilliseconds = timeout;
         this.checkOrigin = false;
@@ -129,17 +144,16 @@ public class Handshake {
      * Performs the actual handshake and will return false if the handshake has failed.
      * @return Returns true if the handshake was successful. 
      */
-    public boolean processRequest()
-    {
+    public boolean processRequest() {
+        
         Logger.debug("Handshaking...");
         
-        WebSocketsReader inputStream;
-        PrintWriter outputStream;
-        
+        WebSocketsReader inputStream = null;
+        PrintWriter outputStream = null;
         int preserveOriginalTimeout = 0;
         
-        try
-        {
+        try {
+            
             //Set the timeout for the handshake.
             preserveOriginalTimeout = this.socket.getSoTimeout();
             this.socket.setSoTimeout(this.timeoutInMilliseconds);
@@ -152,36 +166,36 @@ public class Handshake {
             int len = 0;
             StringBuilder stringBuffer = new StringBuilder();
             
-            while ( (stringBuffer.lastIndexOf("\r\n\r\n") == -1) && ( (len = inputStream.read(buffer, 0, Globals.READ_CHUNK_SIZE)) > 0 ) )
-            {
+            while ( (stringBuffer.lastIndexOf("\r\n\r\n") == -1) && ( (len = inputStream.read(buffer, 0, Globals.READ_CHUNK_SIZE)) > 0 ) ) {
                 stringBuffer.append(new String(buffer, 0, len));
             }
             
-            if(len == -1)
+            if (len == -1) {
                 throw new EndOfStreamException();
+            }
                             
             Logger.verboseDebug(MessageFormat.format("------Buffered Request------\r\n{0}", stringBuffer.toString()));
             
             //Break up the HTTP request by newline constants.
             String[] headerLines = stringBuffer.toString().split("\r\n");
-            if(headerLines.length > 0)
-            {
+            if (headerLines.length > 0) {
+                
                 //Verify that the HTTP verb and version are correct.
-                if( (headerLines[0] !="") && (headerLines[0].toUpperCase().startsWith("GET")) && (headerLines[0].toUpperCase().contains("HTTP/1.1")) )
-                {
+                if ( (headerLines[0] !="") && (headerLines[0].toUpperCase().startsWith("GET")) && (headerLines[0].toUpperCase().contains("HTTP/1.1")) ) {
+                
                     //Collect all of the header fields sent during the initial handshake request.
                     headerFields = new HashMap<String,String>();
-                    for(int i = 1; i < headerLines.length; i++)
-                    {
+                    for (int i = 1; i < headerLines.length; i++) {
+
                         //Break the header into a key and value pair and ignore malformed headers.
                         String[] tokens = headerLines[i].split(":");
-                        if(tokens.length == 2)
+                        if (tokens.length == 2) {
                             headerFields.put(tokens[0].trim().toUpperCase(), tokens[1].trim());
+                        }
                     }
                      
                     //Origin check: http://tools.ietf.org/html/rfc6455#section-4.2.2
-                    if ( (!getCheckOrigin()) || ((headerFields.containsKey(ORIGIN_HEADER)) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) 
-                    {
+                    if ( (!getCheckOrigin()) || ((headerFields.containsKey(ORIGIN_HEADER)) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) {
                         //TO-DO: 
                         //To check the origin against a whitelist if one exists.
                         //Adds an additional timecomplexity of O(n).
@@ -191,25 +205,22 @@ public class Handshake {
                         
                         //Generate the accept key.
                         String acceptKey = "";
-                        if(headerFields.containsKey(SEC_WEBSOCKET_KEY_HEADER))
-                        {
+                        if (headerFields.containsKey(SEC_WEBSOCKET_KEY_HEADER)) {
+                            
                             String requestKey = headerFields.get(SEC_WEBSOCKET_KEY_HEADER) + WEBSOCKET_GUID;
                             
-                            try
-                            {
+                            try {
                                 MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
                                 byte[] keyArray = requestKey.getBytes(ENCODING_TYPE);
                                 byte[] hashedKey = md.digest(keyArray);
                                 acceptKey = Base64.encodeBytes(hashedKey);
                             }
-                            catch(NoSuchAlgorithmException noAlgorithmException)
-                            {
+                            catch (NoSuchAlgorithmException noAlgorithmException) {
                                 outputStream.println("HTTP/1.1 500 Internal Server Error");
                                 Logger.severe(MessageFormat.format("Unable to find the hashing algorithm {0}.  The accept key cannot be created.", HASHING_ALGORITHM));
                                 return false;
                             }
-                            catch(java.lang.NoClassDefFoundError noClassException)
-                            {
+                            catch (java.lang.NoClassDefFoundError noClassException) {
                                 outputStream.println("HTTP/1.1 500 Internal Server Error");
                                 Logger.severe(MessageFormat.format("Unable to find the vital class {0} to generate a Base64 value.", noClassException.getMessage()));
                                 return false;
@@ -228,8 +239,7 @@ public class Handshake {
                         }
                         //END OF if(headerFields.containsKey("SEC-WEBSOCKET-KEY"))...
                     }
-                    else
-                    {
+                    else {
                         outputStream.println("HTTP/1.1 403 Forbidden");
                         Logger.debug("Unable to verify the origin.");
                         return false;
@@ -251,26 +261,23 @@ public class Handshake {
             outputStream.flush();
         }
         //If any one of these exceptions occur then an invalid handshake has been sent and we will ignore the request.
-        catch(EndOfStreamException eofsException)
-        {
+        catch (EndOfStreamException eofsException) {
             Logger.verboseDebug("Invalid handshake.  The client has unexpectedly disconnected.");
         }
-        catch(SocketTimeoutException socketTimeout)
-        {
+        catch (SocketTimeoutException socketTimeout) {
             Logger.verboseDebug(MessageFormat.format("A socket timeout has occured. {0}", socketTimeout.getMessage()));
         }
-        catch(IOException ioException)
-        {
+        catch (IOException ioException) {
             Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
         }
-        finally
-        {
-            try
-            {
+        finally {
+            try {
                 //Reset the original timeout.
                 this.socket.setSoTimeout(preserveOriginalTimeout);
             }
-            catch(IOException ie) {}
+            catch(IOException ie) {
+                //Do nothing...
+            }
         }
         
         return false;
