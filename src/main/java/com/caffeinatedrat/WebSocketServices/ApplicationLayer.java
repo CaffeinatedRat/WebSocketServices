@@ -38,6 +38,7 @@ import com.caffeinatedrat.SimpleWebSockets.TextResponse;
  * @version 1.0.0.0
  * @author CaffeinatedRat
  */
+
 public class ApplicationLayer implements IApplicationLayer {
 
     // ----------------------------------------------
@@ -60,6 +61,9 @@ public class ApplicationLayer implements IApplicationLayer {
     
     public void onTextFrame(String text, TextResponse response) {
         
+        //Default all commands to terminate the connection.
+        response.closeConnection = true;
+        
         if (text.equalsIgnoreCase("WHO")) {
             
             //To-do: Extract into a json formatter.
@@ -79,7 +83,6 @@ public class ApplicationLayer implements IApplicationLayer {
             stringBuffer.append("]}");
             
             response.data = stringBuffer.toString();
-            response.closeConnection = true;
         }
         else if (text.equalsIgnoreCase("VERSION")) {
             
@@ -91,7 +94,6 @@ public class ApplicationLayer implements IApplicationLayer {
             stringBuffer.append("}");
 
             response.data = stringBuffer.toString();
-            response.closeConnection = true;
         }
         else if (text.equalsIgnoreCase("NAME")) {
             this.minecraftServer.getName();
@@ -104,11 +106,9 @@ public class ApplicationLayer implements IApplicationLayer {
             stringBuffer.append("}");
 
             response.data = stringBuffer.toString();
-            response.closeConnection = true;
         }
         else {
-            //Unknown command, close the connection.
-            response.closeConnection = true;
+            //Unknown command...do nothing.
         }
     }
 
