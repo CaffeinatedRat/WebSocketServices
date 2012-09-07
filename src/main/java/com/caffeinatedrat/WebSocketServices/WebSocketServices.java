@@ -46,7 +46,7 @@ public class WebSocketServices extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        
+
         saveDefaultConfig();
         
         FileConfiguration config = getConfig();
@@ -76,12 +76,17 @@ public class WebSocketServices extends JavaPlugin {
      */    
     @Override
     public void onLoad() {
-        Register();
+        Extract();
     }
     
-    public void Register() {
-        if (!DependencyManager.ExtractJar(this, "base64-3.8.1.jar", "plugins/WebSocketServices")) {
-            Logger.severe("Unable to extract the base64-3.8.1.jar.");
+    /**
+     * Extracts the necessary dependencies that the plug-in may use.
+     */
+    public void Extract() {
+        if (!DependencyManager.isJarExtracted("base64-3.8.1.jar", "plugins/WebSocketServices")) {
+            if (!DependencyManager.extractJar(this, "base64-3.8.1.jar", "plugins/WebSocketServices")) {
+                Logger.severe("Unable to extract the base64-3.8.1.jar.");
+            }
         }
     }
     
@@ -96,11 +101,11 @@ public class WebSocketServices extends JavaPlugin {
                 TestServer.start();
             }
             else if (args[0].equalsIgnoreCase("register")) {
-                new WebSocketServices().Register();
+                new WebSocketServices().Extract();
             }
         }
         else {
-            new WebSocketServices().Register();
+            new WebSocketServices().Extract();
         }
         //END OF if(args.length > 0)
     }
