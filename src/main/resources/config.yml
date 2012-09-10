@@ -1,9 +1,17 @@
 #This is a sample config.yml
 websocket:
   portNumber: 4000
-  debug: 0
-  verboseDebug: 0
+  #Logs to the console (0 = off, 1 = simple, 2 = verbose).
+  debug: 2
   maximumThreads: 32
   handshakeTimeOutInMilliseconds: 1000
   frameWaitTimeOutInMilliseconds: 15000
-
+  #Determines if the origin is checked during the handshake.
+  checkOrigin: true
+  #Determines if the websocket services are only available to certain ips.
+  whitelist: false
+  #Determines if the server is pingable via websockets.
+  pingable: true
+command:
+  who: Enabled
+  version: Enabled
