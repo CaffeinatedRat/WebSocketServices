@@ -53,12 +53,15 @@ public class WebSocketServices extends JavaPlugin {
         
         int portNumber = config.getInt("websocket.portNumber", 4000);
         int maximumNumberOfThreads = config.getInt("websocket.maximumThreads", 32);
-        Globals.debugLevel = config.getBoolean("websocket.debug", false) ? 1 : 0;
-        Globals.debugLevel = config.getBoolean("websocket.verboseDebug", false) ? 3 : 0;
+        boolean isWhiteListed = config.getBoolean("websocket.whitelist", false);
+        Globals.debugLevel = config.getInt("websocket.debug", 0);
         
-        server = new Server(portNumber, new ApplicationLayer(this.getServer()), maximumNumberOfThreads);
-        server.setHandshakeTimeout(config.getInt("websockets.handshakeTimeOutInMilliseconds", 1000));
-        server.setFrameWaitTimeOut(config.getInt("websockets.frameWaitTimeOutInMilliseconds", 15000));
+        server = new Server(portNumber, new ApplicationLayer(this.getServer()), isWhiteListed, maximumNumberOfThreads);
+        server.setHandshakeTimeout(config.getInt("websocket.handshakeTimeOutInMilliseconds", 1000));
+        server.setFrameWaitTimeOut(config.getInt("websocket.frameWaitTimeOutInMilliseconds", 15000));
+        server.setOriginCheck(config.getBoolean("websocket.checkOrigin", false));
+        server.setPingable(config.getBoolean("websocket.pingable", true));
+        
         server.start();
     }
     
@@ -76,6 +79,7 @@ public class WebSocketServices extends JavaPlugin {
      */    
     @Override
     public void onLoad() {
+        //I'm sure there is a much better way of extracting the dependencies...
         Extract();
     }
     
@@ -83,8 +87,8 @@ public class WebSocketServices extends JavaPlugin {
      * Extracts the necessary dependencies that the plug-in may use.
      */
     public void Extract() {
-        if (!DependencyManager.isJarExtracted("base64-3.8.1.jar", "plugins/WebSocketServices")) {
-            if (!DependencyManager.extractJar(this, "base64-3.8.1.jar", "plugins/WebSocketServices")) {
+        if (!DependencyManager.isJarExtracted("base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
+            if (!DependencyManager.extractJar(this, "base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
                 Logger.severe("Unable to extract the base64-3.8.1.jar.");
             }
         }
@@ -101,10 +105,12 @@ public class WebSocketServices extends JavaPlugin {
                 TestServer.start();
             }
             else if (args[0].equalsIgnoreCase("register")) {
+                //I'm sure there is a much better way of extracting the dependencies...
                 new WebSocketServices().Extract();
             }
         }
         else {
+            //I'm sure there is a much better way of extracting the dependencies...
             new WebSocketServices().Extract();
         }
         //END OF if(args.length > 0)
