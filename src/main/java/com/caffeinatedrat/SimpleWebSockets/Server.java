@@ -27,6 +27,7 @@ package com.caffeinatedrat.SimpleWebSockets;
 import java.net.*;
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -48,7 +49,10 @@ public class Server extends Thread {
     private int port;
     private int maximumThreads;
     private int handshakeTimeOutInMilliseconds;
-    private int frameWaitTimeOutInMilliseconds; 
+    private int frameWaitTimeOutInMilliseconds;
+    private boolean checkOrigin;
+    private boolean pingable;
+    private HashSet<String> whitelist = null;
     
     private IApplicationLayer applicationLayer;
     
@@ -75,13 +79,14 @@ public class Server extends Thread {
         return this.maximumThreads;
     }
     
-    /*
+    /**
      * Returns the handshake timeout in milliseconds.
+     * @return The handshake timeout in milliseconds.
      */
     public int getHandshakeTimeout() {
         return handshakeTimeOutInMilliseconds;
     }
-    
+        
     /**
      * Sets the handshake timeout in milliseconds.
      * @param timeout The timeout handshake in milliseconds.
@@ -106,20 +111,69 @@ public class Server extends Thread {
         this.frameWaitTimeOutInMilliseconds = timeout;
     }
     
+    /**
+     * Determines if the origin is checked during the handshake.
+     * @return If the origin is checked during handshaking.
+     */
+    public boolean isOriginChecked() {
+        return this.checkOrigin;
+    }
+    
+    /**
+     * Enables or disables origin checking.
+     * @param checkOrigin Enables or disables origin checking.
+     */
+    public void setOriginCheck(boolean checkOrigin) {
+        this.checkOrigin = checkOrigin;
+    }
+    
+    /**
+     * Determines if the server is pingable via websockets.
+     * @return If the server is pingable via websockets.
+     */
+    public boolean isPingable() {
+        return this.pingable;
+    }
+    
+    /**
+     * Enables or disables the ability to ping the server via websockets.
+     * @param isPingable Enables or disables ability to ping the server via websockets.
+     */
+    public void setPingable(boolean isPingable) {
+        this.pingable = isPingable;
+    }
+    
+    /**
+     * Determines if the websockets server is publicly available or by white-list only.
+     * @return the type of accessibility.
+     */
+    public boolean isWhiteListed() {
+        return (this.whitelist != null);
+    }
+    
+    public HashSet<String> getWhiteList()
+    {
+        return this.whitelist;
+    }
+    
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
 
     public Server(int port, IApplicationLayer applicationLayer) {
-        this(port, applicationLayer, 32);
+        this(port, applicationLayer, false, 32);
     }
     
-    public Server(int port, IApplicationLayer applicationLayer, int maximumThreads) {
+    public Server(int port, IApplicationLayer applicationLayer, boolean isWhiteListed) {
+        this(port, applicationLayer, isWhiteListed, 32);
+    }    
+    
+    public Server(int port, IApplicationLayer applicationLayer, boolean isWhiteListed, int maximumThreads) {
         
         if(applicationLayer == null) {
             throw new IllegalArgumentException("The applicationLayer is invalid (null).");
         }
-        
+               
         this.isServerRunning = true;
         this.threads = new LinkedList<Connection>();
         
@@ -129,6 +183,18 @@ public class Server extends Thread {
         this.maximumThreads = maximumThreads;
         this.handshakeTimeOutInMilliseconds = 1000;
         this.frameWaitTimeOutInMilliseconds = 3000;
+        this.checkOrigin = true;
+        this.pingable = true;
+        
+        if(isWhiteListed)
+        {
+            this.whitelist = new HashSet<String>();
+            if(!LoadWhiteList())
+            {
+                //TO-DO: Create the white-list.txt and bail.
+                Logger.severe("The white-list was not found...");
+            }
+        }
     }
     
     // ----------------------------------------------
@@ -167,7 +233,7 @@ public class Server extends Thread {
                 //Make sure we have enough threads before accepting.
                 //NOTE: Minimal unit testing has been done here...more testing is required.
                 if ( (threads.size() + 1) <= this.maximumThreads) {
-                    Connection t = new Connection(socket, this.applicationLayer);
+                    Connection t = new Connection(socket, this.applicationLayer, this);
                     t.start();
                     threads.add(t);
                 }
@@ -204,5 +270,40 @@ public class Server extends Thread {
         catch(IOException io) {
             //Do nothing...
         }
+    }
+    
+    /**
+     * Attempt to load the white-list.
+     */
+    private boolean LoadWhiteList() {
+        File whitelistFile = new File(Globals.PLUGIN_FOLDER + "/" + Globals.WHITE_LIST_FILENAME);
+        
+        if (whitelistFile.exists()) {
+            try {
+                
+                BufferedReader br = new BufferedReader(new FileReader(whitelistFile));
+
+                String sCurrentLine;
+                while ((sCurrentLine = br.readLine()) != null) {
+                    this.whitelist.add(sCurrentLine);
+                }
+                
+                return true;
+            }
+            catch(FileNotFoundException fnfe){}
+            catch(IOException io) {}
+        }
+        else {
+            //The white-list was not found so create it.
+            try {
+                whitelistFile.createNewFile();
+            }
+            catch(IOException io) {
+                Logger.debug(MessageFormat.format("Cannot create \"{0}/{1}\".", Globals.PLUGIN_FOLDER, Globals.WHITE_LIST_FILENAME));
+            }
+        }
+        //END OF if(whitelistFile.exists())...
+        
+        return false;
     }
 }
