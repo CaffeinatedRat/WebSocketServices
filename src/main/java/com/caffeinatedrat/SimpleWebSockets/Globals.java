@@ -36,16 +36,22 @@ public class Globals {
     // Constants
     // ----------------------------------------------
     public static final int READ_CHUNK_SIZE = 1024;
+    public static final String PLUGIN_FOLDER = "plugins/WebSocketServices";
+    public static final String WHITE_LIST_FILENAME = "White-list.txt";
     
     // ----------------------------------------------
     // Global Vars.
     // ----------------------------------------------
-    public static int debugLevel = 3;   
+    public static int debugLevel = 0;
 
     // ----------------------------------------------
     // Properties
     // ----------------------------------------------
     
     public static boolean isDebug() { return (debugLevel > 0); }
-    public static boolean isVerboseDebug() { return ((debugLevel & 0x03) == 0x03); }
+    public static boolean isVerboseDebug() { return ((debugLevel & 0x02) == 0x02); }
+    
+    // ----------------------------------------------
+    // Data Types.
+    // ----------------------------------------------
 }
