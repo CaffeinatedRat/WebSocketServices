@@ -27,6 +27,7 @@ package com.caffeinatedrat.SimpleWebSockets;
 import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
+import java.util.HashSet;
 
 import com.caffeinatedrat.SimpleWebSockets.Frame.OPCODE;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -46,58 +47,36 @@ public class Connection extends Thread {
     
     private Socket socket;
     private IApplicationLayer applicationLayer;
-    private int handshakeTimeOutInMilliseconds;
-    private int frameWaitTimeOutInMilliseconds;
-
-    //private org.bukkit.Server minecraftServer;
+    private com.caffeinatedrat.SimpleWebSockets.Server webSocketServer; 
     
     // ----------------------------------------------
     // Properties
     // ----------------------------------------------    
     
     /*
-     * Returns the handshake timeout in milliseconds.
+     * Returns the simple websocket server.
      */
-    public int getHandshakeTimeout() {
-        return handshakeTimeOutInMilliseconds;
+    public com.caffeinatedrat.SimpleWebSockets.Server getWebSocketServer() {
+        return this.webSocketServer;
     }
-    
-    /**
-     * Sets the handshake timeout in milliseconds.
-     * @param timeout The timeout handshake in milliseconds.
-     */
-    public void setHandshakeTimeout(int timeout) {
-        this.handshakeTimeOutInMilliseconds = timeout;
-    }
-    
-    /**
-     * Returns the amount of time in milliseconds that a connection will wait for a frame.
-     * @return The frame timeout in milliseconds.
-     */
-    public int getFrameWaitTimeout() {
-        return this.frameWaitTimeOutInMilliseconds;
-    }
-    
-    /**
-     * Sets the amount of time in milliseconds that a connection will wait for a frame.
-     * @param timeout The frame timeout in milliseconds.
-     */
-    public void setFrameWaitTimeOut(int timeout) {
-        this.frameWaitTimeOutInMilliseconds = timeout;
-    }    
-    
+          
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public Connection(Socket socket, IApplicationLayer applicationLayer) {
+    public Connection(Socket socket, IApplicationLayer applicationLayer, com.caffeinatedrat.SimpleWebSockets.Server webSocketServer) {
         
         if (applicationLayer == null) {
             throw new IllegalArgumentException("The applicationLayer is invalid (null).");
         }
+
+        if (webSocketServer == null) {
+            throw new IllegalArgumentException("The webSocketServer is invalid (null).");
+        }
         
         this.socket = socket;
         this.applicationLayer = applicationLayer;
+        this.webSocketServer = webSocketServer;
     }
     
     // ----------------------------------------------
@@ -113,8 +92,7 @@ public class Connection extends Thread {
 
             try {
 
-                Handshake handshake = new Handshake(this.socket, this.handshakeTimeOutInMilliseconds);
-                handshake.setCheckOrigin(false);
+                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
                 
                 if (handshake.processRequest()) {
                     
@@ -127,7 +105,7 @@ public class Connection extends Thread {
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
                         //Wait for the next frame.
-                        Frame frame = new Frame(this.socket, this.frameWaitTimeOutInMilliseconds);
+                        Frame frame = new Frame(this.socket, getWebSocketServer().getFrameWaitTimeout());
                         frame.Read();
                         
                         switch (frame.getOpCode()) {
@@ -153,7 +131,6 @@ public class Connection extends Thread {
                                     responseFrame.Write();
                                     
                                     continueListening = !response.closeConnection;
-                                    
                                 }
                                 // END OF if(applicationLayer != null)...
                             }
@@ -179,7 +156,6 @@ public class Connection extends Thread {
                                     responseFrame.Write();
                                     
                                     continueListening = !response.closeConnection;
-                                    
                                 }
                                 // END OF if(applicationLayer != null)...
                             }
@@ -201,6 +177,10 @@ public class Connection extends Thread {
                             //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.2
                             case PING_CONTROL_FRAME:
                             {
+                                //Is pinging supported?
+                                if(!getWebSocketServer().isPingable())
+                                    break;
+                                
                                 if (applicationLayer != null) {
                                     applicationLayer.onPing(frame.getPayloadAsBytes());
                                 }
@@ -231,6 +211,18 @@ public class Connection extends Thread {
                                 break;
                         }
                         //END OF switch(frame.getOpCode())...
+                        
+                        //Firefox needs to know we're closing or it will throw an error.
+                        //Technically according to the RFC we should be sending a close frame before terminating the server anyways.
+                        //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
+                        if (!continueListening)
+                        {
+                            Frame closeFrame = new Frame(this.socket);
+                            closeFrame.setFinalFragment();
+                            closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
+                            closeFrame.setPayload("Bye bye...");
+                            closeFrame.Write();
+                        }
                     }
                     //END OF while(!socket.isClosed())...
                 }
@@ -241,6 +233,19 @@ public class Connection extends Thread {
             }
             catch (InvalidFrameException invalidFrame) {
                 Logger.debug("The frame is invalid.");
+                
+                try
+                {
+                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
+                    Frame closeFrame = new Frame(this.socket);
+                    closeFrame.setFinalFragment();
+                    closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
+                    closeFrame.setPayload("The frame was invalid.");
+                    closeFrame.Write();
+                }
+                catch(InvalidFrameException ife) {
+                    //Do nothing...
+                }
             }
 
             Logger.debug("Connection terminated.");
