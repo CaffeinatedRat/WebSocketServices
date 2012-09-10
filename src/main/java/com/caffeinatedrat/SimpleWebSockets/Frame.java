@@ -440,6 +440,7 @@ public class Frame {
             }
 
             outputStream.write(bufferedPayload, 0, (int)bufferedPayload.length);
+            outputStream.flush();
         }
         catch (SocketTimeoutException socketTimeout) {
             Logger.verboseDebug(MessageFormat.format("A socket timeout has occured.  {0}", socketTimeout.getMessage()));
