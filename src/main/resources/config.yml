@@ -1,10 +1,13 @@
-#This is a sample config.yml
+#Configuration for the websocket server.
 websocket:
   portNumber: 4000
   #Logs to the console (0 = off, 1 = simple, 2 = verbose).
   debug: 2
-  maximumThreads: 32
+  #Sets the maximum number of connections the server can handle concurrently.
+  maximumConnections: 32
+  #Sets the number of milliseconds that the server will wait for a handshake to complete.
   handshakeTimeOutInMilliseconds: 1000
+  #Sets the number of milliseconds that the server will wait for a the next frame before terminating the connection.
   frameWaitTimeOutInMilliseconds: 15000
   #Determines if the origin is checked during the handshake.
   checkOrigin: true
@@ -12,6 +15,7 @@ websocket:
   whitelist: false
   #Determines if the server is pingable via websockets.
   pingable: true
+#Configuration for the commands (services) that are supported.
 command:
   who: Enabled
   version: Enabled

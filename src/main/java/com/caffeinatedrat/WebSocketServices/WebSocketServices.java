@@ -52,11 +52,11 @@ public class WebSocketServices extends JavaPlugin {
         FileConfiguration config = getConfig();
         
         int portNumber = config.getInt("websocket.portNumber", 4000);
-        int maximumNumberOfThreads = config.getInt("websocket.maximumThreads", 32);
+        int maximumConnections = config.getInt("websocket.maximumConnections", 32);
         boolean isWhiteListed = config.getBoolean("websocket.whitelist", false);
         Globals.debugLevel = config.getInt("websocket.debug", 0);
         
-        server = new Server(portNumber, new ApplicationLayer(this.getServer()), isWhiteListed, maximumNumberOfThreads);
+        server = new Server(portNumber, new ApplicationLayer(this.getServer()), isWhiteListed, maximumConnections);
         server.setHandshakeTimeout(config.getInt("websocket.handshakeTimeOutInMilliseconds", 1000));
         server.setFrameWaitTimeOut(config.getInt("websocket.frameWaitTimeOutInMilliseconds", 15000));
         server.setOriginCheck(config.getBoolean("websocket.checkOrigin", false));
