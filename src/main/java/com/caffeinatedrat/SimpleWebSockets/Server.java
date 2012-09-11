@@ -189,7 +189,7 @@ public class Server extends Thread {
         if(isWhiteListed)
         {
             this.whitelist = new HashSet<String>();
-            if(!LoadWhiteList())
+            if(!loadWhiteList())
             {
                 //TO-DO: Create the white-list.txt and bail.
                 Logger.severe("The white-list was not found...");
@@ -218,28 +218,43 @@ public class Server extends Thread {
 
                 //Wait for incoming connections.
                 Socket socket = serverSocket.accept();
+
+                // -- CR (9/10/12) --- Moved the white-listing here to prevent any unnecessary threads from being launched.
+                String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
                 
-                //Try to reclaim any threads if we are exceeding our maximum.
-                //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
-                //NOTE: Minimal unit testing has been done here...more testing is required.
-                if (threads.size() + 1 > this.maximumThreads) {
-                    for (int i = 0; i < threads.size(); i ++) {
-                        if (!threads.get(i).isAlive()) {
-                            threads.remove(i);
+                //Determine if the IP is supported via the white-list.
+                //TODO: Allow local access.
+                if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) ) {
+                
+                    //Try to reclaim any threads if we are exceeding our maximum.
+                    //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
+                    //NOTE: Minimal unit testing has been done here...more testing is required.
+                    if (threads.size() + 1 > this.maximumThreads) {
+                        for (int i = 0; i < threads.size(); i ++) {
+                            if (!threads.get(i).isAlive()) {
+                                threads.remove(i);
+                            }
                         }
                     }
+    
+                    //Make sure we have enough threads before accepting.
+                    //NOTE: Minimal unit testing has been done here...more testing is required.
+                    if ( (threads.size() + 1) <= this.maximumThreads) {
+                        Connection t = new Connection(socket, this.applicationLayer, this);
+                        t.start();
+                        threads.add(t);
+                    }
+                    else {
+                        Logger.debug("The server has reached its thread maximum...");
+                    }
                 }
-
-                //Make sure we have enough threads before accepting.
-                //NOTE: Minimal unit testing has been done here...more testing is required.
-                if ( (threads.size() + 1) <= this.maximumThreads) {
-                    Connection t = new Connection(socket, this.applicationLayer, this);
-                    t.start();
-                    threads.add(t);
-                }
+                //Reject the connection.
                 else {
-                    Logger.debug("The server has reached its thread maximum...");
+                    
+                    socket.close();
+                    Logger.debug(MessageFormat.format("{0} is not white-listed.", remoteAddress));
                 }
+                //END OF if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) )...
             }
             //END OF while ( (this.isServerRunning) && (!serverSocket.isClosed()) )...
             
@@ -273,9 +288,9 @@ public class Server extends Thread {
     }
     
     /**
-     * Attempt to load the white-list.
+     * Attempts to load the white-list.
      */
-    private boolean LoadWhiteList() {
+    private boolean loadWhiteList() {
         File whitelistFile = new File(Globals.PLUGIN_FOLDER + "/" + Globals.WHITE_LIST_FILENAME);
         
         if (whitelistFile.exists()) {
@@ -283,9 +298,11 @@ public class Server extends Thread {
                 
                 BufferedReader br = new BufferedReader(new FileReader(whitelistFile));
 
-                String sCurrentLine;
-                while ((sCurrentLine = br.readLine()) != null) {
-                    this.whitelist.add(sCurrentLine);
+                String ipAddress;
+                while ((ipAddress = br.readLine()) != null) {
+                    if (ipAddress != "") {
+                        this.whitelist.add(ipAddress);
+                    }
                 }
                 
                 return true;

@@ -30,7 +30,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
@@ -59,7 +58,7 @@ public class Handshake {
     private static final String WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     
     private static final String ORIGIN_HEADER = "ORIGIN";
-    private static final String HOST_HEADER = "HOST";
+    //private static final String HOST_HEADER = "HOST";
     private static final String SEC_WEBSOCKET_KEY_HEADER = "SEC-WEBSOCKET-KEY";
     //private static final String SEC_WEBSOCKET_VERSION_HEADER = "SEC-WEBSOCKET-VERSION";
     
@@ -71,7 +70,6 @@ public class Handshake {
     private Socket socket;
     private int timeoutInMilliseconds;
     private boolean checkOrigin;
-    private HashSet<String> whitelist = null;
     
     // ----------------------------------------------
     // Properties
@@ -122,14 +120,13 @@ public class Handshake {
     // ----------------------------------------------
     
     public Handshake(Socket socket) {
-        this(socket, 1000, true, null);
+        this(socket, 1000, true);
     }
     
-    public Handshake(Socket socket, int timeout, boolean checkOrigin, HashSet<String> whitelist) {
+    public Handshake(Socket socket, int timeout, boolean checkOrigin) {
         this.socket = socket;
         this.timeoutInMilliseconds = timeout;
         this.checkOrigin = checkOrigin;
-        this.whitelist = whitelist;
     }
     
     // ----------------------------------------------
@@ -196,57 +193,46 @@ public class Handshake {
                     //NOTE: Verify that the remote IP matches the origin.
                     if ( (!getCheckOrigin()) || ((headerFields.containsKey(ORIGIN_HEADER)) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) {
                         
-                        //Determine if the IP is supported via the white-list.
-                        if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) )
-                        {
-                            //To check the origin...
-                            //Adds an additional timecomplexity of O(n).
+                        //TODO
+                        //To check the origin...
+                        //Adds an additional timecomplexity of O(n).
+                        //Add Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
+                        
+                        //Generate the accept key.
+                        String acceptKey = "";
+                        if (headerFields.containsKey(SEC_WEBSOCKET_KEY_HEADER)) {
                             
-                            //TO-DO
-                            //Add Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
+                            String requestKey = headerFields.get(SEC_WEBSOCKET_KEY_HEADER) + WEBSOCKET_GUID;
                             
-                            //Generate the accept key.
-                            String acceptKey = "";
-                            if (headerFields.containsKey(SEC_WEBSOCKET_KEY_HEADER)) {
-                                
-                                String requestKey = headerFields.get(SEC_WEBSOCKET_KEY_HEADER) + WEBSOCKET_GUID;
-                                
-                                try {
-                                    MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
-                                    byte[] keyArray = requestKey.getBytes(ENCODING_TYPE);
-                                    byte[] hashedKey = md.digest(keyArray);
-                                    acceptKey = Base64.encodeBytes(hashedKey);
-                                }
-                                catch (NoSuchAlgorithmException noAlgorithmException) {
-                                    outputStream.println("HTTP/1.1 500 Internal Server Error");
-                                    Logger.severe(MessageFormat.format("Unable to find the hashing algorithm {0}.  The accept key cannot be created.", HASHING_ALGORITHM));
-                                    return false;
-                                }
-                                catch (java.lang.NoClassDefFoundError noClassException) {
-                                    outputStream.println("HTTP/1.1 500 Internal Server Error");
-                                    Logger.severe(MessageFormat.format("Unable to find the vital class {0} to generate a Base64 value.", noClassException.getMessage()));
-                                    return false;
-                                }
-        
-                                //Respond to the client with the proper handshake.
-                                outputStream.println("HTTP/1.1 101 Switching Protocols");
-                                outputStream.println("Upgrade: websocket");
-                                outputStream.println("Connection: Upgrade");
-                                outputStream.println(MessageFormat.format("Sec-WebSocket-Version: {0}", WEBSOCKET_SUPPORTED_VERSIONS));
-                                outputStream.println(MessageFormat.format("Sec-WebSocket-Accept: {0}", acceptKey));
-                                outputStream.println();
-                                outputStream.flush();
-                                
-                                return true;
+                            try {
+                                MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
+                                byte[] keyArray = requestKey.getBytes(ENCODING_TYPE);
+                                byte[] hashedKey = md.digest(keyArray);
+                                acceptKey = Base64.encodeBytes(hashedKey);
                             }
-                            //END OF if(headerFields.containsKey("SEC-WEBSOCKET-KEY"))...
+                            catch (NoSuchAlgorithmException noAlgorithmException) {
+                                outputStream.println("HTTP/1.1 500 Internal Server Error");
+                                Logger.severe(MessageFormat.format("Unable to find the hashing algorithm {0}.  The accept key cannot be created.", HASHING_ALGORITHM));
+                                return false;
+                            }
+                            catch (java.lang.NoClassDefFoundError noClassException) {
+                                outputStream.println("HTTP/1.1 500 Internal Server Error");
+                                Logger.severe(MessageFormat.format("Unable to find the vital class {0} to generate a Base64 value.", noClassException.getMessage()));
+                                return false;
+                            }
+    
+                            //Respond to the client with the proper handshake.
+                            outputStream.println("HTTP/1.1 101 Switching Protocols");
+                            outputStream.println("Upgrade: websocket");
+                            outputStream.println("Connection: Upgrade");
+                            outputStream.println(MessageFormat.format("Sec-WebSocket-Version: {0}", WEBSOCKET_SUPPORTED_VERSIONS));
+                            outputStream.println(MessageFormat.format("Sec-WebSocket-Accept: {0}", acceptKey));
+                            outputStream.println();
+                            outputStream.flush();
+                            
+                            return true;
                         }
-                        else {
-                            outputStream.println("HTTP/1.1 403 Forbidden");
-                            Logger.debug(MessageFormat.format("{0} is not white-listed.", remoteAddress));
-                            return false;
-                        }
-                        //END OF if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) )...
+                        //END OF if(headerFields.containsKey("SEC-WEBSOCKET-KEY"))...
                     }
                     else {
                         outputStream.println("HTTP/1.1 403 Forbidden");
