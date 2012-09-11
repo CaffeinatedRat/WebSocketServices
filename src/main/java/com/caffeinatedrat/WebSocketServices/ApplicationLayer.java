@@ -66,7 +66,7 @@ public class ApplicationLayer implements IApplicationLayer {
         
         if (text.equalsIgnoreCase("WHO")) {
             
-            //To-do: Extract into a json formatter.
+            //TODO: Extract into a json formatter.
             StringBuilder stringBuffer = new StringBuilder();
             Player[] players = this.minecraftServer.getOnlinePlayers();
             stringBuffer.append("{");
@@ -86,7 +86,7 @@ public class ApplicationLayer implements IApplicationLayer {
         }
         else if (text.equalsIgnoreCase("VERSION")) {
             
-            //To-do: Extract into a json formatter.
+            //TODO: Extract into a json formatter.
             StringBuilder stringBuffer = new StringBuilder();
             
             stringBuffer.append("{");
@@ -98,7 +98,7 @@ public class ApplicationLayer implements IApplicationLayer {
         else if (text.equalsIgnoreCase("NAME")) {
             this.minecraftServer.getName();
             
-            //To-do: Extract into a json formatter.
+            //TODO: Extract into a json formatter.
             StringBuilder stringBuffer = new StringBuilder();
             
             stringBuffer.append("{");
