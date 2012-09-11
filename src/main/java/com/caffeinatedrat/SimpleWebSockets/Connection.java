@@ -27,7 +27,6 @@ package com.caffeinatedrat.SimpleWebSockets;
 import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
-import java.util.HashSet;
 
 import com.caffeinatedrat.SimpleWebSockets.Frame.OPCODE;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -92,7 +91,7 @@ public class Connection extends Thread {
 
             try {
 
-                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
+                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked());
                 
                 if (handshake.processRequest()) {
                     
@@ -101,7 +100,7 @@ public class Connection extends Thread {
                     boolean continueListening = true;
                     while ( (!socket.isClosed()) && (continueListening) ) {
 
-                        //TO-DO: Add management of fragmented frames.
+                        //TODO: Add management of fragmented frames.
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
                         //Wait for the next frame.
@@ -118,7 +117,7 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    //TO-DO: Add support for fragmentation.
+                                    //TODO: Add support for fragmentation.
                                     //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                                     Frame responseFrame = new Frame(this.socket);
                                     responseFrame.setFinalFragment();
@@ -143,7 +142,7 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    //TO-DO: Add support for fragmentation.
+                                    //TODO: Add support for fragmentation.
                                     //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                                     Frame responseFrame = new Frame(this.socket);
                                     responseFrame.setFinalFragment();
