@@ -105,24 +105,24 @@ public class DependencyManager {
        return false;
     }
     
-    public static boolean loadJar(String jarPath, String className) {
-    
-        try {
- 
-            URL url = new URL(jarPath);
-            URL[] urls = new URL[]{url};
-            ClassLoader cl = new URLClassLoader(urls);
-            Class cls = cl.loadClass("net.iharder.Base64");
-            
-            return true;
-        }
-        catch (ClassNotFoundException cnfe){
-        
-        }
-        catch (MalformedURLException me) {
-            
-        }
-        
-        return false;
-    }
+//    public static boolean loadJar(String jarPath, String className) {
+//    
+//        try {
+// 
+//            URL url = new URL(jarPath);
+//            URL[] urls = new URL[]{url};
+//            ClassLoader cl = new URLClassLoader(urls);
+//            Class cls = cl.loadClass("net.iharder.Base64");
+//            
+//            return true;
+//        }
+//        catch (ClassNotFoundException cnfe){
+//        
+//        }
+//        catch (MalformedURLException me) {
+//            
+//        }
+//        
+//        return false;
+//    }
 }
