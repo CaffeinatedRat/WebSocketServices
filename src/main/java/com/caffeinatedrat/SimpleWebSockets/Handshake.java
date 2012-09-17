@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
@@ -70,6 +71,7 @@ public class Handshake {
     private Socket socket;
     private int timeoutInMilliseconds;
     private boolean checkOrigin;
+    private HashSet<String> whitelist;
     
     // ----------------------------------------------
     // Properties
@@ -120,13 +122,14 @@ public class Handshake {
     // ----------------------------------------------
     
     public Handshake(Socket socket) {
-        this(socket, 1000, true);
+        this(socket, 1000, true, null);
     }
     
-    public Handshake(Socket socket, int timeout, boolean checkOrigin) {
+    public Handshake(Socket socket, int timeout, boolean checkOrigin, HashSet<String> whitelist) {
         this.socket = socket;
         this.timeoutInMilliseconds = timeout;
         this.checkOrigin = checkOrigin;
+        this.whitelist = whitelist;
     }
     
     // ----------------------------------------------
@@ -182,20 +185,54 @@ public class Handshake {
                     headerFields = new HashMap<String,String>();
                     for (int i = 1; i < headerLines.length; i++) {
 
+                        // -- CR (9-16-12) --- Fixed an issue where a colon may be present in the value.
                         //Break the header into a key and value pair and ignore malformed headers.
-                        String[] tokens = headerLines[i].split(":");
+                        String[] tokens = headerLines[i].split(":", 2);
                         if (tokens.length == 2) {
                             headerFields.put(tokens[0].trim().toUpperCase(), tokens[1].trim());
                         }
                     }
-                     
+                    
                     //Origin check: http://tools.ietf.org/html/rfc6455#section-4.2.2
-                    //NOTE: Verify that the remote IP matches the origin.
-                    if ( (!getCheckOrigin()) || ((headerFields.containsKey(ORIGIN_HEADER)) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) {
+                    //NOTE: Verify that if the origin is being checked that it is valid and not null.
+                    boolean verified = false;
+                    if ( !getCheckOrigin() ) {
+                        verified = true;
+                    }
+                    else {
+                        
+                        Logger.verboseDebug(MessageFormat.format("ORIGIN: {0}", headerFields.get(ORIGIN_HEADER)));
+                        
+                        //Verify that the origin is valid.
+                        if ( (headerFields.containsKey(ORIGIN_HEADER) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) {
+                            
+                            //Are we using a white-list?  If so, verify the origin is in the white-list.
+                            if(this.whitelist != null) {
+                                
+                                Logger.verboseDebug("White-list: enabled");
+
+                                //Strip out the protocol before checking.
+                                String[] tokens = headerFields.get(ORIGIN_HEADER).split("//", 2);
+                                String origin = ((tokens.length == 2) ? tokens[1] : tokens[0]).toUpperCase();
+                                if (this.whitelist.contains(origin)) {
+                                    verified = true;
+                                }
+                                else {
+                                    Logger.debug(MessageFormat.format("The origin {0} is not white-listed.", headerFields.get(ORIGIN_HEADER)));
+                                }
+                            }
+                            else {
+                                Logger.verboseDebug("White-list: disabled");
+                                verified = true;
+                            }
+                        }
+                        //END OF if ( (headerFields.containsKey(ORIGIN_HEADER) && (!headerFields.get(ORIGIN_HEADER).equalsIgnoreCase("null"))) ) {...
+                    }
+                    //END OF if ( !getCheckOrigin() ) {...
+                    
+                    if (verified) {
                         
                         //TODO
-                        //To check the origin...
-                        //Adds an additional timecomplexity of O(n).
                         //Add Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
                         
                         //Generate the accept key.
@@ -239,7 +276,7 @@ public class Handshake {
                         Logger.debug("Unable to verify the origin.");
                         return false;
                     }                    
-                    //END OF if ( (!getCheckOrigin()) ...
+                    //END OF if (verified) { ...
                 }
                 //END OF if( (headerLines[0] !="") && (headerLines[0].toUpperCase().startsWith("GET")) && (headerLines[0].toUpperCase().contains("HTTP/1.1")) )...
             }

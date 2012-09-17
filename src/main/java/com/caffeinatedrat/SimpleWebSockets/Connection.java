@@ -91,7 +91,7 @@ public class Connection extends Thread {
 
             try {
 
-                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked());
+                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
                 
                 if (handshake.processRequest()) {
                     

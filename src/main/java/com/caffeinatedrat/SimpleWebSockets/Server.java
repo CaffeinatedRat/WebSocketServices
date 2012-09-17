@@ -219,12 +219,13 @@ public class Server extends Thread {
                 //Wait for incoming connections.
                 Socket socket = serverSocket.accept();
 
+                // -- CR (9/16/12) --- Whoops, we can't check the user against the white-list at this point in time, since the IPAddress is from the user and not the domain...stupid mistake.
                 // -- CR (9/10/12) --- Moved the white-listing here to prevent any unnecessary threads from being launched.
-                String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
+                //String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
                 
                 //Determine if the IP is supported via the white-list.
                 //TODO: Allow local access.
-                if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) ) {
+                //if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) ) {
                 
                     //Try to reclaim any threads if we are exceeding our maximum.
                     //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
@@ -247,13 +248,13 @@ public class Server extends Thread {
                     else {
                         Logger.debug("The server has reached its thread maximum...");
                     }
-                }
+                //}
                 //Reject the connection.
-                else {
+                //else {
                     
-                    socket.close();
-                    Logger.debug(MessageFormat.format("{0} is not white-listed.", remoteAddress));
-                }
+                //    socket.close();
+                //    Logger.debug(MessageFormat.format("{0} is not white-listed.", remoteAddress));
+                //}
                 //END OF if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) )...
             }
             //END OF while ( (this.isServerRunning) && (!serverSocket.isClosed()) )...
@@ -298,10 +299,10 @@ public class Server extends Thread {
                 
                 BufferedReader br = new BufferedReader(new FileReader(whitelistFile));
 
-                String ipAddress;
-                while ((ipAddress = br.readLine()) != null) {
-                    if (ipAddress != "") {
-                        this.whitelist.add(ipAddress);
+                String domain;
+                while ((domain = br.readLine()) != null) {
+                    if (domain != "") {
+                        this.whitelist.add(domain.toUpperCase());
                     }
                 }
                 
