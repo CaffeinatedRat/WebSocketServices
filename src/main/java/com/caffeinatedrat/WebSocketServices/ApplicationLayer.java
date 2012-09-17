@@ -61,9 +61,6 @@ public class ApplicationLayer implements IApplicationLayer {
     
     public void onTextFrame(String text, TextResponse response) {
         
-        //Default all commands to terminate the connection.
-        response.closeConnection = true;
-        
         if (text.equalsIgnoreCase("WHO")) {
             
             //TODO: Extract into a json formatter.
