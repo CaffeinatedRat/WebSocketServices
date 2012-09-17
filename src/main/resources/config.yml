@@ -1,6 +1,6 @@
 #Configuration for the websocket server.
 websocket:
-  portNumber: 4000
+  portNumber: 25564
   #Logs to the console (0 = off, 1 = simple, 2 = verbose).
   debug: 2
   #Sets the maximum number of connections the server can handle concurrently.
@@ -9,9 +9,9 @@ websocket:
   handshakeTimeOutInMilliseconds: 1000
   #Sets the number of milliseconds that the server will wait for a the next frame before terminating the connection.
   frameWaitTimeOutInMilliseconds: 15000
-  #Determines if the origin is checked during the handshake.
+  #Determines if the origin is valid during the handshake.  If the origin is null it is invalid and the connection is rejected.
   checkOrigin: true
-  #Determines if the websocket services are only available to certain ips.
+  #Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.
   whitelist: false
   #Determines if the server is pingable via websockets.
   pingable: true
