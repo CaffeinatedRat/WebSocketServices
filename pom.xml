@@ -4,11 +4,26 @@
   <artifactId>WebSocketServices</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <description>Provides simple websocket services for a Minecraft server.</description>
+  
+  <scm>
+    <connection>scm:git:git://github.com/CaffeinatedRat/WebSocketServices.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/CaffeinatedRat/WebSocketServices.git</developerConnection>
+    <url>https://github.com/CaffeinatedRat/WebSocketServices</url>
+  </scm>
+
+  <repositories>
+    <repository>
+      <id>repobo-snap</id>
+      <url>http://repo.bukkit.org/content/groups/public</url>
+    </repository>
+  </repositories>  
+  
   <dependencies>
   	<dependency>
   		<groupId>org.bukkit</groupId>
   		<artifactId>bukkit</artifactId>
   		<version>1.2.5-R4.1-SNAPSHOT</version>
+  		<scope>compile</scope>
   	</dependency>
   	<dependency>
   		<groupId>net.iharder</groupId>
