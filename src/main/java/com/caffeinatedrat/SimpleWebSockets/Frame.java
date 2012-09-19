@@ -277,6 +277,8 @@ public class Frame {
             preserveOriginalTimeout = this.socket.getSoTimeout();
             this.socket.setSoTimeout(this.timeoutInMilliseconds);
 
+            //Suppress this warning as closing the stream after the event is completed will also close the socket.
+            @SuppressWarnings("resource")
             WebSocketsReader inputStream = new WebSocketsReader(socket.getInputStream());
             
             byte[] buffer = new byte[8];

@@ -140,6 +140,8 @@ public class Handshake {
      * Performs the actual handshake and will return false if the handshake has failed.
      * @return Returns true if the handshake was successful. 
      */
+    //Suppress this warning as closing the stream after the event is completed will also close the socket.
+    @SuppressWarnings("resource")
     public boolean processRequest() {
         
         WebSocketsReader inputStream = null;

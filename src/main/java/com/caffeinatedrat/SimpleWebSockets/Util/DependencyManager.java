@@ -75,14 +75,15 @@ public class DependencyManager {
             
             //Get the jar file within the jar file.
             inputStream = object.getClass().getResourceAsStream("/" + jarName);
-            FileOutputStream output = new FileOutputStream(file);
-            
-            //Build the jar file.
-            byte[] data = new byte[Globals.READ_CHUNK_SIZE];
-            int len = 0;
-            while (inputStream.available() > 0) {
-                len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
-                output.write(data, 0, len);
+            try (FileOutputStream output = new FileOutputStream(file)) 
+            {
+                //Build the jar file.
+                byte[] data = new byte[Globals.READ_CHUNK_SIZE];
+                int len = 0;
+                while (inputStream.available() > 0) {
+                    len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
+                    output.write(data, 0, len);
+                }
             }
 
             return true;

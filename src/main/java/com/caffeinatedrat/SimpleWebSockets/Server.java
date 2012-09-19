@@ -297,12 +297,13 @@ public class Server extends Thread {
         if (whitelistFile.exists()) {
             try {
                 
-                BufferedReader br = new BufferedReader(new FileReader(whitelistFile));
-
-                String domain;
-                while ((domain = br.readLine()) != null) {
-                    if (domain != "") {
-                        this.whitelist.add(domain.toUpperCase());
+                try (BufferedReader br = new BufferedReader(new FileReader(whitelistFile)))
+                {
+                    String domain;
+                    while ((domain = br.readLine()) != null) {
+                        if (domain != "") {
+                            this.whitelist.add(domain.toUpperCase());
+                        }
                     }
                 }
                 
