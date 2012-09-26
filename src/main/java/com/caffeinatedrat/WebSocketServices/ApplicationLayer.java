@@ -27,6 +27,8 @@ package com.caffeinatedrat.WebSocketServices;
 import java.text.MessageFormat;
 
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
@@ -61,10 +63,11 @@ public class ApplicationLayer implements IApplicationLayer {
     
     public void onTextFrame(String text, TextResponse response) {
         
+        //TODO: Extract into a json formatter.
+        StringBuilder stringBuffer = new StringBuilder();
+        
         if (text.equalsIgnoreCase("WHO")) {
             
-            //TODO: Extract into a json formatter.
-            StringBuilder stringBuffer = new StringBuilder();
             Player[] players = this.minecraftServer.getOnlinePlayers();
             stringBuffer.append("{");
             stringBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", this.minecraftServer.getMaxPlayers()));
@@ -78,35 +81,45 @@ public class ApplicationLayer implements IApplicationLayer {
             }
             
             stringBuffer.append("]}");
-            
-            response.data = stringBuffer.toString();
         }
-        else if (text.equalsIgnoreCase("VERSION")) {
-            
-            //TODO: Extract into a json formatter.
-            StringBuilder stringBuffer = new StringBuilder();
+        else if (text.equalsIgnoreCase("INFO")) {
             
             stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"version\": \"{0}\", \"bukkitversion\": \"{1}\"", this.minecraftServer.getVersion(), this.minecraftServer.getBukkitVersion()));
+            stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"servername\": \"{1}\", \"version\": \"{2}\", \"bukkitversion\": \"{3}\""
+                    , this.minecraftServer.getName()
+                    , this.minecraftServer.getServerName()
+                    , this.minecraftServer.getVersion()
+                    , this.minecraftServer.getBukkitVersion()));
             stringBuffer.append("}");
-
-            response.data = stringBuffer.toString();
         }
-        else if (text.equalsIgnoreCase("NAME")) {
-            this.minecraftServer.getName();
+        else if (text.equalsIgnoreCase("PLUGINS")) {
             
-            //TODO: Extract into a json formatter.
-            StringBuilder stringBuffer = new StringBuilder();
+            Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
             
             stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"servername\": \"{1}\"", this.minecraftServer.getName(), this.minecraftServer.getServerName()));
-            stringBuffer.append("}");
+            stringBuffer.append("\"Plugins\": [");
+            
+            for (int i = 0; i < plugins.length; i++) {
+                
+                PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
 
-            response.data = stringBuffer.toString();
+                if(i > 0) stringBuffer.append(",");
+                stringBuffer.append("{");
+                stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"description\": \"{1}\", \"author\": \"{2}\", \"version\": \"{3}\""
+                        , plugins[i].getName()
+                        , pluginDescriptor.getDescription().replaceAll("(\r\n|\n)", "")
+                        , pluginDescriptor.getAuthors().toString()
+                        , pluginDescriptor.getVersion()));
+                stringBuffer.append("}");
+            }
+            
+            stringBuffer.append("]}");
         }
         else {
             //Unknown command...do nothing.
         }
+        
+        response.data = stringBuffer.toString();
     }
 
     public void onBinaryFrame(byte[] data, BinaryResponse response) {
