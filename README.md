@@ -37,3 +37,6 @@ To-Do
 * Determine how to manage frames larger than 2^16 in size.
 * Figure out how to import the Maven dependency 'Base64' into the jar.
 * Add a listening layer for other plug-ins to respond to websocket events.
+* Create a wiki entry on how to construct the jar for this plugin, as well as how to install the base64-3.8.1.jar.
+* A security layer for possible individual websocket logins (This will have to be some sort of temporary token, as these services work off client-side scripting and all 'password' information is available for all to see).
+* Eventually add https support.
