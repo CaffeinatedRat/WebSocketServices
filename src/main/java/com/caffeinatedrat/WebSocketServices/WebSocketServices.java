@@ -24,7 +24,6 @@
 
 package com.caffeinatedrat.WebSocketServices;
 
-import org.bukkit.World.Environment;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
