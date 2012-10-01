@@ -26,13 +26,10 @@ package com.caffeinatedrat.WebSocketServices;
 
 import java.text.MessageFormat;
 
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
+import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 /**
  * The application layer that manages the available web services.
@@ -48,13 +45,15 @@ public class ApplicationLayer implements IApplicationLayer {
     // ----------------------------------------------
     
     private org.bukkit.Server minecraftServer;
+    private WebSocketServicesConfiguration config;
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public ApplicationLayer(org.bukkit.Server minecraftServer) {
+    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config) {
         this.minecraftServer = minecraftServer;
+        this.config = config;
     }
     
     // ----------------------------------------------
@@ -64,62 +63,36 @@ public class ApplicationLayer implements IApplicationLayer {
     public void onTextFrame(String text, TextResponse response) {
         
         //TODO: Extract into a json formatter.
-        StringBuilder stringBuffer = new StringBuilder();
+        StringBuilder responseBuffer = new StringBuilder();
+        ServiceLayer serviceLayer = new ServiceLayer(this.minecraftServer);
         
-        if (text.equalsIgnoreCase("WHO")) {
-            
-            Player[] players = this.minecraftServer.getOnlinePlayers();
-            stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", this.minecraftServer.getMaxPlayers()));
-            stringBuffer.append("\"Players\": [");
-            
-            for (int i = 0; i < players.length; i++) {
-                if(i > 0) stringBuffer.append(",");
-                stringBuffer.append("{");
-                stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}s\"", players[i].getName(), players[i].getPlayerTime()));
-                stringBuffer.append("}");
-            }
-            
-            stringBuffer.append("]}");
-        }
-        else if (text.equalsIgnoreCase("INFO")) {
-            
-            stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"servername\": \"{1}\", \"version\": \"{2}\", \"bukkitversion\": \"{3}\""
-                    , this.minecraftServer.getName()
-                    , this.minecraftServer.getServerName()
-                    , this.minecraftServer.getVersion()
-                    , this.minecraftServer.getBukkitVersion()));
-            stringBuffer.append("}");
-        }
-        else if (text.equalsIgnoreCase("PLUGINS")) {
-            
-            Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
-            
-            stringBuffer.append("{");
-            stringBuffer.append("\"Plugins\": [");
-            
-            for (int i = 0; i < plugins.length; i++) {
-                
-                PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
+        //Determine if the service is available and if it is then generate a response.
+        if(config.isServiceEnabled(text)) {
 
-                if(i > 0) stringBuffer.append(",");
-                stringBuffer.append("{");
-                stringBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"description\": \"{1}\", \"author\": \"{2}\", \"version\": \"{3}\""
-                        , plugins[i].getName()
-                        , pluginDescriptor.getDescription().replaceAll("(\r\n|\n)", "")
-                        , pluginDescriptor.getAuthors().toString()
-                        , pluginDescriptor.getVersion()));
-                stringBuffer.append("}");
+            responseBuffer.append("{");
+            
+            if(serviceLayer.execute(text, responseBuffer)) {
+                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"SUCCESSFUL\"");
+            }
+            else {
+                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"FAILURE\"");
             }
             
-            stringBuffer.append("]}");
+            responseBuffer.append("}");
+            
         }
+        //The service is not available so send a NA status.
         else {
-            //Unknown command...do nothing.
+            
+            Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
+            
+            responseBuffer.append("{");
+            responseBuffer.append("\"Status\": \"NOT AVAILABLE\"");
+            responseBuffer.append("}");
+            
         }
         
-        response.data = stringBuffer.toString();
+        response.data = responseBuffer.toString();
     }
 
     public void onBinaryFrame(byte[] data, BinaryResponse response) {
