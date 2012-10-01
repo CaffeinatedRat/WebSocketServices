@@ -104,7 +104,7 @@ public class Connection extends Thread {
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
                         //Wait for the next frame.
-                        Frame frame = new Frame(this.socket, getWebSocketServer().getFrameWaitTimeout());
+                        Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance());
                         frame.Read();
                         
                         switch (frame.getOpCode()) {

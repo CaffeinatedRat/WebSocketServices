@@ -49,7 +49,7 @@ public class Server extends Thread {
     private int port;
     private int maximumThreads;
     private int handshakeTimeOutInMilliseconds;
-    private int frameWaitTimeOutInMilliseconds;
+    private int frameTimeOutToleranceInMilliseconds;
     private boolean checkOrigin;
     private boolean pingable;
     private HashSet<String> whitelist = null;
@@ -99,16 +99,16 @@ public class Server extends Thread {
      * Returns the amount of time in milliseconds that a connection will wait for a frame.
      * @return The frame timeout in milliseconds.
      */
-    public int getFrameWaitTimeout() {
-        return this.frameWaitTimeOutInMilliseconds;
+    public int getFrameTimeoutTolerance() {
+        return this.frameTimeOutToleranceInMilliseconds;
     }
     
     /**
      * Sets the amount of time in milliseconds that a connection will wait for a frame.
      * @param timeout The frame timeout in milliseconds.
      */
-    public void setFrameWaitTimeOut(int timeout) {
-        this.frameWaitTimeOutInMilliseconds = timeout;
+    public void setFrameTimeoutTolerance(int timeout) {
+        this.frameTimeOutToleranceInMilliseconds = timeout;
     }
     
     /**
@@ -182,7 +182,7 @@ public class Server extends Thread {
         this.applicationLayer = applicationLayer;
         this.maximumThreads = maximumThreads;
         this.handshakeTimeOutInMilliseconds = 1000;
-        this.frameWaitTimeOutInMilliseconds = 3000;
+        this.frameTimeOutToleranceInMilliseconds = 3000;
         this.checkOrigin = true;
         this.pingable = true;
         
