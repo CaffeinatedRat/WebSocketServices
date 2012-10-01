@@ -24,7 +24,7 @@
 
 package com.caffeinatedrat.WebSocketServices;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.World.Environment;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
@@ -49,18 +49,16 @@ public class WebSocketServices extends JavaPlugin {
 
         saveDefaultConfig();
         
-        FileConfiguration config = getConfig();
+        WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
         
-        int portNumber = config.getInt("websocket.portNumber", 4000);
-        int maximumConnections = config.getInt("websocket.maximumConnections", 32);
-        boolean isWhiteListed = config.getBoolean("websocket.whitelist", false);
-        Globals.debugLevel = config.getInt("websocket.debug", 0);
+        Globals.debugLevel = config.getDebugLevel();
+        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), config);
         
-        server = new Server(portNumber, new ApplicationLayer(this.getServer()), isWhiteListed, maximumConnections);
-        server.setHandshakeTimeout(config.getInt("websocket.handshakeTimeOutInMilliseconds", 1000));
-        server.setFrameWaitTimeOut(config.getInt("websocket.frameWaitTimeOutInMilliseconds", 15000));
-        server.setOriginCheck(config.getBoolean("websocket.checkOrigin", false));
-        server.setPingable(config.getBoolean("websocket.pingable", true));
+        server = new Server(config.getPortNumber(), applicationLayer, config.getIsWhiteListed(), config.getMaximumConnections());
+        server.setHandshakeTimeout(config.getHandshakeTimeOut());
+        server.setFrameTimeoutTolerance(config.getFrameTimeOutTolerance());
+        server.setOriginCheck(config.getCheckOrigin());
+        server.setPingable(config.getIsPingable());
         
         server.start();
     }
