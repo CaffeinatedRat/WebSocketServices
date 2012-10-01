@@ -2,4 +2,4 @@ name: WebSocketServices
 main: com.caffeinatedrat.WebSocketServices.WebSocketServices
 authors: ['CaffeinatedRat']
 version: 1.0.0.0
-description: Provides simple websocket services for a Minecraft server.
+description: Provides a simple websocket services for a Minecraft server.
