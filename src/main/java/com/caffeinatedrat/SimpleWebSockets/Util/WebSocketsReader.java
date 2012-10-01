@@ -38,6 +38,10 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
  */
 public class WebSocketsReader extends BufferedInputStream {
 
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------
+    
     /**
      * Instantiates a WebSocketsReader object.
      * 
@@ -59,6 +63,10 @@ public class WebSocketsReader extends BufferedInputStream {
         super(in, size);
     }
 
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
     /**
      * Guarantees that the full number of bytes are read based on the len argument.
      * Setting the SoTimeout value is recommended so that the blocking will fail over n number of seconds.

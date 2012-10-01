@@ -32,10 +32,30 @@ package com.caffeinatedrat.SimpleWebSockets.Util;
  */
 public class Timer {
 
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    
     private long startTimeInMilliseconds = 0L;
     private long elapsedTimeInMilliseconds = 0L;
     private boolean started = false;
 
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------
+    
+    /**
+     * Returns the time in milliseconds that have elapsed since the timer was started.
+     * @return The time in milliseconds that have elapsed since the timer was started.
+     */
+    public long getElapsedTime() {
+        return (this.started) ? (System.currentTimeMillis() - this.startTimeInMilliseconds) : elapsedTimeInMilliseconds;
+    }
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------
+    
     public Timer() {
         
     }
@@ -46,6 +66,10 @@ public class Timer {
         }
     }
 
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
     /**
      * Starts the timer.
      */
@@ -68,13 +92,5 @@ public class Timer {
     public void stop() {
         this.started = false;
         this.elapsedTimeInMilliseconds = (System.currentTimeMillis() - this.startTimeInMilliseconds);
-    }
-
-    /**
-     * Returns the time in milliseconds that have elapsed since the timer was started.
-     * @return The time in milliseconds that have elapsed since the timer was started.
-     */
-    public long getElapsedTime() {
-        return (this.started) ? (System.currentTimeMillis() - this.startTimeInMilliseconds) : elapsedTimeInMilliseconds;
     }
 }

@@ -39,6 +39,10 @@ public class Logger {
     
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("Minecraft");
 
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
     public static void severe(String msg) {
         logger.log(Level.SEVERE, MessageFormat.format("[WebSocketServices] {0}", msg));
     }
