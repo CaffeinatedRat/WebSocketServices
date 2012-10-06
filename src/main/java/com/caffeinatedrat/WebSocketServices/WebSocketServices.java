@@ -24,6 +24,9 @@
 
 package com.caffeinatedrat.WebSocketServices;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
@@ -39,7 +42,7 @@ import com.caffeinatedrat.WebSocketServices.Test.TestServer;
 public class WebSocketServices extends JavaPlugin {
 
     private Server server = null;
-    
+    private List<IApplicationLayer> registeredApplicationLayers = new ArrayList<IApplicationLayer>();
     /*
      * This is called when your plug-in is enabled
      */
@@ -76,6 +79,7 @@ public class WebSocketServices extends JavaPlugin {
      */    
     @Override
     public void onLoad() {
+        
         //I'm sure there is a much better way of extracting the dependencies...
         Extract();
     }
@@ -92,7 +96,7 @@ public class WebSocketServices extends JavaPlugin {
     }
     
     /*
-     * Stand-alone entry-point.
+     * Stand-alone entry-point for testing...
      */
     public static void main(String[] args) {
         
