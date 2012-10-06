@@ -46,6 +46,7 @@ public class ApplicationLayer implements IApplicationLayer {
     
     private org.bukkit.Server minecraftServer;
     private WebSocketServicesConfiguration config;
+    private ServiceLayer serviceLayer;
     
     // ----------------------------------------------
     // Constructors
@@ -54,6 +55,7 @@ public class ApplicationLayer implements IApplicationLayer {
     public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config) {
         this.minecraftServer = minecraftServer;
         this.config = config;
+        this.serviceLayer = new ServiceLayer(this.minecraftServer);
     }
     
     // ----------------------------------------------
@@ -64,7 +66,6 @@ public class ApplicationLayer implements IApplicationLayer {
         
         //TODO: Extract into a json formatter.
         StringBuilder responseBuffer = new StringBuilder();
-        ServiceLayer serviceLayer = new ServiceLayer(this.minecraftServer);
         
         //Determine if the service is available and if it is then generate a response.
         if(config.isServiceEnabled(text)) {
