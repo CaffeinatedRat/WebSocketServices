@@ -28,10 +28,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.text.MessageFormat;
+
+//import java.net.MalformedURLException;
+//import java.net.URL;
+//import java.net.URLClassLoader;
 
 import com.caffeinatedrat.SimpleWebSockets.Globals;
 
@@ -48,6 +49,7 @@ public class DependencyManager {
         return file.exists();
     }
     
+    // NOTE: Use of the boolean return type may not be necessary due to the exceptions that are thrown during all failures, consider removing this in the future.
     public static boolean extractJar(Object object, String jarName, String destination) {
         
         InputStream inputStream = null;
@@ -75,21 +77,25 @@ public class DependencyManager {
             
             //Get the jar file within the jar file.
             inputStream = object.getClass().getResourceAsStream("/" + jarName);
-            try (FileOutputStream output = new FileOutputStream(file)) 
-            {
-                //Build the jar file.
-                byte[] data = new byte[Globals.READ_CHUNK_SIZE];
-                int len = 0;
-                while (inputStream.available() > 0) {
-                    len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
-                    output.write(data, 0, len);
-                }
+            if(inputStream != null) {
+	            try (FileOutputStream output = new FileOutputStream(file)) {
+	                //Build the jar file.
+	                byte[] data = new byte[Globals.READ_CHUNK_SIZE];
+	                int len = 0;
+	                while (inputStream.available() > 0) {
+	                    len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
+	                    output.write(data, 0, len);
+	                }
+	            }
+            }
+            else {
+            	throw new IOException(MessageFormat.format("The dependency /{0} was not found.", jarName));
             }
 
             return true;
         }
         catch (IOException io) {
-            Logger.verboseDebug(io.getMessage());
+            Logger.severe(io.getMessage());
         }
         finally {
             
@@ -99,7 +105,7 @@ public class DependencyManager {
                 }
             }
             catch (IOException io) {
-                Logger.verboseDebug(io.getMessage());
+                Logger.severe(io.getMessage());
             }
         }
 
