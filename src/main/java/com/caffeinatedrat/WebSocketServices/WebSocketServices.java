@@ -24,8 +24,8 @@
 
 package com.caffeinatedrat.WebSocketServices;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -40,15 +40,24 @@ import com.caffeinatedrat.WebSocketServices.Test.TestServer;
  * @author CaffeinatedRat
  */
 public class WebSocketServices extends JavaPlugin {
-
+	
+    // ----------------------------------------------
+	// Member Vars (fields)
+    // ----------------------------------------------
+	
     private Server server = null;
-    private List<IApplicationLayer> registeredApplicationLayers = new ArrayList<IApplicationLayer>();
+    private Map<String, IApplicationLayer> registeredApplicationLayers = null;
+    
+    // ----------------------------------------------
+    // Events
+    // ----------------------------------------------
+    
     /*
      * This is called when your plug-in is enabled
      */
     @Override
     public void onEnable() {
-
+    	
         saveDefaultConfig();
         
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
@@ -75,19 +84,29 @@ public class WebSocketServices extends JavaPlugin {
     }
     
     /*
-     * This is called when the plug-in loads.
+     * This is called during a phase when all plug-ins have been loaded but not enabled.
      */    
     @Override
     public void onLoad() {
-        
+    	
+    	registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
+    	
         //I'm sure there is a much better way of extracting the dependencies...
         Extract();
+    }
+    
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
+    public void RegisterApplicationLayer(String pluginName, IApplicationLayer applicationLayer) {
+    	registeredApplicationLayers.put(pluginName, applicationLayer);
     }
     
     /**
      * Extracts the necessary dependencies that the plug-in may use.
      */
-    public void Extract() {
+    private void Extract() {
         if (!DependencyManager.isJarExtracted("base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
             if (!DependencyManager.extractJar(this, "base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
                 Logger.severe("Unable to extract the base64-3.8.1.jar.");
