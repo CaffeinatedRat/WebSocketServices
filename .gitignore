@@ -3,7 +3,7 @@
 /.project
 /.settings
 /WebSocketServices.jardesc
-
+/WebSocketServices.Remote.launch
 
 # netbeans
 /nbproject
