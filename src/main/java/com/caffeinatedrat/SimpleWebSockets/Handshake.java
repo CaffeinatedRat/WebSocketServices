@@ -88,7 +88,7 @@ public class Handshake {
     /**
      * Returns all of headers found in the handshake.
      * @return A map that contains the header and its value.
-     */    
+     */
     public Map<String, String> getHeaders() {
         return headerFields;
     }
@@ -104,7 +104,7 @@ public class Handshake {
     /**
      * Gets the timeout value for the handshake.
      * @return timeout The time in milliseconds before the handshake fails.
-     */    
+     */
     public int getTimeOut() {
         return this.timeoutInMilliseconds;
     }
@@ -112,7 +112,7 @@ public class Handshake {
     /**
      * Gets check origin flag.
      * @return The check origin flag.
-     */        
+     */
     public boolean getCheckOrigin() {
         return this.checkOrigin;
     }
