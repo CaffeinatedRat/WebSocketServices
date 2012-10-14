@@ -33,6 +33,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
+import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
+
 public class ServiceLayer {
 
     // ----------------------------------------------
@@ -43,20 +45,23 @@ public class ServiceLayer {
     
     // ----------------------------------------------
     // Constructors
-    // ----------------------------------------------    
+    // ----------------------------------------------
     
     public ServiceLayer (org.bukkit.Server minecraftServer) {
         this.minecraftServer = minecraftServer;
     }
     
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
     /**
-     * Determine which service to execute.
+     * Determine which text service to execute.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
-     */    
-    public boolean execute(String service, StringBuilder responseBuffer) {
-        
+     */
+    public boolean executeText(String service, StringBuilder responseBuffer) {
         if (service.equalsIgnoreCase("WHO")) {
             return who(responseBuffer);
         }
@@ -69,10 +74,31 @@ public class ServiceLayer {
         else if (service.equalsIgnoreCase("WHITELIST")) {
             return whiteList(responseBuffer);
         }
+        else if (service.equalsIgnoreCase("FRAGMENTATIONTEST")) {
+            return fragmentationTest(responseBuffer);
+        }
         else {
             //Unknown command...do nothing.
             return false;
         }
+    }
+    
+    /**
+     * Determine which binary service to execute.
+     * @param service The name of the requested service.  If the service does not exist then nothing is done.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */    
+    public boolean executeBinary(byte[] data, BinaryResponse response) {
+
+        if(data.length > 0) {
+            byte controlByte = data[0];
+            if(controlByte == 0x01) {
+                return binaryFragmentationTest(data, response);
+            }
+        }
+
+        return false;
     }
     
     /**
@@ -218,4 +244,44 @@ public class ServiceLayer {
         
         return true;
     }
+    
+    /**
+     * Performs a fragmentation test for a text response.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */
+    protected boolean fragmentationTest(StringBuilder responseBuffer) {
+
+        responseBuffer.append("\"Response\": \"");
+        
+        for(long i = 0; i < 70000; i++) {
+        
+           responseBuffer.append(String.valueOf(i % 10));
+        }
+        
+        responseBuffer.append("--end\"");
+        
+        return true;
+    }
+    
+    /**
+     * Performs a fragmentation test for a binary response.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */    
+    protected boolean binaryFragmentationTest(byte[] data, BinaryResponse response) {
+        if (data.length > 1) {
+            for (int i = 1; i < 4; i++) {
+                byte[] newData = new byte[data.length - 1];
+                for(int j = 0; j < data.length - 1; j++) {
+                    newData[j] = (byte)((int)data[j+1] * i);
+                }
+                
+                response.enqueue(newData);
+            }
+        }
+        
+        return true;
+    }
+    
 }
