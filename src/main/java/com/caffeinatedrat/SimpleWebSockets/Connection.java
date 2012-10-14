@@ -50,7 +50,7 @@ public class Connection extends Thread {
     
     // ----------------------------------------------
     // Properties
-    // ----------------------------------------------    
+    // ----------------------------------------------
     
     /*
      * Returns the simple websocket server.
@@ -64,7 +64,6 @@ public class Connection extends Thread {
     // ----------------------------------------------
     
     public Connection(Socket socket, IApplicationLayer applicationLayer, com.caffeinatedrat.SimpleWebSockets.Server webSocketServer) {
-        
         if (applicationLayer == null) {
             throw new IllegalArgumentException("The applicationLayer is invalid (null).");
         }
@@ -82,9 +81,13 @@ public class Connection extends Thread {
     // Methods
     // ----------------------------------------------
     
+    
+    /**
+     * Begins managing an individual connection.
+     */
     @Override
     public void run() {
-
+        
         Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
         
         try {
@@ -117,16 +120,32 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    //TODO: Add support for fragmentation.
-                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                    Frame responseFrame = new Frame(this.socket);
-                                    responseFrame.setFinalFragment();
-                                    responseFrame.setOpCode(OPCODE.TEXT_DATA_FRAME);
-                                    
                                     TextResponse response = new TextResponse();
                                     applicationLayer.onTextFrame(text, response);
-                                    
-                                    responseFrame.setPayload(response.data);
+
+                                    String fragment = response.data;
+                                    Boolean firstFrame = true;
+
+                                    //Fragment the frame if the response is too large.
+                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+                                    while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
+
+                                        Frame responseFrame = new Frame(this.socket);
+                                        responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+                                        responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
+                                        responseFrame.Write();
+                                        
+                                        fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
+                                        
+                                        //No longer the first frame.
+                                        firstFrame = false;
+                                    }
+
+                                    //Send the final frame.
+                                    Frame responseFrame = new Frame(this.socket);
+                                    responseFrame.setFinalFragment();
+                                    responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+                                    responseFrame.setPayload(fragment);
                                     responseFrame.Write();
                                     
                                     continueListening = !response.closeConnection;
@@ -142,21 +161,39 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    //TODO: Add support for fragmentation.
-                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                    Frame responseFrame = new Frame(this.socket);
-                                    responseFrame.setFinalFragment();
-                                    responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
-                                    
                                     BinaryResponse response = new BinaryResponse();
                                     applicationLayer.onBinaryFrame(data, response);
                                     
-                                    responseFrame.setPayload(response.data);
-                                    responseFrame.Write();
+                                    //Keep track of our first frame.
+                                    Boolean firstFrame = true;
+                                    
+                                    //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
+                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+                                    while (!response.isEmpty()) {
+                                        
+                                        Frame responseFrame = new Frame(this.socket);
+                                        
+                                        if (firstFrame) {
+                                            responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
+                                            firstFrame = false;
+                                        }
+                                        else {
+                                            responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+                                        }
+                                        //Set the final fragment.
+                                        if (response.size() == 1) {
+                                            responseFrame.setFinalFragment();
+                                        }
+                                        
+                                        responseFrame.setPayload(response.dequeue());
+                                        responseFrame.Write();
+                                        
+                                    }
+                                    //END OF while(!response.isEmpty()) {...
                                     
                                     continueListening = !response.closeConnection;
                                 }
-                                // END OF if(applicationLayer != null)...
+                                // END OF if (applicationLayer != null) {...
                             }
                             break;
                             
@@ -177,8 +214,9 @@ public class Connection extends Thread {
                             case PING_CONTROL_FRAME:
                             {
                                 //Is pinging supported?
-                                if(!getWebSocketServer().isPingable())
+                                if(!getWebSocketServer().isPingable()) {
                                     break;
+                                }
                                 
                                 if (applicationLayer != null) {
                                     applicationLayer.onPing(frame.getPayloadAsBytes());
@@ -214,8 +252,7 @@ public class Connection extends Thread {
                         //Firefox needs to know we're closing or it will throw an error.
                         //Technically according to the RFC we should be sending a close frame before terminating the server anyways.
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-                        if (!continueListening)
-                        {
+                        if (!continueListening) {
                             Frame closeFrame = new Frame(this.socket);
                             closeFrame.setFinalFragment();
                             closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
@@ -233,8 +270,7 @@ public class Connection extends Thread {
             catch (InvalidFrameException invalidFrame) {
                 Logger.debug("The frame is invalid.");
                 
-                try
-                {
+                try {
                     //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
                     Frame closeFrame = new Frame(this.socket);
                     closeFrame.setFinalFragment();
@@ -255,6 +291,9 @@ public class Connection extends Thread {
         }
     }
     
+    /**
+     * Close the connection.
+     */    
     public void close()
     {
         try {

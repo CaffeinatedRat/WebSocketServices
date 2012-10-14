@@ -193,6 +193,7 @@ public class Frame {
     }
     
     public String getPayloadAsString() {
+        
         if ( (this.payload != null) && (this.payload.length > 0 ) ) {
             return new String(this.payload, 0, this.payload.length);
         }
@@ -201,13 +202,21 @@ public class Frame {
     }
     
     public void setPayload(byte[] payload) {
-        this.payloadLength = payload.length;
-        this.payload = payload;
+        
+        if(payload != null) {
+            this.payloadLength = payload.length;
+            this.payload = payload;
+        }
+        
     }
     
     public void setPayload(String payload) {
-        this.payload = payload.getBytes();
-        this.payloadLength = payload.length();
+        
+        if ( (payload != null) && (payload.length() > 0) ) {
+            this.payload = payload.getBytes();
+            this.payloadLength = payload.length();
+        }
+        
     }
     
     /**
@@ -265,7 +274,7 @@ public class Frame {
     /**
      * Reads a websocket frame.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
-     */    
+     */
     public void Read()
         throws InvalidFrameException {
         

@@ -21,3 +21,5 @@ services:
   plugins: true
   info: true
   whitelist: true
+  fragmentationtest: true
+  binaryfragmentationtest: true

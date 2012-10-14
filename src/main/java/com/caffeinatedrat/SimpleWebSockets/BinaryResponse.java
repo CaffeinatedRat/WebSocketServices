@@ -24,6 +24,9 @@
 
 package com.caffeinatedrat.SimpleWebSockets;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * A simple response object for binary data.
  *
@@ -31,5 +34,90 @@ package com.caffeinatedrat.SimpleWebSockets;
  * @author CaffeinatedRat
  */
 public class BinaryResponse extends Response {
-    byte[] data = null;
+    
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    
+    private Queue<byte[]> data;
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------
+    
+    public BinaryResponse() {
+        this.data = new LinkedList<byte[]>();
+    }
+    
+    public BinaryResponse(BinaryResponse response) {
+        
+        if(response == null) {
+            throw new NullPointerException();
+        }
+        
+        this.data = new LinkedList<byte[]>();
+        
+        for(byte[] oldData : response.data) {
+            
+            byte[] newData = new byte[oldData.length];
+            
+            for(int i = 0; i < oldData.length; i++) {
+                newData[i] = oldData[i];
+            }
+
+            this.data.add(newData);
+        }
+    }
+    
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
+    /**
+     * Removes and returns the byte array at the front of the queue.
+     * @return The byte array that was available on the front of the queue.
+     */
+    public byte[] dequeue() {
+        return this.data.poll();
+    }
+
+    /**
+     * Adds a byte array to the back of the queue.
+     * @param data The byte array to add to the queue.
+     */
+    public void enqueue(byte[] data) {
+        this.data.offer(data);
+    }
+    
+    /**
+     * Returns, but does not remove, the byte array at the front of the queue.
+     * @return The byte array in front of the queue.
+     */
+    public byte[] front() {
+        return this.data.peek();
+    }
+    
+    /**
+     * Returns, but does not remove, the byte array at the back of the queue.
+     * @return The byte array in the back of the queue.
+     */
+    public byte[] back() {
+        return ((LinkedList<byte[]>)this.data).getLast();
+    }
+    
+    /**
+     * Returns true if the queue is empty.
+     * @return True if the queue is empty.
+     */
+    public boolean isEmpty() {
+        return this.data.isEmpty();
+    }
+    
+    /**
+     * Returns the size of the queue.
+     * @return The size of the queue.
+     */
+    public int size() {
+        return this.data.size();
+    }
 }
