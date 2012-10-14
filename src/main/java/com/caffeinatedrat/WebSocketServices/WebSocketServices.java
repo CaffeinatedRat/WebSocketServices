@@ -63,7 +63,7 @@ public class WebSocketServices extends JavaPlugin {
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
         
         Globals.debugLevel = config.getDebugLevel();
-        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), config);
+        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), config, registeredApplicationLayers);
         
         server = new Server(config.getPortNumber(), applicationLayer, config.getIsWhiteListed(), config.getMaximumConnections());
         server.setHandshakeTimeout(config.getHandshakeTimeOut());

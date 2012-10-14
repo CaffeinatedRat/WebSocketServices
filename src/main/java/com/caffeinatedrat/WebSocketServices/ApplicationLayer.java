@@ -25,6 +25,9 @@
 package com.caffeinatedrat.WebSocketServices;
 
 import java.text.MessageFormat;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
@@ -47,15 +50,17 @@ public class ApplicationLayer implements IApplicationLayer {
     private org.bukkit.Server minecraftServer;
     private WebSocketServicesConfiguration config;
     private ServiceLayer serviceLayer;
+    private Map<String, IApplicationLayer> registeredApplicationLayers = null;
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config) {
+    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config,  Map<String, IApplicationLayer> applicationLayers) {
         this.minecraftServer = minecraftServer;
         this.config = config;
         this.serviceLayer = new ServiceLayer(this.minecraftServer);
+        this.registeredApplicationLayers = applicationLayers;
     }
     
     // ----------------------------------------------
@@ -72,15 +77,35 @@ public class ApplicationLayer implements IApplicationLayer {
 
             responseBuffer.append("{");
             
-            if(serviceLayer.execute(text, responseBuffer)) {
+            //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
+            if(serviceLayer.executeText(text, responseBuffer)) {
+                
                 responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"SUCCESSFUL\"");
+                
             }
             else {
-                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"FAILURE\"");
+
+                // --- CR (10/9/12) --- Removed the failure status for now and replaced it with registered application layers.
+                //responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"FAILURE\"");
+                
+                //Adds an O(n) operation.
+                Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    
+                    Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
+                    
+                    responseBuffer.append("{");
+                    responseBuffer.append(MessageFormat.format("PluginName: {0}", pairs.getKey()));
+                    
+                    ((ApplicationLayer)pairs.getValue()).onTextFrame(text, response);
+                    iterator.remove(); // avoids a ConcurrentModificationException
+                    
+                    responseBuffer.append("}");
+                }
             }
-            
+
             responseBuffer.append("}");
-            
+
         }
         //The service is not available so send a NA status.
         else {
@@ -97,13 +122,31 @@ public class ApplicationLayer implements IApplicationLayer {
     }
 
     public void onBinaryFrame(byte[] data, BinaryResponse response) {
-        // TODO Auto-generated method stub
 
+        //This is temporary until some standard is created...
+        if (config.isServiceEnabled("binaryfragmentationtest")) {
+            
+            //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
+            if(!serviceLayer.executeBinary(data, response)) {
+                
+                //Adds an O(n) operation.
+                Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    
+                    Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
+    
+                    ((ApplicationLayer)pairs.getValue()).onBinaryFrame(data, response);
+                    iterator.remove(); // avoids a ConcurrentModificationException
+                }
+                //END OF while (iterator.hasNext()) {...
+            }
+            //END OF if(!serviceLayer.executeBinary(data, response)) {...
+        }
+        //END OF if (config.isServiceEnabled("binaryfragmentationtest")) {...
     }
 
     public void onClose() {
         // TODO Auto-generated method stub
-
     }
 
     public void onPing(byte[] data) {
