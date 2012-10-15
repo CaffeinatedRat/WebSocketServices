@@ -78,15 +78,30 @@ public class DependencyManager {
             //Get the jar file within the jar file.
             inputStream = object.getClass().getResourceAsStream("/" + jarName);
             if(inputStream != null) {
-	            try (FileOutputStream output = new FileOutputStream(file)) {
-	                //Build the jar file.
-	                byte[] data = new byte[Globals.READ_CHUNK_SIZE];
-	                int len = 0;
-	                while (inputStream.available() > 0) {
-	                    len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
-	                    output.write(data, 0, len);
-	                }
-	            }
+                FileOutputStream output = null;
+                
+                try {
+                    // --- CR (10-14/12) --- Removed the try-with-resources block to support backwards compatibility.
+                    //try (FileOutputStream output = new FileOutputStream(file)) {
+                    output = new FileOutputStream(file);
+                    if (output != null) {
+                        //Build the jar file.
+                        byte[] data = new byte[Globals.READ_CHUNK_SIZE];
+                        int len = 0;
+                        while (inputStream.available() > 0) {
+                            len = inputStream.read(data, 0, Globals.READ_CHUNK_SIZE);
+                            output.write(data, 0, len);
+                        }
+                    }
+                }
+                finally {
+                    try { 
+                        output.close();
+                    }
+                    catch (IOException io) {
+                        
+                    }
+                }
             }
             else {
             	throw new IOException(MessageFormat.format("The dependency /{0} was not found.", jarName));

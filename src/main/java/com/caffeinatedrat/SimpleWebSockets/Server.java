@@ -295,9 +295,13 @@ public class Server extends Thread {
         File whitelistFile = new File(Globals.PLUGIN_FOLDER + "/" + Globals.WHITE_LIST_FILENAME);
         
         if (whitelistFile.exists()) {
+            BufferedReader br = null;
             try {
                 
-                try (BufferedReader br = new BufferedReader(new FileReader(whitelistFile)))
+                // --- CR (10-14/12) --- Removed the try-with-resources block to support backwards compatibility.
+                //try (BufferedReader br = new BufferedReader(new FileReader(whitelistFile)))
+                br = new BufferedReader(new FileReader(whitelistFile));
+                if(br != null)
                 {
                     String domain;
                     while ((domain = br.readLine()) != null) {
@@ -306,11 +310,21 @@ public class Server extends Thread {
                         }
                     }
                 }
-                
+
+                br.close();
+
                 return true;
             }
             catch(FileNotFoundException fnfe){}
             catch(IOException io) {}
+            finally {
+                try {
+                    br.close();
+                }
+                catch (IOException io) {
+                    
+                }
+            }
         }
         else {
             //The white-list was not found so create it.
