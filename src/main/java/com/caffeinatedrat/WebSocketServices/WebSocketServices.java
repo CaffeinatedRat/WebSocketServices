@@ -30,7 +30,6 @@ import java.util.Map;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
-import com.caffeinatedrat.SimpleWebSockets.Util.*;
 import com.caffeinatedrat.WebSocketServices.Test.TestServer;
 
 /**
@@ -88,11 +87,8 @@ public class WebSocketServices extends JavaPlugin {
      */    
     @Override
     public void onLoad() {
-    	
-    	registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
-    	
-        //I'm sure there is a much better way of extracting the dependencies...
-        Extract();
+        
+        registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
     }
     
     // ----------------------------------------------
@@ -100,39 +96,14 @@ public class WebSocketServices extends JavaPlugin {
     // ----------------------------------------------
     
     public void RegisterApplicationLayer(String pluginName, IApplicationLayer applicationLayer) {
-    	registeredApplicationLayers.put(pluginName, applicationLayer);
+        registeredApplicationLayers.put(pluginName, applicationLayer);
     }
-    
-    /**
-     * Extracts the necessary dependencies that the plug-in may use.
-     */
-    private void Extract() {
-        if (!DependencyManager.isJarExtracted("base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
-            if (!DependencyManager.extractJar(this, "base64-3.8.1.jar", Globals.PLUGIN_FOLDER)) {
-                Logger.severe("Unable to extract the base64-3.8.1.jar.");
-            }
-        }
-    }
-    
+
     /*
      * Stand-alone entry-point for testing...
      */
     public static void main(String[] args) {
-        
-        if(args.length > 0) {
-            
-            if (args[0].equalsIgnoreCase("test")) {
-                TestServer.start();
-            }
-            else if (args[0].equalsIgnoreCase("register")) {
-                //I'm sure there is a much better way of extracting the dependencies...
-                new WebSocketServices().Extract();
-            }
-        }
-        else {
-            //I'm sure there is a much better way of extracting the dependencies...
-            new WebSocketServices().Extract();
-        }
-        //END OF if(args.length > 0)
+
+        TestServer.start();
     }
 }
