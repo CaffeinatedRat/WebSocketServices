@@ -4,6 +4,7 @@
 /.settings
 /WebSocketServices.jardesc
 /WebSocketServices Remote.launch
+/dependency-reduced-pom.xml
 
 # netbeans
 /nbproject
