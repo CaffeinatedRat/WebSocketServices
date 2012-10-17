@@ -74,7 +74,6 @@ public class ApplicationLayer implements IApplicationLayer {
         
         //Determine if the service is available and if it is then generate a response.
         if(config.isServiceEnabled(text)) {
-
             responseBuffer.append("{");
             
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
@@ -93,29 +92,22 @@ public class ApplicationLayer implements IApplicationLayer {
                 while (iterator.hasNext()) {
                     
                     Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
+                    ((IApplicationLayer)pairs.getValue()).onTextFrame(text, response);
                     
-                    responseBuffer.append("{");
-                    responseBuffer.append(MessageFormat.format("PluginName: {0}", pairs.getKey()));
-                    
-                    ((ApplicationLayer)pairs.getValue()).onTextFrame(text, response);
-                    iterator.remove(); // avoids a ConcurrentModificationException
-                    
-                    responseBuffer.append("}");
+                    responseBuffer.append(MessageFormat.format("\"PluginName\": \"{0}\",", pairs.getKey()));
+                    responseBuffer.append(response.data);
                 }
             }
 
             responseBuffer.append("}");
-
         }
         //The service is not available so send a NA status.
         else {
-            
             Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
             
             responseBuffer.append("{");
             responseBuffer.append("\"Status\": \"NOT AVAILABLE\"");
             responseBuffer.append("}");
-            
         }
         
         response.data = responseBuffer.toString();
@@ -134,9 +126,7 @@ public class ApplicationLayer implements IApplicationLayer {
                 while (iterator.hasNext()) {
                     
                     Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
-    
-                    ((ApplicationLayer)pairs.getValue()).onBinaryFrame(data, response);
-                    iterator.remove(); // avoids a ConcurrentModificationException
+                    ((IApplicationLayer)pairs.getValue()).onBinaryFrame(data, response);
                 }
                 //END OF while (iterator.hasNext()) {...
             }

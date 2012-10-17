@@ -27,6 +27,7 @@ package com.caffeinatedrat.WebSocketServices;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
@@ -45,7 +46,7 @@ public class WebSocketServices extends JavaPlugin {
     // ----------------------------------------------
 	
     private Server server = null;
-    private Map<String, IApplicationLayer> registeredApplicationLayers = null;
+    private static Map<String, IApplicationLayer> registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
     
     // ----------------------------------------------
     // Events
@@ -87,16 +88,19 @@ public class WebSocketServices extends JavaPlugin {
      */    
     @Override
     public void onLoad() {
-        
-        registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
+
     }
     
     // ----------------------------------------------
     // Methods
     // ----------------------------------------------
     
-    public void RegisterApplicationLayer(String pluginName, IApplicationLayer applicationLayer) {
-        registeredApplicationLayers.put(pluginName, applicationLayer);
+    public static void registerApplicationLayer(Plugin plugin, IApplicationLayer applicationLayer) {
+        if (plugin == null) {
+            throw new NullPointerException("The plugin cannot be null.");
+        }
+        
+        registeredApplicationLayers.put(plugin.getName(), applicationLayer);
     }
 
     /*
