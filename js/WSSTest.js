@@ -46,7 +46,20 @@ $(document).ready(function(){
 				if(msg !== undefined)
 				{
 					console.log(msg.data);
-					$('#otherData').text(msg.data);
+					var data = '';
+					
+					try {
+						var json = jQuery.parseJSON(msg.data);
+						var firstProp;
+						for(var key in json) {
+							if(json.hasOwnProperty(key)) {
+								data += '' + key + ': ' + json[key] + '<br/>';
+							}
+						}
+					}
+					catch (err) { }
+					
+					$('#otherData').html(data);
 				}
 			});		
 	});
