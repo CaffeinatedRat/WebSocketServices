@@ -119,6 +119,7 @@ public class ServiceLayer {
                 responseBuffer.append(",");
             }
             
+            //Determine the last time the player was online.
             String timePlayed = "Never";
             long timeSpan = new Date().getTime() - players[i].getLastPlayed();
             timePlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
@@ -127,8 +128,14 @@ public class ServiceLayer {
                         (timeSpan / 60000L % 60),
                         (timeSpan / 1000L % 60));
             
+            //Determine the environment the player is in.
+            String environment = players[i].getWorld().getEnvironment().toString();
+            
             responseBuffer.append("{");
-            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}\"", players[i].getName(), timePlayed));
+            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}\", \"environment\": \"{2}\""
+                        , players[i].getName()
+                        , timePlayed
+                        , environment));
             responseBuffer.append("}");
         }
         
