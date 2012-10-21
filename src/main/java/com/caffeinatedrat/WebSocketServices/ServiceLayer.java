@@ -24,16 +24,20 @@
 
 package com.caffeinatedrat.WebSocketServices;
 
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
+import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 public class ServiceLayer {
 
@@ -62,25 +66,43 @@ public class ServiceLayer {
      * @return True if the service was successfully executed.
      */
     public boolean executeText(String service, StringBuilder responseBuffer) {
-        if (service.equalsIgnoreCase("WHO")) {
-            return who(responseBuffer);
+        
+        try {
+            
+            if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
+                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), StringBuilder.class);
+                method.setAccessible(true);
+                return (Boolean)method.invoke(this, responseBuffer);
+            }
         }
-        else if (service.equalsIgnoreCase("INFO")) {
-            return info(responseBuffer);
+        catch(Exception ex) {
+            Logger.verboseDebug(ex.getMessage());
         }
-        else if (service.equalsIgnoreCase("PLUGINS")) {
-            return plugins(responseBuffer);
-        }
-        else if (service.equalsIgnoreCase("WHITELIST")) {
-            return whiteList(responseBuffer);
-        }
-        else if (service.equalsIgnoreCase("FRAGMENTATIONTEST")) {
-            return fragmentationTest(responseBuffer);
-        }
-        else {
-            //Unknown command...do nothing.
-            return false;
-        }
+        
+        return false;
+        
+//        if (service.equalsIgnoreCase("WHO")) {
+//            return who(responseBuffer);
+//        }
+//        else if (service.equalsIgnoreCase("INFO")) {
+//            return info(responseBuffer);
+//        }
+//        else if (service.equalsIgnoreCase("PLUGINS")) {
+//            return plugins(responseBuffer);
+//        }
+//        else if (service.equalsIgnoreCase("WHITELIST")) {
+//            return whiteList(responseBuffer);
+//        }
+//        else if (service.equalsIgnoreCase("FRAGMENTATIONTEST")) {
+//            return fragmentationTest(responseBuffer);
+//        }
+//        else if (service.equalsIgnoreCase("PING")) {
+//            return ping(responseBuffer);
+//        }
+//        else {
+//            //Unknown command...do nothing.
+//            return false;
+//        }
     }
     
     /**
@@ -108,8 +130,10 @@ public class ServiceLayer {
      */
     protected boolean who(StringBuilder responseBuffer) {
         
-        Player[] players = this.minecraftServer.getOnlinePlayers();
+        Set<OfflinePlayer> operators = this.minecraftServer.getOperators();
         
+        Player[] players = this.minecraftServer.getOnlinePlayers();
+
         responseBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", this.minecraftServer.getMaxPlayers()));
         responseBuffer.append("\"Players\": [");
         
@@ -128,19 +152,30 @@ public class ServiceLayer {
                         (timeSpan / 60000L % 60),
                         (timeSpan / 1000L % 60));
             
+            //Get the player's name.
+            String playerName = players[i].getName();
+            
             //Determine the environment the player is in.
             String environment = players[i].getWorld().getEnvironment().toString();
             
+            //Determine if the player is an operator.
+            boolean isOperator = false;
+            if(operators.size() > 0) {
+                isOperator = operators.contains(players[i].getPlayer());
+            }
+            
             responseBuffer.append("{");
-            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}\", \"environment\": \"{2}\""
-                        , players[i].getName()
+            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"onlineTime\": \"{1}\", \"environment\": \"{2}\", \"isOperator\":{3}"
+                        , playerName
                         , timePlayed
-                        , environment));
+                        , environment
+                        , isOperator
+                    ));
             responseBuffer.append("}");
         }
-        
+
         responseBuffer.append("]");
-        
+
         return true;
     }
     
@@ -150,8 +185,12 @@ public class ServiceLayer {
      * @return True if the service was successfully executed.
      */    
     protected boolean info(StringBuilder responseBuffer) {
-        
-        responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"serverName\": \"{1}\", \"version\": \"{2}\", \"bukkitVersion\": \"{3}\", \"worldType\": \"{4}\", \"allowsNether\": {5}, \"allowsEnd\": {6}, \"allowsFlight\": {7}, \"isWhiteListed\": {8}, \"motd\": \"{9}\", \"gameMode\": \"{10}\", \"port\": \"{11}\", \"ipAddress\": \"{12}\""
+
+        //Get the normal world and assume it is the first in the list.
+        List<World> worlds = this.minecraftServer.getWorlds();
+        World world = worlds.get(0);
+
+        responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"serverName\": \"{1}\", \"version\": \"{2}\", \"bukkitVersion\": \"{3}\", \"worldType\": \"{4}\", \"allowsNether\": {5}, \"allowsEnd\": {6}, \"allowsFlight\": {7}, \"isWhiteListed\": {8}, \"motd\": \"{9}\", \"gameMode\": \"{10}\", \"port\": {11,number,#}, \"ipAddress\": \"{12}\", \"serverTime\":{13,number,#}"
                 , this.minecraftServer.getName()
                 , this.minecraftServer.getServerName()
                 , this.minecraftServer.getVersion()
@@ -165,6 +204,7 @@ public class ServiceLayer {
                 , this.minecraftServer.getDefaultGameMode().toString()
                 , this.minecraftServer.getPort()
                 , this.minecraftServer.getIp()
+                , world.getTime()
                 ));
         
         return true;
@@ -182,7 +222,6 @@ public class ServiceLayer {
         responseBuffer.append("\"Plugins\": [");
         
         for (int i = 0; i < plugins.length; i++) {
-            
             PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
 
             if(i > 0) {
@@ -197,6 +236,7 @@ public class ServiceLayer {
                     , pluginDescriptor.getVersion()));
             responseBuffer.append("}");
         }
+        //END OF for (int i = 0; i < plugins.length; i++) {...
         
         responseBuffer.append("]");
         
@@ -208,7 +248,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean whiteList(StringBuilder responseBuffer) {
+    protected boolean whitelist(StringBuilder responseBuffer) {
 
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
@@ -237,21 +277,44 @@ public class ServiceLayer {
                                 (timeSpan / 1000L % 60));
                 }
             }
+            //END OF if(offlinePlayer.isOnline()) {...
             
             responseBuffer.append("{");
-            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"isOnline\": {1}, \"lastPlayed\": \"{2}\""
+            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"isOnline\": {1}, \"lastPlayed\": \"{2}\", \"isOperator\": {3}"
                     , offlinePlayer.getName()
                     , offlinePlayer.isOnline()
-                    , lastPlayed));
+                    , lastPlayed
+                    , offlinePlayer.isOp()
+                    ));
             
             responseBuffer.append("}");
         }
+        //END OF for(OfflinePlayer offlinePlayer : whiteListedPlayers) {...
         
         responseBuffer.append("]");
         
         return true;
     }
-    
+
+    /**
+     * The simplest and most light-weight service that simply responds with alive and the server time.
+     * Currently the browsers do not support the websocket ping operation so this is the current substitute.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */
+    protected boolean ping(StringBuilder responseBuffer) {
+        
+        //Get the normal world and assume it is the first in the list.
+        List<World> worlds = this.minecraftServer.getWorlds();
+        World world = worlds.get(0);
+
+        responseBuffer.append(MessageFormat.format("\"pong\": \"alive\", \"serverTime\": {0,number,#}"
+                , world.getTime()
+                ));
+
+        return true;
+    }
+
     /**
      * Performs a fragmentation test for a text response.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
@@ -260,17 +323,16 @@ public class ServiceLayer {
     protected boolean fragmentationTest(StringBuilder responseBuffer) {
 
         responseBuffer.append("\"Response\": \"");
-        
+
         for(long i = 0; i < 70000; i++) {
-        
            responseBuffer.append(String.valueOf(i % 10));
         }
-        
+
         responseBuffer.append("--end\"");
-        
+
         return true;
     }
-    
+
     /**
      * Performs a fragmentation test for a binary response.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
@@ -290,5 +352,4 @@ public class ServiceLayer {
         
         return true;
     }
-    
 }

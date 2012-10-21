@@ -21,5 +21,6 @@ services:
   plugins: true
   info: true
   whitelist: true
+  ping: true
   fragmentationtest: true
   binaryfragmentationtest: true
