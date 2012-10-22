@@ -94,6 +94,7 @@ public class ApplicationLayer implements IApplicationLayer {
                     Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
                     ((IApplicationLayer)pairs.getValue()).onTextFrame(text, response);
                     
+                    //The plug-in name is appended to all other data.
                     responseBuffer.append(MessageFormat.format("\"PluginName\": \"{0}\",", pairs.getKey()));
                     responseBuffer.append(response.data);
                 }
