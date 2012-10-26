@@ -2,14 +2,14 @@
 websocket:
   portNumber: 25564
   #Logs to the console (0 = off, 1 = simple, 2 = verbose).
-  debug: 2
+  debug: 0
   #Sets the maximum number of connections the server can handle concurrently.
   maximumConnections: 32
   #Sets the number of milliseconds that the server will wait for a handshake to complete.
   handshakeTimeOutTolerance: 1000
   #Sets the number of milliseconds that the server will wait for a the next frame before terminating the connection.
   frameTimeOutTolerance: 15000
-  #Determines if the origin is valid during the handshake.  If the origin is null it is invalid and the connection is rejected.
+  #Determines if the origin is valid during the handshake.  If the origin is null, it is invalid and the connection is rejected.
   checkOrigin: true
   #Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.
   whitelist: false
@@ -22,5 +22,5 @@ services:
   info: true
   whitelist: true
   ping: true
-  fragmentationtest: true
-  binaryfragmentationtest: true
+  fragmentationtest: false
+  binaryfragmentationtest: false
