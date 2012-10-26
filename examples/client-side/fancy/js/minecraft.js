@@ -1,5 +1,5 @@
 //Add your server address here, make sure the port number matches that of the port number in the websocketservices/config.yml.
-var websocketAddress = "ws://71.204.116.172:25564";
+var websocketAddress = "ws://192.168.1.100:25564";
 
 //Adjust this time interval to the number of milliseconds you want the website to ping your server.
 var pingInterval = 15000;
