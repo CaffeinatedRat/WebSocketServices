@@ -1,0 +1,294 @@
+/*
+------------------------------------
+Document Classes
+------------------------------------
+*/
+
+body
+{
+    /*background: url('../Media/offline.jpg') no-repeat 0% 0% #000000;*/
+    background-color: #000000;
+    font-size: .75em;
+    font-family: Verdana, Helvetica, Sans-Serif;
+    color: #696969;
+    margin: 0px;
+}
+
+div.inline 
+{ 
+	display:inline-block;
+}
+
+/*
+------------------------------------
+Page Classes
+------------------------------------
+*/
+
+.titlebar
+{
+	margin: 10px 15px;
+	height: 75px;
+}
+
+.title
+{
+	color: #fff;
+	float: left;
+}
+
+.wrapper
+{
+    margin-left: auto;
+    margin-right: auto;
+    text-align:left;
+    width: 910px;
+	height: 550px;
+	
+	background-color: rgba(125, 125, 125, 0.55);
+	
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	padding: 15px;
+	
+	color: #fff;
+	text-align: center;
+}
+
+#tabs
+{
+	height: 540px;
+	background: rgba(255, 255, 255, 0.65) 50% 50% repeat-x !important;
+}
+
+.tabContainer
+{
+	height: 480px;
+}
+
+.scrollContainer
+{
+	overflow: scroll;
+	overflow-y: auto;
+	overflow-x: hidden;	
+}
+
+.container
+{
+	height: 450px;
+	text-align: left;
+	padding: 15px;
+}
+
+.container > div
+{
+	padding: 5px;
+}
+
+#footer
+{
+	margin: 15px;
+	height: 4em;
+	text-align: center;
+	color: #fff;
+}
+
+#footer a, #footer a:hover, #footer a:visited
+{
+	text-decoration: none;
+	color: #fff;
+}
+
+/*
+------------------------------------
+Status Classes
+------------------------------------
+*/
+
+.serverStatus
+{
+	float: right;
+}
+
+.offline
+{
+	color: red;
+}
+
+.online
+{
+	color: green;
+}
+
+/*
+------------------------------------
+Images Classes
+------------------------------------
+*/
+
+.imgOffline
+{
+	background: url('../Media/offline.jpg') no-repeat 0% 0% #000000;
+}
+
+.imgDay
+{
+	background: url('../Media/day.jpg') no-repeat 0% 0% #000000;
+}
+
+.imgNight
+{
+	background: url('../Media/night.jpg') no-repeat 0% 0% #000000;
+}
+
+/*
+------------------------------------
+Tile Classes
+------------------------------------
+*/
+
+.tiles
+{
+	background: url('../Media/tiles.png') no-repeat 0px 0px transparent;
+	height: 16px;
+	width: 16px;	
+}
+
+.netherTile
+{
+	background-position: 0px 0px;
+	height: 16px;
+	width: 16px;
+}
+
+.normalTile
+{
+	background-position: -48px 0px;
+	height: 16px;
+	width: 16px;
+}
+
+.theendTile
+{
+	background-position: -32px 0px;
+	height: 16px;
+	width: 16px;
+}
+
+.modTile
+{
+	background-position: -32px -16px;
+	height: 16px;
+	width: 16px;
+}
+
+.playerTile
+{
+	background-position: -48px -16px;
+	height: 16px;
+	width: 16px;
+}
+
+.mojangTile
+{
+	background-position: -32px -32px;
+	height: 16px;
+	width: 16px;
+}
+
+.imgPlayersFace
+{
+	background-position: -32px 0px;
+	height: 16px;
+	width: 16px;
+	background-size: 100%;
+	-webkit-background-size: 100%;
+}
+
+.playersFace
+{
+	width: 16px;
+	height: 16px;
+}
+
+/*
+------------------------------------
+Offline Classes
+------------------------------------
+*/
+
+#websocketNotSupported
+{
+	height: 520px;
+}
+
+#offlineDiv
+{
+	height: 520px;
+}
+
+/*
+------------------------------------
+Player Classes
+------------------------------------
+*/
+
+.playerContainer
+{
+	height: 440px;
+}
+
+.playerElement > div
+{
+	padding: 0 5px;
+	vertical-align: top;
+}
+
+.playerName
+{
+
+}
+
+/*
+------------------------------------
+Plugin Classes
+------------------------------------
+*/
+#pluginList, #pluginList td
+{
+	border: 1px solid black;
+}
+
+#pluginList th
+{
+	border: 1px solid black;
+	background-color: rgba(200, 200, 200, 1.0);
+}
+
+/*
+------------------------------------
+Profile Classes
+------------------------------------
+*/
+
+#skinWrapper
+{
+	width: 540px;
+	height: 540px;
+}
+
+.profileBackground_normal
+{
+	background-image: url('../Media/Normal.jpg')
+}
+
+.profileBackground_nether
+{
+	background-image: url('../Media/Nether.jpg')
+}
+
+.profileBackground_theend
+{
+	background-image: url('../Media/TheEnd.jpg')
+}

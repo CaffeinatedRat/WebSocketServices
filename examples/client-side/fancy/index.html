@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<HTML>
+	<HEAD>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	
+		<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.9.0.custom.min.js"></script>
+		<script type="text/javascript" src="js/three.min.js"></script>
+		<script type="text/javascript" src="js/minecraft.js"></script>
+		<script type="text/javascript" src="js/profile.js"></script>
+		<link type="text/css" rel="stylesheet" href="css/smoothness/jquery-ui-1.9.0.custom.min.css"></link>
+		<link type="text/css" rel="stylesheet" href="css/minecraft.css"></link>		
+		<title>Caff's Minecraft Sandbox</title>
+	</HEAD>
+	<BODY class="imgOffline">
+		<div class="titlebar">
+			<div class="title">
+				<H1>
+					Your server name here...
+				</H1>
+			</div>
+			<div class="serverStatus">
+				<H1>
+					<span id="serverStatus" class="offline">
+						Checking...
+					</span>
+				</H1>
+			</div>
+		</div>
+		<div class="wrapper">
+			<div id="websocketNotSupported" style="display:none;">
+				Websockets are not supported by this browser.
+			</div>
+			<div id="offlineDiv">
+				<span>
+					<h2>
+					The server cannot be found. You must be lost and it looks like this is the end.
+					</h2>
+				</span>
+			</div>
+			<div id="websocketSupported" style="display:none;">
+				<div id="tabs">
+					<ul>
+						<li><a id="serverTab" href="#tabs-1">Server Information</a></li>
+						<li><a id="playerTab" href="#tabs-2">WHO's Online</a></li>
+						<li><a id="whitelistTab" href="#tabs-3">Whitelist</a></li>
+						<li><a id="pluginsTab" href="#tabs-4">Plugins</a></li>
+						<li><a id="spectatorTab" href="#tabs-5">Spectator</a></li>
+					</ul>
+					<div id="tabs-1" class="tabContainer">
+						<div class="container scrollContainer">
+							<div>
+								<strong>Minecraft Server Name:</strong>
+								<span id="minecraftServerName"></span>
+							</div>
+							<div>
+								<strong>Name:</strong>
+								<span id="minecraftName"></span>
+							</div>
+							<div>
+								<strong>IPAddress:</strong>
+								<span id="ipAddress"></span>
+							</div>				
+							<div>
+								<strong>Port:</strong>
+								<span id="port"></span>
+							</div>			
+							<div>
+								<strong>MOTD:</strong>
+								<span id="motd"></span>
+							</div>
+							<div>
+								<strong>Time: </strong>
+								<span id="time"></span>
+							</div>
+							<div>
+								<strong>Minecraft Version:</strong>
+								<span id="minecraftVersion"></span>
+							</div>
+							<div>
+								<strong>Bukkit Version:</strong>
+								<span id="bukkitVersion"></span>
+							</div>
+							<div>
+								<strong>World Type:</strong>
+								<span id="worldType"></span>
+							</div>
+							<div>
+								<strong>Game Mode:</strong>
+								<span id="gameMode"></span>
+							</div>
+							<div>
+								<strong>Is WhiteListed:</strong>
+								<span id="isWhiteListed"></span>
+							</div>
+							<div>
+								<strong>Allow Nether:</strong>
+								<span id="allowsNether"></span>
+							</div>
+							<div>
+								<strong>Allow End:</strong>
+								<span id="allowsEnd"></span>
+							</div>
+							<div>
+								<strong>Allow Flight:</strong>
+								<span id="allowsFlight"></span>
+							</div>
+						</div>
+					</div>
+					<div id="tabs-2" class="tabContainer">
+						<div class="container">
+							<div>
+								<strong>Players online: </strong>
+								<span id="totalPlayersOnline"></span>
+								out of 
+								<span id="maxNumberOfPlayers"></span>
+							</div>
+							<div class="playerContainer scrollContainer">
+								<ul id="playerList">
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div id="tabs-3" class="tabContainer">
+						<div class="container">
+							<div>
+								<strong>White-listed Players: </strong>
+								<span id="totalWhitelistedPlayers"></span>
+							</div>
+							<div class="playerContainer scrollContainer">
+								<ul id="whiteList">
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div id="tabs-4" class="tabContainer">
+						<div class="container scrollContainer">
+							<table id="pluginList">
+							</table>
+						</div>
+					</div>
+					<div id="tabs-5" class="tabContainer">
+						<canvas id="spectator">
+						</canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="footer">
+			<p>
+				Site Design by <a href="http://www.caffeinatedrat.com">CaffeinatedRat</a>
+			</p>			
+			<p>
+				<div class="inline">
+					Minecraft Copyright (c) 2012 
+				</div>
+				<a href="http://www.mojang.com/">
+					<div class="inline" style="vertical-align: top;">
+						<div title="Mojang" class="tiles mojangTile"></div>
+					</div>
+					<div class="inline">
+						Mojang
+					</div>
+				</a>
+			</p>
+			<p>
+				<div class="inline">Crown Image</div>
+				<div class="inline" style="vertical-align: top;">
+					<div title="Crown" class="tiles modTile"></div>
+				</div>
+				<div class="inline">
+					Copyright (c) 2012 <a href="http://painterlypack.net/">Painterly Pack</a>
+				</div>
+			</p>
+		</div>
+		
+		<!-- Skin viewer -->
+		<div id="skinProfile-modal" title="Profile">
+			<div id="skinWrapper"></div>
+		</div>		
+		
+	</BODY>
+</HTML>
