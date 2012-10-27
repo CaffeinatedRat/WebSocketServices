@@ -264,6 +264,13 @@ public class Connection extends Thread {
                 }
                 else {
                     Logger.debug("Handshaking failure.");
+                    
+                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
+                    Frame closeFrame = new Frame(this.socket);
+                    closeFrame.setFinalFragment();
+                    closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
+                    closeFrame.setPayload("The handshaking has failed.");
+                    closeFrame.Write();
                 }
                 //END OF if(handshake.processRequest())...
             }
