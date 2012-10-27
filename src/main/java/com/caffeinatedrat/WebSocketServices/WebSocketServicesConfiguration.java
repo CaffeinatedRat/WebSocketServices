@@ -53,7 +53,7 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     }
     
     public int getDebugLevel() {
-        return getInt("websocket.debug", 0);
+        return getInt("websocket.logging", 0);
     }
 
     public int getHandshakeTimeOut() {

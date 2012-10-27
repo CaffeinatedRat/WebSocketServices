@@ -2,7 +2,7 @@
 websocket:
   portNumber: 25564
   #Logs to the console (0 = off, 1 = simple, 2 = verbose).
-  debug: 0
+  logging: 0
   #Sets the maximum number of connections the server can handle concurrently.
   maximumConnections: 32
   #Sets the number of milliseconds that the server will wait for a handshake to complete.
