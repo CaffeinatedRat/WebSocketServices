@@ -6,7 +6,7 @@ Document Classes
 
 body
 {
-    /*background: url('../Media/offline.jpg') no-repeat 0% 0% #000000;*/
+    /*background: url('../media/offline.jpg') no-repeat 0% 0% #000000;*/
     background-color: #000000;
     font-size: .75em;
     font-family: Verdana, Helvetica, Sans-Serif;
@@ -129,17 +129,17 @@ Images Classes
 
 .imgOffline
 {
-	background: url('../Media/offline.jpg') no-repeat 0% 0% #000000;
+	background: url('../media/offline.jpg') no-repeat 0% 0% #000000;
 }
 
 .imgDay
 {
-	background: url('../Media/day.jpg') no-repeat 0% 0% #000000;
+	background: url('../media/day.jpg') no-repeat 0% 0% #000000;
 }
 
 .imgNight
 {
-	background: url('../Media/night.jpg') no-repeat 0% 0% #000000;
+	background: url('../media/night.jpg') no-repeat 0% 0% #000000;
 }
 
 /*
@@ -150,7 +150,7 @@ Tile Classes
 
 .tiles
 {
-	background: url('../Media/tiles.png') no-repeat 0px 0px transparent;
+	background: url('../media/tiles.png') no-repeat 0px 0px transparent;
 	height: 16px;
 	width: 16px;	
 }
@@ -280,15 +280,15 @@ Profile Classes
 
 .profileBackground_normal
 {
-	background-image: url('../Media/Normal.jpg')
+	background-image: url('../media/Normal.jpg')
 }
 
 .profileBackground_nether
 {
-	background-image: url('../Media/Nether.jpg')
+	background-image: url('../media/Nether.jpg')
 }
 
 .profileBackground_theend
 {
-	background-image: url('../Media/TheEnd.jpg')
+	background-image: url('../media/TheEnd.jpg')
 }
