@@ -250,23 +250,26 @@ public class Handshake {
                                 acceptKey = Base64.encodeBytes(hashedKey);
                             }
                             catch (NoSuchAlgorithmException noAlgorithmException) {
-                                outputStream.println("HTTP/1.1 500 Internal Server Error");
+                                outputStream.print("HTTP/1.1 500 Internal Server Error\r\n");
                                 Logger.severe(MessageFormat.format("Unable to find the hashing algorithm {0}.  The accept key cannot be created.", HASHING_ALGORITHM));
                                 return false;
                             }
                             catch (java.lang.NoClassDefFoundError noClassException) {
-                                outputStream.println("HTTP/1.1 500 Internal Server Error");
+                                outputStream.print("HTTP/1.1 500 Internal Server Error\r\n");
                                 Logger.severe(MessageFormat.format("Unable to find the vital class {0} to generate a Base64 value.", noClassException.getMessage()));
                                 return false;
                             }
-    
+                            
+
+                            //CR (10/26/12) --- There was an issue here with the println method, where on linux boxes the newline is simply a linefeed(\n), while on windows machines the newline would be a Carriage Return-Line Feed (\r\n).
+                            // We need to force the newline to be a Carriage Return-Line Feed (\r\n) to meet HTTP specification.
                             //Respond to the client with the proper handshake.
-                            outputStream.println("HTTP/1.1 101 Switching Protocols");
-                            outputStream.println("Upgrade: websocket");
-                            outputStream.println("Connection: Upgrade");
-                            outputStream.println(MessageFormat.format("Sec-WebSocket-Version: {0}", WEBSOCKET_SUPPORTED_VERSIONS));
-                            outputStream.println(MessageFormat.format("Sec-WebSocket-Accept: {0}", acceptKey));
-                            outputStream.println();
+                            outputStream.print("HTTP/1.1 101 Switching Protocols\r\n");
+                            outputStream.print("Upgrade: websocket\r\n");
+                            outputStream.print("Connection: Upgrade\r\n");
+                            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+                            outputStream.print(MessageFormat.format("Sec-WebSocket-Accept: {0}\r\n", acceptKey));
+                            outputStream.print("\r\n");
                             outputStream.flush();
                             
                             return true;
@@ -274,24 +277,22 @@ public class Handshake {
                         //END OF if(headerFields.containsKey("SEC-WEBSOCKET-KEY"))...
                     }
                     else {
-                        outputStream.println("HTTP/1.1 403 Forbidden");
+                        outputStream.print("HTTP/1.1 403 Forbidden\r\n");
                         Logger.debug("Unable to verify the origin.");
                         return false;
-                    }                    
+                    }
                     //END OF if (verified) { ...
                 }
                 //END OF if( (headerLines[0] !="") && (headerLines[0].toUpperCase().startsWith("GET")) && (headerLines[0].toUpperCase().contains("HTTP/1.1")) )...
             }
             //END OF if(headerLines.length > 0)...
 
-            Logger.verboseDebug(MessageFormat.format("------Buffered Request------\r\n{0}", stringBuffer.toString()));
-            
             //If we've reached this point then return a bad request to the client and terminate the handshake.
-            outputStream.println("HTTP/1.1 400 Bad Request");
-            outputStream.println("Upgrade: websocket");
-            outputStream.println("Connection: Upgrade");
-            outputStream.println(MessageFormat.format("Sec-WebSocket-Version: {0}", WEBSOCKET_SUPPORTED_VERSIONS));
-            outputStream.println();
+            outputStream.print("HTTP/1.1 400 Bad Request\r\n");
+            outputStream.print("Upgrade: websocket\r\n");
+            outputStream.print("Connection: Upgrade\r\n");
+            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+            outputStream.print("\r\n");
             outputStream.flush();
         }
         //If any one of these exceptions occur then an invalid handshake has been sent and we will ignore the request.
