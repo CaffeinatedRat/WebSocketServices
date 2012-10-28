@@ -37,7 +37,8 @@ Some various notes about the plug-in:
 
 * This plug-in can send fragmented frames but cannot receive it at this time.
 * The total frame size can only be 2^16 in size, as larger frames will be truncated.  This will not change since we want to keep this lightweight and prevent the minecraft server from being overloaded.
-* Other plug-ins may register for websocket events during the onLoad event with the method WebSocketServices.registerApplicationLayer(Plugin plugin, IApplicationLayer applicationLayer). 
+* Other plug-ins may register for websocket events during the onLoad event with the method WebSocketServices.registerApplicationLayer(Plugin plugin, IApplicationLayer applicationLayer).
+* A [wiki] (https://github.com/CaffeinatedRat/WebSocketServices/wiki) on how to use the WebSocketServices API is available.
 
 To-Do
 -----------
