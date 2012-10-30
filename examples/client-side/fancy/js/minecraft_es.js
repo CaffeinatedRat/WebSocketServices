@@ -162,7 +162,7 @@ function getServerInfo()
 				$('#allowsFlight').text(json.allowsFlight ? 'Sí' : 'No');
 				$('#port').text(json.port);
 				$('#ipAddress').text(json.ipAddress);
-				$('#time').text( (json.serverTime % 23000 >= 13000) ? "Night" : "Day" );
+				$('#time').text( (json.serverTime % 23000 >= 13000) ? "la noche" : "el día" );
 			}
 			//END OF if(json.Status == "SUCCESSFUL") {...
 		}
