@@ -18,6 +18,7 @@
 		<INPUT type="button" id="btnWHO" value="Who"></INPUT>
 		<INPUT type="button" id="btnPlugins" value="Plugins"></INPUT>
 		<INPUT type="button" id="btnWhiteList" value="WhiteList"></INPUT>
+		<INPUT type="button" id="btnOffline" value="Offline"></INPUT>
 		<br/>
 		<INPUT type="radio" id="dataTypeText" name="dataType" value="Text" checked="checked"/>
 		<span>Text</span>
@@ -26,6 +27,12 @@
 		<INPUT type="button" id="btnFragmentationTest" value="Fragmentation Test"></INPUT>
 		<br/>
 		<br/>
+		<h1>
+			Info
+		</h1>
+		<div id="info">
+		</div>
+		<!-- 
 		<div>
 			<div>
 				<strong>Minecraft Server Name:</strong>
@@ -80,6 +87,10 @@
 				<span id="allowsFlight"></span>
 			</div>
 		</div>
+		-->
+		<h1>
+			Players
+		</h1>		
 		<div>
 			<div>
 				<strong>Max Number of Players: </strong>
@@ -90,9 +101,11 @@
 				</ul>
 			</div>
 		</div>
+		<h1>
+			Plugins
+		</h1>		
 		<div>
 			<div>
-				<strong>Plugins: </strong>
 				<span id="maxNumberOfPlayers"></span>
 			</div>
 			<div>
@@ -106,15 +119,24 @@
 				</table>
 			</div>
 		</div>
+		<h1>
+			WhiteList
+		</h1>
 		<div>
-			<div>
-				<strong>WhiteList: </strong>
-			</div>
 			<div>
 				<ul id="whiteList">
 				</ul>
 			</div>
 		</div>
+		<h1>
+			Offline Players
+		</h1>
+		<div>
+			<div>
+				<ul id="offlinePlayers">
+				</ul>
+			</div>
+		</div>		
 		<div id="otherData">
 		
 		</div>

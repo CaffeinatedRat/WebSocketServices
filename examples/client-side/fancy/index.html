@@ -10,7 +10,7 @@
 		<script type="text/javascript" src="js/profile.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/smoothness/jquery-ui-1.9.0.custom.min.css"></link>
 		<link type="text/css" rel="stylesheet" href="css/minecraft.css"></link>		
-		<title>Caff's Minecraft Sandbox</title>
+		<title>Your server name here</title>
 	</HEAD>
 	<BODY class="imgOffline">
 		<div class="titlebar">
@@ -44,8 +44,9 @@
 						<li><a id="serverTab" href="#tabs-1">Server Information</a></li>
 						<li><a id="playerTab" href="#tabs-2">WHO's Online</a></li>
 						<li><a id="whitelistTab" href="#tabs-3">Whitelist</a></li>
-						<li><a id="pluginsTab" href="#tabs-4">Plugins</a></li>
-						<li><a id="spectatorTab" href="#tabs-5">Spectator</a></li>
+						<li><a id="offlinePlayersTab" href="#tabs-4">Offline</a></li>
+						<li><a id="pluginsTab" href="#tabs-5">Plugins</a></li>
+						<li><a id="spectatorTab" href="#tabs-6">Spectator</a></li>
 					</ul>
 					<div id="tabs-1" class="tabContainer">
 						<div class="container scrollContainer">
@@ -134,12 +135,24 @@
 						</div>
 					</div>
 					<div id="tabs-4" class="tabContainer">
+						<div class="container">
+							<div>
+								<strong>Offline Players: </strong>
+								<span id="totalOfflinePlayers"></span>
+							</div>
+							<div class="playerContainer scrollContainer">
+								<ul id="offlinePlayers">
+								</ul>
+							</div>
+						</div>
+					</div>					
+					<div id="tabs-5" class="tabContainer">
 						<div class="container scrollContainer">
 							<table id="pluginList">
 							</table>
 						</div>
 					</div>
-					<div id="tabs-5" class="tabContainer">
+					<div id="tabs-6" class="tabContainer">
 						<canvas id="spectator">
 						</canvas>
 					</div>

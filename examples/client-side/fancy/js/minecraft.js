@@ -1,5 +1,5 @@
 //Add your server address here, make sure the port number matches that of the port number in the websocketservices/config.yml.
-var websocketAddress = "ws://192.168.1.100:25564";
+//var websocketAddress = "ws://192.168.1.100:25564";
 
 //Adjust this time interval to the number of milliseconds you want the website to ping your server.
 var pingInterval = 15000;
@@ -310,6 +310,80 @@ function getWhiteListing()
 	};
 }
 
+function getOfflinePlayers()
+{
+	var ws = new WebSocket(websocketAddress);
+	ws.onopen = function() {
+		ws.send('offlinePlayers');
+	};
+	ws.onmessage = function(msg) {
+		if(msg !== undefined) {
+			var json = jQuery.parseJSON(msg.data);
+			
+			if(json.Status == "SUCCESSFUL") {
+				$('#totalOfflinePlayers').text(json.OfflinePlayers.length);
+				
+				if(json.OfflinePlayers.length > 0) {
+					$('#offlinePlayers').text('');
+					for(i = 0; i < json.OfflinePlayers.length; i++) {
+						var onlineTime = 'now';
+						if(!json.OfflinePlayers[i].isOnline) {
+							onlineTime = 'Last Played: ' + json.OfflinePlayers[i].lastPlayed + '' 	
+						}
+					
+						//Open the player element.
+						var element = '<li><div class="playerElement">';
+
+						//Show the mod icon if the user is a moderator.
+						if(json.OfflinePlayers[i].isOperator) {
+							element += '<div class="inline"><div title="Moderator" class="tiles modTile"></div></div>';
+						}
+						else {
+							element += '<div class="inline"><div title="Player" class="tiles playerTile"></div></div>';
+						}
+						
+						//Show the player's face.
+						element += '<div id="test" class="inline"><canvas class="playersFace" id="canOP' + json.OfflinePlayers[i].name + '"></canvas></div>';		
+						
+						//Show the player's name with profile link.
+						element += '<div class="inline">';
+						
+						element += '<strong><a class="playerName" href="#" data-name="';
+						element += json.OfflinePlayers[i].name;
+						element += '" data-environment="';
+						element += "normal"
+						element += '" click="javascript:return false;">';
+						element += json.OfflinePlayers[i].name;
+						element += '</a></strong>';
+						
+						element += '</div>';
+						
+						//Show the amount of time it has been since the player was online.
+						element += '<div class="inline">(' + onlineTime + ')</div>';
+						
+						//Close the player element.
+						element += '</div></li>';
+						
+						$('#offlinePlayers').append(element);
+						
+						//Resize the player's face.
+						$('#offlinePlayers').append('<script>drawPlayersFace("canOP' + json.OfflinePlayers[i].name + '", "' + json.OfflinePlayers[i].name + '");</script>');						
+					}
+					//END OF for(i = 0; i < json.OfflinePlayers.length; i++) {...
+				}
+				else  {
+					$('#offlinePlayers').text('').append('<li>No offline player info available.</li>');
+				}
+				//END OF if(json.OfflinePlayers.length > 0) {...
+			}
+			//END OF if(json.Status == "SUCCESSFUL") {...
+		}
+		//END OF if(msg !== undefined) {...
+	};
+	ws.onerror = function(error) {
+		console.log('WebSocket Error ' + error);
+	};
+}
 function getPluginInfo()
 {
 	var ws = new WebSocket(websocketAddress);
@@ -400,6 +474,11 @@ $(document).ready(function(){
 	$('#whitelistTab').click(function() {
 		clearInterval(onlineTimerPID);
 		getWhiteListing();
+	});
+	
+	$('#offlinePlayersTab').click(function() {
+		clearInterval(onlineTimerPID);
+		getOfflinePlayers();
 	});
 	
 	$('#pluginsTab').click(function() {

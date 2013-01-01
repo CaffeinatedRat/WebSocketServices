@@ -21,6 +21,7 @@ services:
   plugins: true
   info: true
   whitelist: true
+  offlinePlayers: true
   ping: true
   fragmentationtest: false
   binaryfragmentationtest: false

@@ -7,7 +7,7 @@ function webSocketWrapper(onOpen, onMessage)
 		try
 		{
 			 // Let us open a web socket
-			 ws = new WebSocket('ws://192.168.1.100:25564' );
+			 ws = new WebSocket('ws://192.168.1.101:25564' );
 			 ws.onopen = onOpen;
 			 ws.onmessage = onMessage;
 			 
@@ -101,21 +101,21 @@ $(document).ready(function(){
 				{
 					console.log(msg.data);
 					var json = jQuery.parseJSON(msg.data);
+					var data = '';
 					
 					if(json.Status == "SUCCESSFUL") {
-						$('#minecraftServerName').text(json.serverName);
-						$('#minecraftName').text(json.name);
-						$('#minecraftVersion').text(json.version);
-						$('#bukkitVersion').text(json.bukkitVersion);
-						$('#motd').text(json.motd);
-						$('#worldType').text(json.worldType);
-						$('#gameMode').text(json.gameMode);
-						$('#isWhiteListed').text(json.isWhiteListed);
-						$('#allowsNether').text(json.allowsNether);
-						$('#allowsEnd').text(json.allowsEnd);
-						$('#allowsFlight').text(json.allowsFlight);
-						$('#port').text(json.port);
-						$('#ipAddress').text(json.ipAddress);
+						try {
+							var json = jQuery.parseJSON(msg.data);
+							var firstProp;
+							for(var key in json) {
+								if(json.hasOwnProperty(key)) {
+									data += '<strong>' + key + '</strong>: ' + json[key] + '<br/>';
+								}
+							}
+						}
+						catch (err) { }
+						
+						$('#info').html(data);
 					}
 				}
 			});
@@ -172,6 +172,33 @@ $(document).ready(function(){
 				}
 			});
 	});
+	
+	$('#btnOffline').click(function() {
+		webSocketWrapper(
+			function() {
+				ws.send('offlinePlayers');
+			},
+			function(msg) {
+				if(msg !== undefined)
+				{
+					console.log(msg.data);
+					var json = jQuery.parseJSON(msg.data);
+					
+					if(json.Status == "SUCCESSFUL") {
+										
+						if(json.OfflinePlayers.length > 0) {
+							$('#offlinePlayers').text('');
+							for(i = 0; i < json.OfflinePlayers.length; i++)
+								$('#offlinePlayers').append('<li>' + json.OfflinePlayers[i].name + ' (' + (json.OfflinePlayers[i].isOnline ? 'online' : ('Last Played: ' + json.OfflinePlayers[i].lastPlayed) + ' ago' ) + ')' + '</li>');
+						}
+						else
+						{
+							$('#offlinePlayers').text('').append('<li>No offline player information is available.</li>');
+						}					
+					}
+				}
+			});
+	});	
 	
 	$('#btnFragmentationTest').click(function() {
 		webSocketWrapper(

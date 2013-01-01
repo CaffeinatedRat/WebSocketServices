@@ -249,7 +249,7 @@ public class ServiceLayer {
      * @return True if the service was successfully executed.
      */
     protected boolean whitelist(StringBuilder responseBuffer) {
-
+    	
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
         responseBuffer.append("\"Whitelist\": [");
@@ -295,6 +295,61 @@ public class ServiceLayer {
         
         return true;
     }
+    
+    /**
+     * Provides a list of all offline players
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */
+    protected boolean offlineplayers(StringBuilder responseBuffer) {
+    	
+        OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
+        
+        responseBuffer.append("\"OfflinePlayers\": [");
+        
+        int i = 0;
+        for(OfflinePlayer offlinePlayer : offlinePlayers) {
+        
+            if(i++ > 0) {
+                responseBuffer.append(",");
+            }
+
+            String lastPlayed = "Never";
+            if(offlinePlayer.isOnline()) {
+                lastPlayed = "Now";
+            }
+            else {
+                if (offlinePlayer.getLastPlayed() > 0) {
+                    
+                    long timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
+                    
+                    lastPlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
+                                (timeSpan / 3600000L / 24),
+                                (timeSpan / 3600000L % 60),
+                                (timeSpan / 60000L % 60),
+                                (timeSpan / 1000L % 60));
+                }
+            }
+            //END OF if(offlinePlayer.isOnline()) {...
+            
+            responseBuffer.append("{");
+            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"isOnline\": {1}, \"lastPlayed\": \"{2}\", \"isOperator\": {3}, \"isWhitelisted\": {4}, \"hasPlayed\": {5}"
+                    , offlinePlayer.getName()
+                    , offlinePlayer.isOnline()
+                    , lastPlayed
+                    , offlinePlayer.isOp()
+                    , offlinePlayer.isWhitelisted()
+                    , offlinePlayer.hasPlayedBefore()
+                    ));
+            
+            responseBuffer.append("}");
+        }
+        //END OF for(OfflinePlayer offlinePlayer : offlinePlayers) {...
+        
+        responseBuffer.append("]");
+        
+        return true;
+    }    
 
     /**
      * The simplest and most light-weight service that simply responds with alive and the server time.
