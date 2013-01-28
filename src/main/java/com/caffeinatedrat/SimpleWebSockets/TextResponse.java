@@ -24,6 +24,8 @@
 
 package com.caffeinatedrat.SimpleWebSockets;
 
+import java.util.Hashtable;
+
 /**
  * A simple response object for text data.
  *
@@ -32,4 +34,10 @@ package com.caffeinatedrat.SimpleWebSockets;
  */
 public class TextResponse extends Response {
     public String data = "";
+    public Hashtable<String, Object> responseCollection;
+    
+    public TextResponse() {
+        
+        responseCollection = new Hashtable<String, Object>();
+    }
 }

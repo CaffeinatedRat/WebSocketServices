@@ -73,7 +73,10 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     }
     
     public boolean isServiceEnabled(String service) {
+        
+        
         return getBoolean("services." + service.toLowerCase(), false);
+        
     }
     
     // ----------------------------------------------

@@ -79,7 +79,7 @@ public class ApplicationLayer implements IApplicationLayer {
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
             if(serviceLayer.executeText(text, responseBuffer)) {
                 
-                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"SUCCESSFUL\"");
+                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\":\"SUCCESSFUL\"");
                 
             }
             else {
@@ -95,7 +95,7 @@ public class ApplicationLayer implements IApplicationLayer {
                     ((IApplicationLayer)pairs.getValue()).onTextFrame(text, response);
                     
                     //The plug-in name is appended to all other data.
-                    responseBuffer.append(MessageFormat.format("\"PluginName\": \"{0}\",", pairs.getKey()));
+                    responseBuffer.append(MessageFormat.format("\"PluginName\":\"{0}\",", pairs.getKey()));
                     responseBuffer.append(response.data);
                 }
             }
@@ -107,7 +107,7 @@ public class ApplicationLayer implements IApplicationLayer {
             Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
             
             responseBuffer.append("{");
-            responseBuffer.append("\"Status\": \"NOT AVAILABLE\"");
+            responseBuffer.append("\"Status\":\"NOT AVAILABLE\"");
             responseBuffer.append("}");
         }
         
