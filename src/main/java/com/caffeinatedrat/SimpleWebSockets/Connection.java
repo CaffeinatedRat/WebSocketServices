@@ -123,7 +123,7 @@ public class Connection extends Thread {
                                     TextResponse response = new TextResponse();
                                     applicationLayer.onTextFrame(text, response);
 
-                                    String fragment = response.data;
+                                    String fragment = response.toString();
                                     Boolean firstFrame = true;
 
                                     //Fragment the frame if the response is too large.

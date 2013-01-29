@@ -26,6 +26,8 @@ package com.caffeinatedrat.SimpleWebSockets;
 
 import java.util.Hashtable;
 
+import com.caffeinatedrat.SimpleWebSockets.Util.JsonHelper;
+
 /**
  * A simple response object for text data.
  *
@@ -33,11 +35,42 @@ import java.util.Hashtable;
  * @author CaffeinatedRat
  */
 public class TextResponse extends Response {
-    public String data = "";
-    public Hashtable<String, Object> responseCollection;
     
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    private String data = "";
+    private Hashtable<String, Object> responseCollection;
+    
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------    
+    public Hashtable<String, Object> getCollection() {
+        return this.responseCollection;
+    }
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------    
     public TextResponse() {
-        
         responseCollection = new Hashtable<String, Object>();
+    }
+    
+    public TextResponse(String data) {
+        this.data = data;
+        this.responseCollection = null;
+    }
+
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------    
+    @Override
+    public String toString() {
+        
+        if (data == "") {
+            data = JsonHelper.serialize(responseCollection);
+        }
+        
+        return data;
     }
 }

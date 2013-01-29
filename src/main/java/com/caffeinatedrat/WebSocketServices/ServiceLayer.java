@@ -39,6 +39,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
+import com.caffeinatedrat.SimpleWebSockets.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.JsonHelper;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -68,14 +69,14 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    public boolean executeText(String service, StringBuilder responseBuffer) {
+    public boolean executeText(String service, TextResponse response) {
         
         try {
             
             if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
-                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), StringBuilder.class);
+                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), TextResponse.class);
                 method.setAccessible(true);
-                return (Boolean)method.invoke(this, responseBuffer);
+                return (Boolean)method.invoke(this, response);
             }
         }
         catch(Exception ex) {
@@ -110,13 +111,13 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */    
-    protected boolean info(StringBuilder responseBuffer) {
+    protected boolean info(TextResponse response) {
 
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
         World world = worlds.get(0);
 
-        Hashtable<String, Object> collection = new Hashtable<String, Object>();
+        Hashtable<String, Object> collection = response.getCollection();
         
         collection.put("name", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
         collection.put("serverName", this.minecraftServer.getServerName());
@@ -133,8 +134,6 @@ public class ServiceLayer {
         collection.put("ipAddress", this.minecraftServer.getIp());
         collection.put("serverTime", world.getTime());
         
-        responseBuffer.append(JsonHelper.serialize(collection));
-        
         return true;
     }
     
@@ -143,30 +142,27 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */    
-    protected boolean plugins(StringBuilder responseBuffer) {
+    protected boolean plugins(TextResponse response) {
         
         Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
+
+        Hashtable<String, Object> masterCollection = response.getCollection();
         
-        responseBuffer.append("\"Plugins\": [");
+        List<Hashtable<String, Object>> listofPlugins = new ArrayList<Hashtable<String, Object>>();
+        masterCollection.put("Plugins", listofPlugins);
         
         for (int i = 0; i < plugins.length; i++) {
             PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
 
-            if(i > 0) {
-                responseBuffer.append(",");
-            }
+            Hashtable<String, Object> collection = new Hashtable<String, Object>();
+            collection.put("name", plugins[i].getName());
+            collection.put("description", pluginDescriptor.getDescription().replaceAll("(\r\n|\n)", ""));
+            collection.put("author", pluginDescriptor.getAuthors().toString());
+            collection.put("version", pluginDescriptor.getVersion());
             
-            responseBuffer.append("{");
-            responseBuffer.append(MessageFormat.format("\"name\": \"{0}\", \"description\": \"{1}\", \"author\": \"{2}\", \"version\": \"{3}\""
-                    , plugins[i].getName()
-                    , pluginDescriptor.getDescription().replaceAll("(\r\n|\n)", "")
-                    , pluginDescriptor.getAuthors().toString()
-                    , pluginDescriptor.getVersion()));
-            responseBuffer.append("}");
+            listofPlugins.add(collection);
         }
         //END OF for (int i = 0; i < plugins.length; i++) {...
-        
-        responseBuffer.append("]");
         
         return true;
     }
@@ -176,20 +172,17 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean who(StringBuilder responseBuffer) {
-        
-        //Set<OfflinePlayer> operators = this.minecraftServer.getOperators();
+    protected boolean who(TextResponse response) {
         
         Player[] players = this.minecraftServer.getOnlinePlayers();
-
-        responseBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", this.minecraftServer.getMaxPlayers()));
-        responseBuffer.append("\"Players\": [");
+        
+        Hashtable<String, Object> masterCollection = response.getCollection();
+        List<Hashtable<String, Object>> listofPlayers = new ArrayList<Hashtable<String, Object>>();
+        
+        masterCollection.put("MaxPlayers", this.minecraftServer.getMaxPlayers());
+        masterCollection.put("Players", listofPlayers);
         
         for (int i = 0; i < players.length; i++) {
-            
-            if(i > 0) { 
-                responseBuffer.append(",");
-            }
             
             //Determine the last time the player was online.
             String timePlayed = "Never";
@@ -206,8 +199,6 @@ public class ServiceLayer {
             //Determine the environment the player is in.
             String environment = players[i].getWorld().getEnvironment().toString();
 
-            responseBuffer.append("{");
-            
             Hashtable<String, Object> collection = new Hashtable<String, Object>();
             
             collection.put("name", playerName);
@@ -215,12 +206,8 @@ public class ServiceLayer {
             collection.put("environment", environment);
             collection.put("isOperator", players[i].isOp());
             
-            responseBuffer.append(JsonHelper.serialize(collection));
-            
-            responseBuffer.append("}");
+            listofPlayers.add(collection);
         }
-
-        responseBuffer.append("]");
 
         return true;
     }
@@ -230,19 +217,16 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean whitelist(StringBuilder responseBuffer) {
+    protected boolean whitelist(TextResponse response) {
     	
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
-        responseBuffer.append("\"Whitelist\": [");
+        Hashtable<String, Object> masterCollection = response.getCollection();
+        List<Hashtable<String, Object>> listofWhitelistedPlayers = new ArrayList<Hashtable<String, Object>>();
+        masterCollection.put("Whitelist", listofWhitelistedPlayers);
         
-        int i = 0;
         for(OfflinePlayer offlinePlayer : whiteListedPlayers) {
         
-            if(i++ > 0) {
-                responseBuffer.append(",");
-            }
-
             String lastPlayed = "Never";
             if(offlinePlayer.isOnline()) {
                 lastPlayed = "Now";
@@ -261,23 +245,17 @@ public class ServiceLayer {
             }
             //END OF if(offlinePlayer.isOnline()) {...
             
-            responseBuffer.append("{");
+            Hashtable<String, Object> properties = new Hashtable<String, Object>();
             
-            Hashtable<String, Object> collection = new Hashtable<String, Object>();
+            properties.put("name", offlinePlayer.getName());
+            properties.put("isOnline",  offlinePlayer.isOnline());
+            properties.put("lastPlayed",  lastPlayed);
+            properties.put("isOperator", offlinePlayer.isOp());
             
-            collection.put("name", offlinePlayer.getName());
-            collection.put("isOnline",  offlinePlayer.isOnline());
-            collection.put("lastPlayed",  lastPlayed);
-            collection.put("isOperator", offlinePlayer.isOp());
-            
-            responseBuffer.append(JsonHelper.serialize(collection));
-            
-            responseBuffer.append("}");
+            listofWhitelistedPlayers.add(properties);
         }
         //END OF for(OfflinePlayer offlinePlayer : whiteListedPlayers) {...
-        
-        responseBuffer.append("]");
-        
+
         return true;
     }
     
@@ -286,11 +264,11 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean offlineplayers(StringBuilder responseBuffer) {
+    protected boolean offlineplayers(TextResponse response) {
     	
         OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
         
-        Hashtable<String, Object> masterCollection = new Hashtable<String, Object>();
+        Hashtable<String, Object> masterCollection = response.getCollection();
         List<Hashtable<String, Object>> listOfOfflinePlayers = new ArrayList<Hashtable<String, Object>>();
         masterCollection.put("OfflinePlayers", listOfOfflinePlayers);
         
@@ -327,8 +305,6 @@ public class ServiceLayer {
         }
         //END OF for(OfflinePlayer offlinePlayer : offlinePlayers) {...
         
-        responseBuffer.append(JsonHelper.serialize(masterCollection));
-        
         return true;
     }
 
@@ -338,19 +314,17 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean ping(StringBuilder responseBuffer) {
+    protected boolean ping(TextResponse response) {
         
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
         World world = worlds.get(0);
 
-        Hashtable<String, Object> collection = new Hashtable<String, Object>();
+        Hashtable<String, Object> collection = response.getCollection();
         
         collection.put("pong", "alive");
         collection.put("serverTime", world.getTime());
-        
-        responseBuffer.append(JsonHelper.serialize(collection));
-        
+
         return true;
     }
 
@@ -359,15 +333,21 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean fragmentationTest(StringBuilder responseBuffer) {
+    protected boolean fragmentationTest(TextResponse response) {
 
-        responseBuffer.append("\"Response\": \"");
+        Hashtable<String, Object> collection = response.getCollection();
+        
+        StringBuilder fragmentationData = new StringBuilder();
+        
+        //responseBuffer.append("\"Response\": \"");
 
         for(long i = 0; i < 70000; i++) {
-           responseBuffer.append(String.valueOf(i % 10));
+            fragmentationData.append(String.valueOf(i % 10));
         }
 
-        responseBuffer.append("--end\"");
+        fragmentationData.append("--end\"");
+        
+        collection.put("Response", fragmentationData.toString());
 
         return true;
     }

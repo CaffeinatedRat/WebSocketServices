@@ -22,41 +22,41 @@ public class ApplicationLayer implements IApplicationLayer {
     // ----------------------------------------------
         
     public void onTextFrame(String text, TextResponse response) {
-        if(text.equalsIgnoreCase("WHO"))
-        {
-            int maxPlayers = 10;
-            
-            //To-do: Extract into a json formatter.
-            StringBuilder stringBuffer = new StringBuilder();
-            stringBuffer.append("{");
-            stringBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", maxPlayers));
-            stringBuffer.append("\"Players\": [");
-            
-            for(int i = 0; i < maxPlayers; i++)
-            {
-                if(i > 0) stringBuffer.append(",");
-                stringBuffer.append("{");
-                stringBuffer.append(MessageFormat.format("\"name\": \"player{0}\", \"onlineTime\": \"{1}s\"", i, Calendar.getInstance().getTimeInMillis()));
-                stringBuffer.append("}");
-            }
-            
-            stringBuffer.append("]}");
-            
-            response.data = stringBuffer.toString();
-            response.closeConnection = true;
-        }
-        else if(text.equalsIgnoreCase("VERSION")){
-            
-            //To-do: Extract into a json formatter.
-            StringBuilder stringBuffer = new StringBuilder();
-            
-            stringBuffer.append("{");
-            stringBuffer.append("\"version\": \"1.0.0.0\", \"bukkit-version\": \"1.0.0.0\"");
-            stringBuffer.append("}");
-
-            response.data = stringBuffer.toString();
-            response.closeConnection = true;
-        }
+//        if(text.equalsIgnoreCase("WHO"))
+//        {
+//            int maxPlayers = 10;
+//            
+//            //To-do: Extract into a json formatter.
+//            StringBuilder stringBuffer = new StringBuilder();
+//            stringBuffer.append("{");
+//            stringBuffer.append(MessageFormat.format("\"MaxPlayers\": \"{0}\",", maxPlayers));
+//            stringBuffer.append("\"Players\": [");
+//            
+//            for(int i = 0; i < maxPlayers; i++)
+//            {
+//                if(i > 0) stringBuffer.append(",");
+//                stringBuffer.append("{");
+//                stringBuffer.append(MessageFormat.format("\"name\": \"player{0}\", \"onlineTime\": \"{1}s\"", i, Calendar.getInstance().getTimeInMillis()));
+//                stringBuffer.append("}");
+//            }
+//            
+//            stringBuffer.append("]}");
+//            
+//            response.data = stringBuffer.toString();
+//            response.closeConnection = true;
+//        }
+//        else if(text.equalsIgnoreCase("VERSION")){
+//            
+//            //To-do: Extract into a json formatter.
+//            StringBuilder stringBuffer = new StringBuilder();
+//            
+//            stringBuffer.append("{");
+//            stringBuffer.append("\"version\": \"1.0.0.0\", \"bukkit-version\": \"1.0.0.0\"");
+//            stringBuffer.append("}");
+//
+//            response.data = stringBuffer.toString();
+//            response.closeConnection = true;
+//        }
     }
 
     public void onBinaryFrame(byte[] data, BinaryResponse response) {

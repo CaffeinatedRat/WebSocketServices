@@ -18,7 +18,6 @@ websocket:
 #Configuration for the commands (services) that are supported.
 services:
   who: true
-  	position: true
   plugins: true
   info: true
   whitelist: true

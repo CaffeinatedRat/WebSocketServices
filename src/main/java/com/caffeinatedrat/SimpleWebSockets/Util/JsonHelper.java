@@ -47,6 +47,8 @@ public class JsonHelper {
         if (depth >= maxDepth)
             return;
         
+        jsonBuffer.append("{");
+        
         int i = 0;
         for(Map.Entry<String, Object> element : collection.entrySet() ) {
             
@@ -74,13 +76,10 @@ public class JsonHelper {
                             if (j++ > 0) {
                                 jsonBuffer.append(",");
                             }
-                            
-                            jsonBuffer.append("{");
-                            
+
                             Hashtable<String, Object> internalElement = (Hashtable<String, Object>)object;
                             internalSerialization(internalElement, jsonBuffer, depth++, maxDepth);
                             
-                            jsonBuffer.append("}");
                         }
                     }
                     
@@ -110,5 +109,7 @@ public class JsonHelper {
             //END OF if (element.getValue() instanceof Collection) {...
         }
         //END OF for(Map.Entry<String, Object> element : collection.entrySet() ) {...
+        
+        jsonBuffer.append("}");
     }
 }

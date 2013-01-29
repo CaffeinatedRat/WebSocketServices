@@ -70,16 +70,17 @@ public class ApplicationLayer implements IApplicationLayer {
     public void onTextFrame(String text, TextResponse response) {
         
         //TODO: Extract into a json formatter.
-        StringBuilder responseBuffer = new StringBuilder();
+        //StringBuilder responseBuffer = new StringBuilder();
         
         //Determine if the service is available and if it is then generate a response.
         if(config.isServiceEnabled(text)) {
-            responseBuffer.append("{");
+            //responseBuffer.append("{");
             
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-            if(serviceLayer.executeText(text, responseBuffer)) {
+            if(serviceLayer.executeText(text, response)) {
                 
-                responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\":\"SUCCESSFUL\"");
+                //responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\":\"SUCCESSFUL\"");
+                response.getCollection().put("Status", "SUCCESSFUL");
                 
             }
             else {
@@ -95,23 +96,27 @@ public class ApplicationLayer implements IApplicationLayer {
                     ((IApplicationLayer)pairs.getValue()).onTextFrame(text, response);
                     
                     //The plug-in name is appended to all other data.
-                    responseBuffer.append(MessageFormat.format("\"PluginName\":\"{0}\",", pairs.getKey()));
-                    responseBuffer.append(response.data);
+                    response.getCollection().put("PluginName", pairs.getKey());
+                    
+                    //responseBuffer.append(MessageFormat.format("\"PluginName\":\"{0}\",", pairs.getKey()));
+                    //responseBuffer.append(response.data);
                 }
             }
 
-            responseBuffer.append("}");
+            //responseBuffer.append("}");
         }
         //The service is not available so send a NA status.
         else {
             Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
             
-            responseBuffer.append("{");
-            responseBuffer.append("\"Status\":\"NOT AVAILABLE\"");
-            responseBuffer.append("}");
+            //responseBuffer.append("{");
+            //responseBuffer.append("\"Status\":\"NOT AVAILABLE\"");
+            //responseBuffer.append("}");
+            
+            response.getCollection().put("Status", "NOT AVAILABLE");
         }
         
-        response.data = responseBuffer.toString();
+        //response.data = responseBuffer.toString();
     }
 
     public void onBinaryFrame(byte[] data, BinaryResponse response) {
