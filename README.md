@@ -44,7 +44,6 @@ To-Do
 -----------
 * Add support for receiving fragmented frames.
 * Add necessary synchronization for threading; however, all services are read-only and the synch penalty is not currently worth it.
-* Create a wiki entry on how to construct the jar for this plug-in, as well as how to install the base64-3.8.1.jar.
 * A security layer for possible individual websocket logins (This will have to be some sort of temporary token, as these services work off client-side scripting and all 'password' information is available for all to see).
 * Eventually add https support.
 * Eventually add support for batched services to reduce the number of threads occupied by individual requests.
