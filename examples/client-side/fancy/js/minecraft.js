@@ -10,6 +10,9 @@ var onlineInterval = 15000;
 var onlineTimerPID = 0;
 
 var images = [];
+var debug = true;
+
+var profile;
 
 function drawPlayersFace(id, playersName)
 {
@@ -21,7 +24,7 @@ function drawPlayersFace(id, playersName)
 	if (images[playersName] === undefined) {
 
 		//Get the player's skin...if only we could get the case-sensitive name so we can pull the skins for players that do not have a completely lowercase name.
-		var img = new Image()
+		var img = new Image();
 		
 		img.setAttribute("data-canvasId", id);
 		img.onload = function() {
@@ -31,6 +34,8 @@ function drawPlayersFace(id, playersName)
 				var context = canvas.getContext("2d");
 				
 				if(context !== undefined) {
+					context.mozImageSmoothingEnabled = false;
+					context.webkitImageSmoothingEnabled = false;
 					context.drawImage(this, 8, 8, 8, 8, 0, 0, canvas.width, canvas.height);
 				}
 			}
@@ -74,6 +79,11 @@ function ping()
 		ws.send('ping');
 	};
 	ws.onmessage = function(msg) {
+	
+		if(debug) {
+			console.log(msg.data);
+		}
+	
 		var json = jQuery.parseJSON(msg.data);
 		if(json.Status == "SUCCESSFUL") {
 		
@@ -125,6 +135,10 @@ function getServerInfo()
 	ws.onmessage = function(msg) {
 		if(msg !== undefined) {
 		
+			if(debug) {
+				console.log(msg.data);
+			}
+		
 			var json = jQuery.parseJSON(msg.data);
 						
 			if(json.Status == "SUCCESSFUL") {
@@ -160,6 +174,10 @@ function getPlayerInfo()
 	};
 	ws.onmessage = function(msg) {
 		if(msg !== undefined) {
+		
+			if(debug) {
+				console.log(msg.data);
+			}
 			var json = jQuery.parseJSON(msg.data);
 			
 			if(json.Status == "SUCCESSFUL") {
@@ -243,6 +261,11 @@ function getWhiteListing()
 	};
 	ws.onmessage = function(msg) {
 		if(msg !== undefined) {
+		
+			if(debug) {
+				console.log(msg.data);
+			}
+		
 			var json = jQuery.parseJSON(msg.data);
 			
 			if(json.Status == "SUCCESSFUL") {
@@ -318,6 +341,11 @@ function getOfflinePlayers()
 	};
 	ws.onmessage = function(msg) {
 		if(msg !== undefined) {
+		
+			if(debug) {
+				console.log(msg.data);
+			}
+			
 			var json = jQuery.parseJSON(msg.data);
 			
 			if(json.Status == "SUCCESSFUL") {
@@ -384,6 +412,7 @@ function getOfflinePlayers()
 		console.log('WebSocket Error ' + error);
 	};
 }
+
 function getPluginInfo()
 {
 	var ws = new WebSocket(websocketAddress);
@@ -392,6 +421,11 @@ function getPluginInfo()
 	};
 	ws.onmessage = function(msg) {
 		if(msg !== undefined) {
+		
+			if(debug) {
+				console.log(msg.data);
+			}		
+		
 			var json = jQuery.parseJSON(msg.data);
 			
 			if(json.Status == "SUCCESSFUL") {
@@ -448,7 +482,12 @@ function Init()
 			width: 600,
 			resizable: false,
             modal: true,
-			autoOpen: false
+			autoOpen: false, 
+			close: function ( event, ui) {
+				if ( (profile !== undefined) && (profile != null) ) {
+					profile.stop();
+				}
+			}
         });
 	}
 	else {
@@ -486,20 +525,49 @@ $(document).ready(function(){
 		getPluginInfo();
 	});
 	
+	var isInited = false;
+	
 	$('.playerName').live('click', function(e) {
 		
-		console.log('Disabled until the Webgl character model can be developed...');
+		var playersName = $(this).data('name');
+		
+		$('#skinWrapper').text('');
+		
+		//var img = new Image()
+		//var dataUrl = '';
+		
+		//img.onload = function(e) { 
+		
 		/*
+			var canvas = document.createElement('canvas');
+			if(canvas !== undefined) {
+				var context = canvas.getContext("2d");
+				
+				if(context !== undefined) {
+					context.drawImage(], 0, 0, 64, 32);
+					try {
+					dataUrl = canvas.toDataURL(); // Succeeds. Canvas won't be dirty. 
+					}
+					catch(e) {}
+				}
+			}
+			*/
+		 
+
+		//}; 
+		//img.crossOrigin = ''; 
+		//img.src = images[$(this).data('name')].src;
+		
 		$('#skinProfile-modal').dialog('open');
-		$('#skinProfile-modal').dialog('option', 'title', $(this).data('name') + '\'s profile');
-		$('#skinWrapper').data('name', $(this).data('name'));
+		$('#skinProfile-modal').dialog('option', 'title', playersName + '\'s profile');
+		$('#skinWrapper').data('name', playersName);
 		$('#skinWrapper').removeClass();
 		$('#skinWrapper').addClass('profileBackground_' + $(this).data('environment'));
 		
-		init_profile();
-		animate();
-		*/
-		
+		//profile = new caffeinatedrat.minecraft.profile($('#skinWrapper'), images[$(this).data('name')]);		
+		//profile.init();
+		//profile.animate();			
+
 		e.preventDefault();
 	});
 });
