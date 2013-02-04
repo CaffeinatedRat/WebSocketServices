@@ -186,12 +186,27 @@ public class ServiceLayer {
             
             //Determine the last time the player was online.
             String timePlayed = "Never";
-            long timeSpan = new Date().getTime() - players[i].getLastPlayed();
-            timePlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
-                        (timeSpan / 3600000L / 24),
-                        (timeSpan / 3600000L % 60),
-                        (timeSpan / 60000L % 60),
-                        (timeSpan / 1000L % 60));
+            
+            // --- CR (10/9/12) --- Hopefully fixed an issue with the player time when a player has never logged in.
+            // NOTE: The last played time will be zero if a player has never logged in; however, the first played time will contain the time value we need.
+            long lastPlayedTime = players[i].getLastPlayed();
+            if (lastPlayedTime == 0L) {
+                
+                lastPlayedTime = players[i].getFirstPlayed();
+                
+            }
+            
+            long timeSpan = new Date().getTime() - lastPlayedTime;
+            
+            //Make sure the timespan is valid.
+            if (timeSpan > 0) {
+                timePlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
+                            (timeSpan / 3600000L / 24),
+                            (timeSpan / 3600000L % 60),
+                            (timeSpan / 60000L % 60),
+                            (timeSpan / 1000L % 60));
+                
+            }
             
             //Get the player's name.
             String playerName = players[i].getName();
@@ -251,6 +266,7 @@ public class ServiceLayer {
             properties.put("isOnline",  offlinePlayer.isOnline());
             properties.put("lastPlayed",  lastPlayed);
             properties.put("isOperator", offlinePlayer.isOp());
+            properties.put("hasPlayed", offlinePlayer.hasPlayedBefore());
             
             listofWhitelistedPlayers.add(properties);
         }
