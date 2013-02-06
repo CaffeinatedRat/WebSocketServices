@@ -40,7 +40,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
-import com.caffeinatedrat.SimpleWebSockets.Util.JsonHelper;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 public class ServiceLayer {
