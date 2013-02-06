@@ -152,15 +152,42 @@ public class ServiceLayer {
         masterCollection.put("Plugins", listofPlugins);
         
         for (int i = 0; i < plugins.length; i++) {
-            PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
-
-            Hashtable<String, Object> collection = new Hashtable<String, Object>();
-            collection.put("name", plugins[i].getName());
-            collection.put("description", pluginDescriptor.getDescription().replaceAll("(\r\n|\n)", ""));
-            collection.put("author", pluginDescriptor.getAuthors().toString());
-            collection.put("version", pluginDescriptor.getVersion());
             
-            listofPlugins.add(collection);
+            // --- CR (2/6/13) --- Catch and ignore any unexpected errors from the plugin.
+            try {
+            
+                PluginDescriptionFile pluginDescriptor =  plugins[i].getDescription();
+                Hashtable<String, Object> collection = new Hashtable<String, Object>();
+                collection.put("name", plugins[i].getName());
+                
+                // --- CR (2/6/13) --- NOTE: The description can be null.
+                String description = "none";
+                if (pluginDescriptor.getDescription() != null) {
+
+                    description =  pluginDescriptor.getDescription().toString().replaceAll("(\r\n|\n)", "");
+
+                }
+
+                // --- CR (2/6/13) --- NOTE: I'm not sure if the authors can be null but lets check against it and make sure that there is at least one author.
+                String author = "unknown";
+                if ( ( pluginDescriptor.getAuthors() != null) && (pluginDescriptor.getAuthors().size() > 0 ) ) {
+
+                    author = pluginDescriptor.getAuthors().toString();
+
+                }
+
+                collection.put("description", description);
+                collection.put("author", author);
+                collection.put("version", pluginDescriptor.getVersion());
+
+                listofPlugins.add(collection);
+            }
+            catch (Exception ex) {
+                
+                //Do nothing...
+                Logger.verboseDebug(ex.getMessage());
+                
+            }
         }
         //END OF for (int i = 0; i < plugins.length; i++) {...
         

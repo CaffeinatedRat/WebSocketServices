@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.caffeinatedrat</groupId>
   <artifactId>WebSocketServices</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <description>Provides simple websocket services for a Minecraft server.</description>
   
   <scm>
@@ -59,7 +59,7 @@
   	<dependency>
   		<groupId>org.bukkit</groupId>
   		<artifactId>bukkit</artifactId>
-  		<version>1.4.7-R0.1</version>
+  		<version>1.4.7-R1.0</version>
   		<scope>provided</scope>
   	</dependency>
   	<dependency>
