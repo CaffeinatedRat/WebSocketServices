@@ -97,9 +97,6 @@ public class ApplicationLayer implements IApplicationLayer {
                     
                     //The plug-in name is appended to all other data.
                     response.getCollection().put("PluginName", pairs.getKey());
-                    
-                    //responseBuffer.append(MessageFormat.format("\"PluginName\":\"{0}\",", pairs.getKey()));
-                    //responseBuffer.append(response.data);
                 }
             }
 
@@ -108,10 +105,6 @@ public class ApplicationLayer implements IApplicationLayer {
         //The service is not available so send a NA status.
         else {
             Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
-            
-            //responseBuffer.append("{");
-            //responseBuffer.append("\"Status\":\"NOT AVAILABLE\"");
-            //responseBuffer.append("}");
             
             response.getCollection().put("Status", "NOT AVAILABLE");
         }

@@ -35,17 +35,30 @@ public class JsonHelper {
         
         StringBuilder jsonBuffer = new StringBuilder();
         
-        Integer depth = new Integer(0);
-        internalSerialization(collection, jsonBuffer, depth, 10);
+        //Integer depth = new Integer(0);
+        internalSerialization(collection, jsonBuffer, 0, 10);
         
         return jsonBuffer.toString();
     }
     
-    private static void internalSerialization(Hashtable<String, Object> collection, StringBuilder jsonBuffer, Integer depth, int maxDepth) {
+    /**
+     * Manages the JSON Serialization.
+     * @param collection A Hashtable that contains the name of the item that'll contain a value or another Hashtable.
+     * @param jsonBuffer The serialized JSON string data thus far.
+     * @param depth The current level of recursion.
+     * @param maxDepth The maximum recursive depth to prevent a stack overflow. 
+     * @return True if serialization was completed, while it is false if the depth exceeds the maxDepth.
+     */    
+    private static boolean internalSerialization(Hashtable<String, Object> collection, StringBuilder jsonBuffer, int depth, int maxDepth) {
         
+        // --- CR (2/7/13) --- We will now log when the maximum depth is exceeded in verbose mode.
         //Add a depth restriction to prevent overflow.
-        if (depth >= maxDepth)
-            return;
+        if (depth > maxDepth) {
+            
+            Logger.verboseDebug(MessageFormat.format("The maximum recursive depth has been reached. The collection {0} cannot be serialized.", collection.toString()));
+            
+            return false;
+        }
         
         jsonBuffer.append("{");
         
@@ -63,6 +76,7 @@ public class JsonHelper {
             if (element.getValue() instanceof Collection) {
                 
                 try {
+                    
                     Collection internalCollection = (Collection)element.getValue();
                     
                     jsonBuffer.append("[");
@@ -72,13 +86,26 @@ public class JsonHelper {
                         
                         if (object instanceof Hashtable){
                             
+                            /*
                             //Comma delimit multiple items.
                             if (j++ > 0) {
+                                
                                 jsonBuffer.append(",");
+                                
                             }
+                            */
 
+                            // --- CR (2/7/13) --- A flag has been added indicating whether the max depth has been reached.
+                            // If the maximum depth has been reached then we want to omit the delimiter for this instance.
                             Hashtable<String, Object> internalElement = (Hashtable<String, Object>)object;
-                            internalSerialization(internalElement, jsonBuffer, depth++, maxDepth);
+                            boolean completed = internalSerialization(internalElement, jsonBuffer, depth + 1, maxDepth);
+                            
+                            // --- CR (2/7/13) --- A comma delimiter will be added only if internal serialization was successful, did not exceed the max recursive depth, and if it is not the last item int he collection.
+                            if ( (completed) && (++j < internalCollection.size()) ) {
+                                
+                                jsonBuffer.append(",");
+                                
+                            }
                             
                         }
                     }
@@ -111,5 +138,7 @@ public class JsonHelper {
         //END OF for(Map.Entry<String, Object> element : collection.entrySet() ) {...
         
         jsonBuffer.append("}");
+        
+        return true;
     }
 }

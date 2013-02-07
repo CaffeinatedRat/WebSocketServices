@@ -13,8 +13,8 @@ websocket:
   checkOrigin: true
   #Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.
   whitelist: false
-  #Determines if the server is pingable via websockets.
-  pingable: true
+  #Determines if the server is pingable via websockets (This is reserved as a future feature as most browers do not support a websocket ping method).
+  pingable: false
 #Configuration for the commands (services) that are supported.
 services:
   who: true

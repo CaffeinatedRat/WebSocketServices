@@ -48,6 +48,11 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
         return getInt("websocket.maximumConnections", 32);
     }
     
+    public int getMaxDepth() {
+        int maxNesting = getInt("websocket.maximumJSONSerializationNesting", 10);
+        return (maxNesting > 10) ? 10 : maxNesting;
+    }
+    
     public boolean getIsWhiteListed() {
         return getBoolean("websocket.whitelist", false);
     }
