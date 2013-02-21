@@ -29,6 +29,7 @@ import java.net.SocketTimeoutException;
 import java.text.MessageFormat;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
@@ -213,8 +214,20 @@ public class Frame {
     public void setPayload(String payload) {
         
         if ( (payload != null) && (payload.length() > 0) ) {
-            this.payload = payload.getBytes();
-            this.payloadLength = payload.length();
+            
+            try {
+                
+                // --- CR (2/21/13) --- Force into UTF-8 and get the correct payload length.
+                this.payload = payload.getBytes("UTF-8");
+                //this.payloadLength = payload.length();
+                this.payloadLength = this.payload.length;
+                
+            }
+            catch(UnsupportedEncodingException exception) {
+                
+                Logger.verboseDebug(exception.getMessage());
+                
+            }
         }
         
     }

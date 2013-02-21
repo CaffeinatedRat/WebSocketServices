@@ -8,7 +8,7 @@ websocket:
   #Sets the number of milliseconds that the server will wait for a handshake to complete.
   handshakeTimeOutTolerance: 1000
   #Sets the number of milliseconds that the server will wait for a the next frame before terminating the connection.
-  frameTimeOutTolerance: 15000
+  frameTimeOutTolerance: 3000
   #Determines if the origin is valid during the handshake.  If the origin is null, it is invalid and the connection is rejected.
   checkOrigin: true
   #Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.

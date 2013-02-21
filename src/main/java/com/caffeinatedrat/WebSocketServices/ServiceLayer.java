@@ -119,6 +119,7 @@ public class ServiceLayer {
         Hashtable<String, Object> collection = response.getCollection();
         
         collection.put("name", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
+        collection.put("serverTypeName", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
         collection.put("serverName", this.minecraftServer.getServerName());
         collection.put("version", this.minecraftServer.getVersion());
         collection.put("bukkitVersion", this.minecraftServer.getBukkitVersion());
