@@ -1,42 +1,64 @@
 <!DOCTYPE html>
-<HTML>
-	<HEAD>
+<html>
+	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	
 		<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.9.0.custom.min.js"></script>
 		<script type="text/javascript" src="js/three.min.js"></script>
+		<script type="text/javascript" src="js/TrackballControls.js"></script>
+		<script type="text/javascript" src="js/websocketservices.min.js"></script>
+		<script type="text/javascript" src="js/profile.min.js"></script>
 		<script type="text/javascript" src="js/minecraft.js"></script>
-		<script type="text/javascript" src="js/profile.js"></script>
-		<link type="text/css" rel="stylesheet" href="css/smoothness/jquery-ui-1.9.0.custom.min.css"></link>
-		<link type="text/css" rel="stylesheet" href="css/minecraft.css"></link>		
+		<link type="text/css" rel="stylesheet" href="css/smoothness/jquery-ui-1.9.0.custom.min.css" />
+		<link type="text/css" rel="stylesheet" href="css/minecraft.css" />
 		<title>Your server name here</title>
-	</HEAD>
-	<BODY class="imgOffline">
+	</head>
+	<body class="imgOffline">
 		<div class="titlebar">
 			<div class="title">
-				<H1>
+				<h1>
 					Your server name here...
-				</H1>
+				</h1>
 			</div>
 			<div class="serverStatus">
-				<H1>
+				<h1>
 					<span id="serverStatus" class="offline">
 						Checking...
 					</span>
-				</H1>
+				</h1>
 			</div>
 		</div>
 		<div class="wrapper">
 			<div id="websocketNotSupported" style="display:none;">
-				Websockets are not supported by this browser.
+				<h2>
+					Websockets are not supported by this browser.
+				</h2>
+				<p>
+					Please try another browser.  The following browser's support WebSockets.
+				</p>
+				<ul>
+					<li>
+						Firefox 11+
+					</li>
+					<li>
+						Chrome 16+
+					</li>
+					<li>
+						Safari 6+
+					</li>
+					<li>
+						IE 10+
+					</li>
+				</ul>
 			</div>
-			<div id="offlineDiv">
-				<span>
-					<h2>
-					The server cannot be found. You must be lost and it looks like this is the end.
-					</h2>
-				</span>
+			<div id="offlineDiv" style="display:none;">
+				<h2>
+				The server cannot be found. You must be lost and it looks like this is the end.
+				</h2>
+				<p>
+				NOTE: The server may be down or is undergoing maintenance, please be patient.
+				</p>
 			</div>
 			<div id="websocketSupported" style="display:none;">
 				<div id="tabs">
@@ -52,59 +74,59 @@
 						<div class="container scrollContainer">
 							<div>
 								<strong>Minecraft Server Name:</strong>
-								<span id="minecraftServerName"></span>
+								<span class="wssMinecraftServerName"></span>
 							</div>
 							<div>
 								<strong>Name:</strong>
-								<span id="minecraftName"></span>
+								<span class="wssMinecraftServerType"></span>
 							</div>
 							<div>
 								<strong>IPAddress:</strong>
-								<span id="ipAddress"></span>
+								<span class="wssMinecraftIPAddress"></span>
 							</div>				
 							<div>
 								<strong>Port:</strong>
-								<span id="port"></span>
-							</div>			
+								<span class="wssMinecraftPort"></span>
+							</div>		
 							<div>
 								<strong>MOTD:</strong>
-								<span id="motd"></span>
+								<span class="wssMinecraftMOTD"></span>
 							</div>
 							<div>
 								<strong>Time: </strong>
-								<span id="time"></span>
+								<span class="wssMinecraftTime"></span>
 							</div>
 							<div>
 								<strong>Minecraft Version:</strong>
-								<span id="minecraftVersion"></span>
+								<span class="wssMinecraftVersion"></span>
 							</div>
 							<div>
 								<strong>Bukkit Version:</strong>
-								<span id="bukkitVersion"></span>
+								<span class="wssMinecraftBukkitVersion"></span>
 							</div>
 							<div>
 								<strong>World Type:</strong>
-								<span id="worldType"></span>
+								<span class="wssMinecraftWorldType"></span>
 							</div>
 							<div>
 								<strong>Game Mode:</strong>
-								<span id="gameMode"></span>
+								<span class="wssMinecraftGameMode"></span>
 							</div>
 							<div>
 								<strong>Is WhiteListed:</strong>
-								<span id="isWhiteListed"></span>
+								<span class="wssMinecraftIsWhiteListed"></span>
 							</div>
 							<div>
 								<strong>Allow Nether:</strong>
-								<span id="allowsNether"></span>
+								<span class="wssMinecraftAllowsNether"></span>
 							</div>
 							<div>
 								<strong>Allow End:</strong>
-								<span id="allowsEnd"></span>
+								<span class="wssMinecraftAllowsEnd"></span>
 							</div>
 							<div>
 								<strong>Allow Flight:</strong>
-								<span id="allowsFlight"></span>
+								<span class="wssMinecraftAllowsFlight"></span>
 							</div>
 						</div>
 					</div>
@@ -112,13 +134,49 @@
 						<div class="container">
 							<div>
 								<strong>Players online: </strong>
-								<span id="totalPlayersOnline"></span>
+								<span class="wssMinecraftTotalPlayersOnline"></span>
 								out of 
-								<span id="maxNumberOfPlayers"></span>
+								<span class="wssMinecraftMaxNumberOfPlayers"></span>
 							</div>
 							<div class="playerContainer scrollContainer">
-								<ul id="playerList">
-								</ul>
+								<div class="wssMinecraftPlayerList">
+									<ul class="wssListItemTemplate">
+										<li>
+											<div class="playerElement">
+												<div class="inline">
+													<div class="wssPlayerIsOperator">
+														<div title="Moderator" class="tiles modTile"></div>
+													</div>
+													<div class="wssPlayerIsNotOperator">
+														<div title="Player" class="tiles playerTile"></div>
+													</div>
+												</div>
+												<div class="inline">
+													#wssPlayerFace#
+												</div>
+												<div class="inline">
+													<a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
+														<strong>
+															#wssPlayerName#
+														</strong>
+													</a>
+												</div>
+												<div class="inline">
+													(#wssPlayerOnlineTime#)
+												</div>
+												<div class="inline" style="padding-left: 5px;">
+													<div title="#wssPlayerEnvironment#" class="tiles #wssPlayerEnvironment#Tile">
+													</div>
+												</div>
+											</div>
+										</li>
+									</ul>
+									<ul class="wssEmptyListTemplate">
+										<li>
+											No one is online.
+										</li>
+									</ul>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -126,11 +184,43 @@
 						<div class="container">
 							<div>
 								<strong>White-listed Players: </strong>
-								<span id="totalWhitelistedPlayers"></span>
+								<span class="wssTotalWhitelistedPlayers"></span>
 							</div>
 							<div class="playerContainer scrollContainer">
-								<ul id="whiteList">
-								</ul>
+								<div class="wssMinecraftWhiteList">
+									<ul class="wssListItemTemplate">
+										<li>
+											<div class="playerElement">
+												<div class="inline">
+													<div class="wssPlayerIsOperator">
+														<div title="Moderator" class="tiles modTile"></div>
+													</div>
+													<div class="wssPlayerIsNotOperator">
+														<div title="Player" class="tiles playerTile"></div>
+													</div>
+												</div>
+												<div class="inline">
+													#wssPlayerFace#
+												</div>
+												<div class="inline">
+													<a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
+														<strong>
+															#wssPlayerName#
+														</strong>
+													</a>
+												</div>
+												<div class="inline">
+													(#wssPlayerOnlineTime#)
+												</div>
+											</div>
+										</li>
+									</ul>
+									<ul class="wssEmptyListTemplate">
+										<li>
+											No one is white-list.
+										</li>
+									</ul>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -138,17 +228,80 @@
 						<div class="container">
 							<div>
 								<strong>Offline Players: </strong>
-								<span id="totalOfflinePlayers"></span>
+								<span id="wssTotalOfflinePlayers"></span>
 							</div>
 							<div class="playerContainer scrollContainer">
-								<ul id="offlinePlayers">
-								</ul>
+								<div class="wssMinecraftOfflineList">
+									<ul class="wssListItemTemplate">
+										<li>
+											<div class="playerElement">
+												<div class="inline">
+													<div class="wssPlayerIsOperator">
+														<div title="Moderator" class="tiles modTile"></div>
+													</div>
+													<div class="wssPlayerIsNotOperator">
+														<div title="Player" class="tiles playerTile"></div>
+													</div>
+												</div>
+												<div class="inline">
+													#wssPlayerFace#
+												</div>
+												<div class="inline">
+													<a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
+														<strong>
+															#wssPlayerName#
+														</strong>
+													</a>
+												</div>
+												<div class="inline">
+													(#wssPlayerOnlineTime#)
+												</div>
+											</div>
+										</li>
+									</ul>
+									<ul class="wssEmptyListTemplate">
+										<li>
+											No offline player info available.
+										</li>
+									</ul>
+								</div>
 							</div>
 						</div>
 					</div>					
 					<div id="tabs-5" class="tabContainer">
 						<div class="container scrollContainer">
-							<table id="pluginList">
+							<table class="wssPluginList">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Version</th>
+										<th>Author(s)</th>
+										<th>Descriptions</th>
+									</tr>
+								</thead>
+								<tbody class="wssListItemTemplate">
+									<tr>
+										<td>
+											#wssPluginName#
+										</td>
+										<td>
+											#wssPluginVersion#
+										</td>
+										<td>
+											#wssPluginAuthor#
+										</td>
+										<td>
+											#wssPluginDescription#
+										</td>
+									</tr>
+								</tbody>
+								<tbody class="wssEmptyListTemplate">
+									<tr>
+										<td colspan="4">
+											No plug-in info available.
+										</td>
+									</tr>
+								</tbody>
 							</table>
 						</div>
 					</div>
@@ -160,10 +313,12 @@
 			</div>
 		</div>
 		<div id="footer">
-			<p>
-				Site Design by <a href="http://www.caffeinatedrat.com">CaffeinatedRat</a>
-			</p>			
-			<p>
+			<div class="buffer">
+				<div class="inline">
+					Site Design by <a href="http://www.caffeinatedrat.com">CaffeinatedRat</a>
+				</div>
+			</div>
+			<div class="buffer">
 				<div class="inline">
 					Minecraft Copyright (c) 2012 
 				</div>
@@ -175,8 +330,8 @@
 						Mojang
 					</div>
 				</a>
-			</p>
-			<p>
+			</div>
+			<div class="buffer">
 				<div class="inline">Crown Image</div>
 				<div class="inline" style="vertical-align: top;">
 					<div title="Crown" class="tiles modTile"></div>
@@ -184,13 +339,52 @@
 				<div class="inline">
 					Copyright (c) 2012 <a href="http://painterlypack.net/">Painterly Pack</a>
 				</div>
-			</p>
+			</div>
 		</div>
 		
-		<!-- Skin viewer -->
-		<div id="skinProfile-modal" title="Profile">
+		<!-- Profile viewer -->
+		<div id="skinProfile-modal" title="Profile" style="display:none;">
+			<div class="elementOverlay">
+				<div>
+					<input id="toggleHelmet" type="checkbox" value="test" checked="checked"/>
+					<span>
+						<label for="toggleHelmet">
+							<strong>Show Helmet</strong>
+						</label>
+					</span>
+				</div>
+				<div>
+					<div class="inline" style="vertical-align: top;">
+						<div id="rotateTile" title="rotate" class="tiles rotateTile"></div>
+					</div>
+					<div class="inline">
+						<label for="rotateTile" title="rotate">
+							<strong>Left Button</strong>
+						</label>
+					</div>
+				</div>
+				<div>
+					<div class="inline" style="vertical-align: top;">
+						<div id="moveTile" title="move" class="tiles moveTile"></div>
+					</div>
+					<div class="inline">
+						<label for="moveTile" title="move">
+							<strong>Right Button</strong>
+						</label>
+					</div>
+				</div>
+				<div>
+					<div class="inline" style="vertical-align: top;">
+						<div id="zoomTile" title="zoom" class="tiles zoomTile"></div>
+					</div>
+					<div class="inline">
+						<label for="zoomTile" title="zoom">
+							<strong>Middle Button</strong>
+						</label>
+					</div>
+				</div>
+			</div>
 			<div id="skinWrapper"></div>
-		</div>		
-		
-	</BODY>
-</HTML>
+		</div>
+	</body>
+</html>

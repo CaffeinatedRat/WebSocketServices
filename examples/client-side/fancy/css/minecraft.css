@@ -19,6 +19,11 @@ div.inline
 	display:inline-block;
 }
 
+div.buffer
+{
+	margin: 15px 0px;
+}
+
 /*
 ------------------------------------
 Page Classes
@@ -197,6 +202,27 @@ Tile Classes
 	width: 16px;
 }
 
+.rotateTile
+{
+	background-position: 0px -48px;
+	height: 16px;
+	width: 16px;
+}
+
+.moveTile
+{
+	background-position: -32px -48px;
+	height: 16px;
+	width: 16px;
+}
+
+.zoomTile
+{
+	background-position: -16px -48px;
+	height: 16px;
+	width: 16px;
+}
+
 .imgPlayersFace
 {
 	background-position: -32px 0px;
@@ -221,6 +247,7 @@ Offline Classes
 #websocketNotSupported
 {
 	height: 520px;
+	text-align:left;
 }
 
 #offlineDiv
@@ -255,12 +282,12 @@ Player Classes
 Plugin Classes
 ------------------------------------
 */
-#pluginList, #pluginList td
+.wssPluginList, .wssPluginList td
 {
 	border: 1px solid black;
 }
 
-#pluginList th
+.wssPluginList th
 {
 	border: 1px solid black;
 	background-color: rgba(200, 200, 200, 1.0);
@@ -291,4 +318,31 @@ Profile Classes
 .profileBackground_theend
 {
 	background-image: url('../media/TheEnd.jpg')
+}
+
+.elementOverlay
+{
+	float:left;
+	position:absolute;
+}
+
+/*
+------------------------------------
+Demo specific Classes
+------------------------------------
+*/
+
+h1.welcome
+{
+	color: #fff;
+}
+
+.welcome
+{
+	font-size: 1.0em;
+	color: #000;
+}
+
+.port
+{
 }
