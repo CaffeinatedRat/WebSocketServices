@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
@@ -49,13 +50,15 @@ public class ServiceLayer {
     // ----------------------------------------------
     
     private org.bukkit.Server minecraftServer;
+    private WebSocketServicesConfiguration config;
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public ServiceLayer (org.bukkit.Server minecraftServer) {
+    public ServiceLayer (org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config) {
         this.minecraftServer = minecraftServer;
+        this.config = config;
     }
     
     // ----------------------------------------------
@@ -65,17 +68,18 @@ public class ServiceLayer {
     /**
      * Determine which text service to execute.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    public boolean executeText(String service, TextResponse response) {
+    public boolean executeText(String service, String arguments, TextResponse response) {
         
         try {
             
             if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
-                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), TextResponse.class);
+                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), String.class, TextResponse.class);
                 method.setAccessible(true);
-                return (Boolean)method.invoke(this, response);
+                return (Boolean)method.invoke(this, arguments, response);
             }
         }
         catch(Exception ex) {
@@ -107,10 +111,11 @@ public class ServiceLayer {
     
     /**
      * Provides information about the server.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */    
-    protected boolean info(TextResponse response) {
+    protected boolean info(String arguments, TextResponse response) {
 
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
@@ -139,10 +144,11 @@ public class ServiceLayer {
     
     /**
      * Provides a list of all available plug-ins.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */    
-    protected boolean plugins(TextResponse response) {
+    protected boolean plugins(String arguments, TextResponse response) {
         
         Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
 
@@ -196,10 +202,11 @@ public class ServiceLayer {
     
     /**
      * Provides a list of the players that are currently online and the maximum number of players allowed.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean who(TextResponse response) {
+    protected boolean who(String arguments, TextResponse response) {
         
         Player[] players = this.minecraftServer.getOnlinePlayers();
         
@@ -256,10 +263,11 @@ public class ServiceLayer {
     
     /**
      * Provides a list of all white-listed players.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean whitelist(TextResponse response) {
+    protected boolean whitelist(String arguments, TextResponse response) {
     	
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
@@ -304,10 +312,11 @@ public class ServiceLayer {
     
     /**
      * Provides a list of all offline players
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean offlineplayers(TextResponse response) {
+    protected boolean offlineplayers(String arguments, TextResponse response) {
     	
         OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
         
@@ -354,10 +363,11 @@ public class ServiceLayer {
     /**
      * The simplest and most light-weight service that simply responds with alive and the server time.
      * Currently the browsers do not support the websocket ping operation so this is the current substitute.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean ping(TextResponse response) {
+    protected boolean ping(String arguments, TextResponse response) {
         
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
@@ -365,18 +375,22 @@ public class ServiceLayer {
 
         Hashtable<String, Object> collection = response.getCollection();
         
+        String version = this.config.getPlugInfo().getDescription().getVersion();
+        
         collection.put("pong", "alive");
         collection.put("serverTime", world.getTime());
+        collection.put("wssVersion", version);
 
         return true;
     }
 
     /**
      * Performs a fragmentation test for a text response.
+     * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean fragmentationTest(TextResponse response) {
+    protected boolean fragmentationTest(String arguments, TextResponse response) {
 
         Hashtable<String, Object> collection = response.getCollection();
         
