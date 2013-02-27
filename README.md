@@ -45,6 +45,12 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.1.5
+
+* Added additional configuration validation checks.
+* Added the WebSocketService version number to the ping service.
+* Added the framework for the support of service arguments.
+
 #### 1.1.4
 
 * Fixed an issue with WebSocketService plug-in not handling Unicode characters correctly. All frames will now be forced into UTF-8.
