@@ -147,8 +147,8 @@ $(document).ready(function () {
 			$('#skinWrapper').addClass('profileBackground_' + $(this).data('environment'));
 
 			profile = new CaffeinatedRat.Minecraft.Profile({
-				ctrl: $('#skinWrapper'),
-				image: wss.getImage(playersName),
+				container: $('#skinWrapper'),
+				skinImage: wss.getImage(playersName),
 				useWebGL: false,
 				scale: 200
 			});
