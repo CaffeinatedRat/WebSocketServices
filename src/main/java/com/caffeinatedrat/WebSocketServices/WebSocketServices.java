@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
-import com.caffeinatedrat.WebSocketServices.Test.TestServer;
+//import com.caffeinatedrat.WebSocketServices.Test.TestServer;
 
 /**
  * The bukkit entry point for the WebSocketServices.
@@ -57,7 +57,7 @@ public class WebSocketServices extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-    	
+        
         saveDefaultConfig();
         
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
@@ -108,6 +108,6 @@ public class WebSocketServices extends JavaPlugin {
      */
     public static void main(String[] args) {
 
-        TestServer.start();
+        //TestServer.start();
     }
 }
