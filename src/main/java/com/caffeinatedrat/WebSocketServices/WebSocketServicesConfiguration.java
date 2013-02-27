@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,6 +27,7 @@ package com.caffeinatedrat.WebSocketServices;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -37,48 +38,160 @@ import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 public class WebSocketServicesConfiguration extends YamlConfiguration {
 
     // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    
+    private JavaPlugin pluginInfo;
+    
+    // ----------------------------------------------
     // Properties
     // ----------------------------------------------
     
-    public int getPortNumber() {
-        return getInt("websocket.portNumber", 25564);
+    /**
+     * Returns this plug-in's information.
+     * @return This plug-in's information.
+     */
+    public JavaPlugin getPlugInfo() {
+        
+        return this.pluginInfo;
+        
     }
     
+    /**
+     * Safely returns the port number.
+     * @return Safely returns the port number.
+     */
+    public int getPortNumber() {
+        
+        int portNumber = getInt("websocket.portNumber", 25564);
+        
+        //Validate the port number.
+        if (portNumber < 0 || portNumber > 65535) {
+        
+            Logger.warning(MessageFormat.format("The port number {0} is invalid, defaulting to port 25564.", portNumber));
+            return 25564;
+            
+        }
+        
+        return portNumber;
+        
+    }
+    
+    /**
+     * Safely returns the maximum number of connections.
+     * @return Safely returns the maximum number of connections.
+     */
     public int getMaximumConnections() {
-        return getInt("websocket.maximumConnections", 32);
+        
+        int maxConnections = getInt("websocket.maximumConnections", 32);
+        
+        //Validate
+        if (maxConnections < 0) {
+        
+            Logger.warning(MessageFormat.format("The maximum number of connections {0} is invalid, defaulting to 32.", maxConnections));
+            return 32;
+            
+        }
+        
+        return maxConnections;
     }
     
     public int getMaxDepth() {
         int maxNesting = getInt("websocket.maximumJSONSerializationNesting", 10);
         return (maxNesting > 10) ? 10 : maxNesting;
     }
-    
+
+    /**
+     * Determines if the WebSocketServices plug-in is white-listed.
+     * @return true if the WebSocketServices server is white-listed.
+     */
     public boolean getIsWhiteListed() {
+        
         return getBoolean("websocket.whitelist", false);
+
     }
     
+    /**
+     * Safely returns the logging level.
+     * @return safely returns the logging level.
+     */
     public int getDebugLevel() {
-        return getInt("websocket.logging", 0);
+        int logLevel = getInt("websocket.logging", 0);
+        
+        //Validate
+        if ( (logLevel < 0) || (logLevel > 2) ) {
+        
+            Logger.warning(MessageFormat.format("The log level {0} is invalid, defaulting to 0.", logLevel));
+            return 0;
+            
+        }
+        
+        return logLevel;
+        
     }
 
+    /**
+     * Safely returns the handshake timeout in milliseconds.
+     * @return safely returns the handshake timeout in milliseconds.
+     */
     public int getHandshakeTimeOut() {
-        return getInt("websocket.handshakeTimeOutTolerance", 1000);
+        
+        int timeout = getInt("websocket.handshakeTimeOutTolerance", 1000);
+        
+        //Validate
+        if (timeout < 0) {
+        
+            Logger.warning(MessageFormat.format("The handshake timeout tolerance {0} is invalid, defaulting to 1000.", timeout));
+            return 1000;
+            
+        }
+        
+        return timeout;
+        
     }
     
+    /**
+     * Safely returns the frame timeout in milliseconds.
+     * @return safely returns the frame timeout in milliseconds.
+     */
     public int getFrameTimeOutTolerance() {
-        return getInt("websocket.frameTimeOutTolerance", 15000); 
+        
+        int timeout = getInt("websocket.frameTimeOutTolerance", 3000);
+        
+        //Validate
+        if (timeout < 0) {
+        
+            Logger.warning(MessageFormat.format("The frame timeout tolerance {0} is invalid, defaulting to 3000.", timeout));
+            return 3000;
+            
+        }
+        
+        return timeout;
+        
     }
 
+    /**
+     * Determines if the origin is checked when establishing a connection.
+     * @return true if the origin is checked when establishing a connection.
+     */
     public boolean getCheckOrigin() {
         return getBoolean("websocket.checkOrigin", false);
     }
     
+    /**
+     * Determines if the WebSocketServices server is pingable.
+     * @return true if the WebSocketServices server is pingable.
+     */
     public boolean getIsPingable() {
         return getBoolean("websocket.pingable", true);
     }
     
+    /**
+     * Determines if a specified service is enabled.
+     * @param the name of the service.
+     * @return true if the service is enabled.
+     */    
     public boolean isServiceEnabled(String service) {
-        
         
         return getBoolean("services." + service.toLowerCase(), false);
         
@@ -90,6 +203,8 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     
     public WebSocketServicesConfiguration(JavaPlugin plugin) {
         super();
+        
+        this.pluginInfo = plugin;
         
         try {
             load(new File(plugin.getDataFolder(), "config.yml"));

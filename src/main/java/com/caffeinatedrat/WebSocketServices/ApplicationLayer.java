@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat@gmail.com>
+* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
@@ -56,10 +58,10 @@ public class ApplicationLayer implements IApplicationLayer {
     // Constructors
     // ----------------------------------------------
     
-    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config,  Map<String, IApplicationLayer> applicationLayers) {
+    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config, Map<String, IApplicationLayer> applicationLayers) {
         this.minecraftServer = minecraftServer;
         this.config = config;
-        this.serviceLayer = new ServiceLayer(this.minecraftServer);
+        this.serviceLayer = new ServiceLayer(this.minecraftServer, config);
         this.registeredApplicationLayers = applicationLayers;
     }
     
@@ -68,16 +70,23 @@ public class ApplicationLayer implements IApplicationLayer {
     // ----------------------------------------------
     
     public void onTextFrame(String text, TextResponse response) {
-        
-        //TODO: Extract into a json formatter.
-        //StringBuilder responseBuffer = new StringBuilder();
+
+        String[] tokens = text.split(" ", 2);
+        String serviceName = tokens[0];
+        String arguments = null;
+
+        if (tokens.length > 1) {
+
+            arguments = tokens[1];
+            
+        }
         
         //Determine if the service is available and if it is then generate a response.
-        if(config.isServiceEnabled(text)) {
+        if(config.isServiceEnabled(serviceName)) {
             //responseBuffer.append("{");
             
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-            if(serviceLayer.executeText(text, response)) {
+            if(serviceLayer.executeText(serviceName, arguments, response)) {
                 
                 //responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\":\"SUCCESSFUL\"");
                 response.getCollection().put("Status", "SUCCESSFUL");
