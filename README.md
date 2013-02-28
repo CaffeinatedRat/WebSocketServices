@@ -6,9 +6,9 @@ This implementation of websockets is designed to be light-weight and simple, red
 Clients that support websockets will have the ability to perform simple informational queries, such as who is online, what version the server is running on, etc.
 All text base results will be returned in a simple JSON format for consistency.
 
-Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
-Bukkit: [http://dev.bukkit.org/server-mods/websocketservices/]
-Bugs/Suggestions: CaffeinatedRat@gmail.com
+* Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
+* Bukkit: [http://dev.bukkit.org/server-mods/websocketservices/] (http://dev.bukkit.org/server-mods/websocketservices/)
+* Bugs/Suggestions: CaffeinatedRat@gmail.com
 
 Compilation
 -----------
