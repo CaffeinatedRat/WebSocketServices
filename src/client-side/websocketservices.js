@@ -22,6 +22,13 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+* -----------------------------------------------------------------
+* Required Libraries:
+* 1) Jquery.js
+* -----------------------------------------------------------------
+*/
+
 //-----------------------------------------------------------------
 // Namespace
 //-----------------------------------------------------------------
@@ -37,7 +44,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
 	// Versioning
 	//-----------------------------------------------------------------
 	CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.5';
-	CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '1';
+	CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '2';
 
 	console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
 
@@ -351,7 +358,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 		img.onerror = function () {
 
 			//this.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAAHxALIxcJJBgIJBgKJhgLJhoKJxsLJhoMKBsKKBsLKBoNKBwLKRwMKh0NKx4NKx4OLR0OLB4OLx8PLB4RLyANLSAQLyIRMiMQMyQRNCUSOigUPyoVKCgoPz8/JiFbMChyAFtbAGBgAGhoAH9/Qh0KQSEMRSIOQioSUigmUTElYkMvbUMqb0UsakAwdUcvdEgvek4za2trOjGJUj2JRjqlVknMAJmZAJ6eAKioAK+vAMzMikw9gFM0hFIxhlM0gVM5g1U7h1U7h1g6ilk7iFo5j14+kF5Dll9All9BmmNEnGNFnGNGmmRKnGdIn2hJnGlMnWpPlm9bnHJcompHrHZaqn1ms3titXtnrYBttIRttolsvohst4Jyu4lyvYtyvY5yvY50xpaA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPSUN6AAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My4zNqnn4iUAAAKjSURBVEhLpZSLVtNAEIYLpSlLSUITLCBaGhNBQRM01M2mSCoXNUURIkZFxQvv/wz6724Wij2HCM7J6UyS/b+dmZ208rsww6jiqo4FhannZb5yDqjaNgDVwE/8JAmCMqF6fwGwbU0CKjD/+oAq9jcM27gxAFpNQxU3Bwi9Ajy8fgmGZuvaGAcIuwFA12CGce1jJESr6/Ot1i3Tnq5qptFqzet1jRA1F2XHWQFAs3RzwTTNhQd3rOkFU7c0DijmohRg1TR9ZmpCN7/8+PX954fb+sTUjK7VLKOYi1IAaTQtUrfm8pP88/vTw8M5q06sZoOouSgHEDI5vrO/eHK28el04yxf3N8ZnyQooZiLfwA0arNb6d6bj998/+vx8710a7bW4E2Uc1EKsEhz7WiQBK9eL29urrzsB8ngaK1JLDUXpYAkGSQH6e7640fL91dWXjxZ33138PZggA+Sz0WQlAL4gmewuzC1uCenqXevMPWc9XrMX/VXh6Hicx4ByHEeAfRg/wtgSMAvz+CKEkYAnc5SpwuD4z70PM+hUf+4348ixF7EGItjxmQcCx/Dzv/SOkuXAF3PdT3GIujjGLELNYwxhF7M4oi//wsgdlYZdMXCmEUUSsSu0OOBACMoBTiu62BdRPEjYxozXFyIpK7IAE0IYa7jOBRqGlOK0BFq3Kdpup3DthFwP9QDlBCGKEECoHEBEDLAXHAQMQnI8jwFYRQw3AMOQAJoOADoAVcDAh0HZAKQZUMZdC43kdeqAPwUBEsC+M4cIEq5KEEBCl90mR8CVR3nxwCdBBS9OAe020UGnXb7KcxzPY9SXoEEIBZtgE7UDgBKyLMhgBS2YdzjMJb4XHRDAPiQhSGjNOxKQIZTgC8BiMECgarxprjjO0OXiV4MAf4A/x0nbcyiS5EAAAAASUVORK5CYII="
-			this.src = this._defaultSkin;
+			this.src = that._defaultSkin;
 
 			//Cache the images so we don't attempt to pull again...although the browser should be handling this.
 			that._images[playersName] = this;
@@ -616,18 +623,18 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getServerInfo = function (p
 
 			}
 
+			try {
+
 			var json = jQuery.parseJSON(msg.data);
 
+			//Perform callback.
+			if (that._serverInfoCallback) {
+
+				that._serverInfoCallback(json);
+
+			}
+
 			if (json.Status == "SUCCESSFUL") {
-
-				try {
-
-					//Perform callback.
-					if (that._serverInfoCallback) {
-
-						that._serverInfoCallback(json);
-
-					}
 
 					$(".wssMinecraftServerName").text(json.serverName);
 
@@ -646,13 +653,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getServerInfo = function (p
 					$('.wssMinecraftTime').text((json.serverTime % 23000 >= 13000) ? "Night" : "Day");
 
 				}
-				catch (err) {
+				//END OF if(json.Status == "SUCCESSFUL") {...
 
-					console.log(err);
-
-				}
 			}
-			//END OF if(json.Status == "SUCCESSFUL") {...
+			catch (err) {
+
+				console.log(err);
+
+			}
 
 		}
 		//END OF if(msg !== undefined) {...
@@ -705,14 +713,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
 
 				var json = jQuery.parseJSON(msg.data);
 
-				if (json.Status == "SUCCESSFUL") {
+				//Perform callback.
+				if (that._playerInfoCallback) {
 
-					//Perform callback.
-					if (that._playerInfoCallback) {
+					that._playerInfoCallback(json);
 
-						that._playerInfoCallback(json);
+				}
 
-					}
+				if (json.Status === "SUCCESSFUL") {
 
 					$('.wssMinecraftMaxNumberOfPlayers').text(json.MaxPlayers);
 					$('.wssMinecraftTotalPlayersOnline').text(json.Players.length);
@@ -730,10 +738,10 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
 
 					that.mapToTemplate(that._templateWho, itemList, json.Players, 'playerInfoMapping');
 
+					$('.wssMinecraftPlayerList').show();
+
 				}
 				//END OF if(json.Status == "SUCCESSFUL") {...
-
-				$('.wssMinecraftPlayerList').show();
 
 			}
 			catch (exception) {
@@ -794,14 +802,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getWhiteListing = function 
 
 				var json = jQuery.parseJSON(msg.data);
 
+				//Perform callback.
+				if (that._whiteListInfoCallback) {
+
+					that._whiteListInfoCallback(json);
+
+				}
+
 				if (json.Status == "SUCCESSFUL") {
-
-					//Perform callback.
-					if (that._whiteListInfoCallback) {
-
-						that._whiteListInfoCallback(json);
-
-					}
 
 					$('.wssTotalWhitelistedPlayers').text(json.Whitelist.length);
 
@@ -818,10 +826,9 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getWhiteListing = function 
 
 					that.mapToTemplate(that._templateWhiteList, itemList, json.Whitelist, 'playerInfoMapping');
 
+					$('.wssMinecraftWhiteList').show();
 				}
 				//END OF if(json.Status == "SUCCESSFUL") {...
-
-				$('.wssMinecraftWhiteList').show();
 
 			}
 			catch (exception) {
@@ -876,14 +883,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getOfflinePlayers = functio
 
 				var json = jQuery.parseJSON(msg.data);
 
+				//Perform callback.
+				if (that._offlineInfoCallback) {
+
+					that._offlineInfoCallback(json);
+
+				}
+
 				if (json.Status == "SUCCESSFUL") {
-
-					//Perform callback.
-					if (that._offlineInfoCallback) {
-
-						that._offlineInfoCallback(json);
-
-					}
 
 					$('#wssTotalOfflinePlayers').text(json.OfflinePlayers.length);
 
@@ -900,10 +907,10 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getOfflinePlayers = functio
 
 					that.mapToTemplate(that._templateOfflinePlayerList, itemList, json.OfflinePlayers, 'playerInfoMapping');
 
+					$('.wssMinecraftOfflineList').show();
+
 				}
 				//END OF if(json.Status == "SUCCESSFUL") {...
-
-				$('.wssMinecraftOfflineList').show();
 
 			}
 			catch (exception) {
@@ -958,14 +965,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
 				var json = jQuery.parseJSON(msg.data);
 
+				//Perform callback.
+				if (that._pluginInfoCallback) {
+
+					that._pluginInfoCallback(json);
+
+				}
+
 				if (json.Status == "SUCCESSFUL") {
-
-					//Perform callback.
-					if (that._pluginInfoCallback) {
-
-						that._pluginInfoCallback(json);
-
-					}
 
 					var itemList = $('.wssPluginList');
 					if (itemList.length > 0) {
@@ -980,10 +987,10 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
 					that.mapToTemplate(that._templatePluginList, itemList, json.Plugins, 'pluginInfoMapping');
 
+					$('.wssMinecraftPluginList').show();
+
 				}
 				//END OF if(json.Status == "SUCCESSFUL") {...
-
-				$('.wssMinecraftPluginList').show();
 
 			}
 			catch (exception) {
