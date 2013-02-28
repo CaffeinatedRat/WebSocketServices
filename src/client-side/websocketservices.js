@@ -331,6 +331,9 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 		//Get the player's skin...if only we could get the case-sensitive name so we can pull the skins for players that do not have a completely lowercase name.
 		var img = new Image();
 
+		// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
+		img.crossOrigin = '';
+
 		img.setAttribute("data-canvasId", id);
 		img.onload = function () {
 
