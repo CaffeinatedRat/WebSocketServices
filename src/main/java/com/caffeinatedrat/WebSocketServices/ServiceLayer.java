@@ -39,6 +39,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
+import com.caffeinatedrat.SimpleWebSockets.ResponseWrapper;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -68,18 +69,34 @@ public class ServiceLayer {
      * Determine which text service to execute.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
      * @param arguments Any arguments included with the service.
-     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @param responseWrapper The response to the client.
      * @return True if the service was successfully executed.
      */
-    public boolean executeText(String service, String arguments, TextResponse response) {
+    public boolean executeText(String service, String arguments, ResponseWrapper responseWrapper) {
         
         try {
-            
-            if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
-                Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), String.class, TextResponse.class);
-                method.setAccessible(true);
-                return (Boolean)method.invoke(this, arguments, response);
+
+            //Handle special conditions for the testing services.
+            if(service.equalsIgnoreCase("fragmentationtest")) {
+                
+                return fragmentationtest(arguments, responseWrapper);
+                
             }
+            else
+            {
+                
+                responseWrapper.response = new TextResponse();
+                
+                if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
+                    
+                    Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), String.class, TextResponse.class);
+                    method.setAccessible(true);
+                    return (Boolean)method.invoke(this, arguments, responseWrapper.response);
+                    
+                }
+                
+            }
+            //END OF if(service.equalsIgnoreCase("fragmentationtest")) {...
         }
         catch(Exception ex) {
             Logger.verboseDebug(ex.getMessage());
@@ -91,16 +108,24 @@ public class ServiceLayer {
     /**
      * Determine which binary service to execute.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
-     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @param responseWrapper The response to the client.
      * @return True if the service was successfully executed.
      */    
-    public boolean executeBinary(byte[] data, BinaryResponse response) {
+    public boolean executeBinary(byte[] data, ResponseWrapper responseWrapper) {
 
-        if(data.length > 0) {
-            byte controlByte = data[0];
-            if(controlByte == 0x01) {
-                return binaryFragmentationTest(data, response);
+        try {
+        
+            responseWrapper.response = new BinaryResponse();
+            
+            if(data.length > 0) {
+                byte controlByte = data[0];
+                if(controlByte == 0x01) {
+                    return binaryfragmentationtest(data, (BinaryResponse)responseWrapper.response);
+                }
             }
+        }
+        catch(Exception ex) {
+            Logger.verboseDebug(ex.getMessage());
         }
 
         return false;
@@ -389,31 +414,61 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean fragmentationTest(String arguments, TextResponse response) {
-
-        Hashtable<String, Object> collection = response.getCollection();
+    protected boolean fragmentationtest(String arguments, ResponseWrapper responseWrapper) {
         
-        StringBuilder fragmentationData = new StringBuilder();
+        if (arguments.equalsIgnoreCase("binary")) {
         
-        //responseBuffer.append("\"Response\": \"");
-
-        for(long i = 0; i < 70000; i++) {
-            fragmentationData.append(String.valueOf(i % 10));
+            responseWrapper.response = new BinaryResponse();
+            
+            byte[] newData = new byte[65535];
+            for (int i = 0; i < 65535; i++) {
+                
+                newData[i] = (byte) (i % 10);
+                
+            }
+            
+            ((BinaryResponse)responseWrapper.response).enqueue(newData);
+            
+            //Test fragementation
+            newData = new byte[10];
+            for (int i = 0; i < 10; i++) {
+                
+                newData[i] = (byte) (i % 10);
+                
+            }
+            
+            ((BinaryResponse)responseWrapper.response).enqueue(newData);
         }
-
-        fragmentationData.append("--end\"");
+        //Handle all other conditions as text.
+        else {
         
-        collection.put("Response", fragmentationData.toString());
+            responseWrapper.response = new TextResponse();
+            
+            Hashtable<String, Object> collection = ((TextResponse)responseWrapper.response).getCollection();
+            
+            StringBuilder fragmentationData = new StringBuilder();
+    
+            for(long i = 0; i < 70000; i++) {
+                
+                fragmentationData.append(String.valueOf(i % 10));
+                
+            }
+    
+            fragmentationData.append("--end");
+            
+            collection.put("Response", fragmentationData.toString());
+            
+        }
 
         return true;
     }
 
     /**
      * Performs a fragmentation test for a binary response.
-     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @param response A binary response
      * @return True if the service was successfully executed.
      */    
-    protected boolean binaryFragmentationTest(byte[] data, BinaryResponse response) {
+    protected boolean binaryfragmentationtest(byte[] data, BinaryResponse response) {
         if (data.length > 1) {
             for (int i = 1; i < 4; i++) {
                 byte[] newData = new byte[data.length - 1];

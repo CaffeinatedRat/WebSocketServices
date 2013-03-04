@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
+import com.caffeinatedrat.SimpleWebSockets.ResponseWrapper;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -67,8 +67,11 @@ public class ApplicationLayer implements IApplicationLayer {
     // Methods
     // ----------------------------------------------
     
-    public void onTextFrame(String text, TextResponse response) {
+    public void onTextFrame(String text, ResponseWrapper responseWrapper) {
 
+        responseWrapper.response = new TextResponse();
+        
+        // --- CR (3/3/13) --- Prepare for handling arguments for text services.
         String[] tokens = text.split(" ", 2);
         String serviceName = tokens[0];
         String arguments = null;
@@ -81,13 +84,15 @@ public class ApplicationLayer implements IApplicationLayer {
         
         //Determine if the service is available and if it is then generate a response.
         if(config.isServiceEnabled(serviceName)) {
-            //responseBuffer.append("{");
             
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-            if(serviceLayer.executeText(serviceName, arguments, response)) {
+            if(serviceLayer.executeText(serviceName, arguments, responseWrapper)) {
                 
-                //responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\":\"SUCCESSFUL\"");
-                response.getCollection().put("Status", "SUCCESSFUL");
+                if (responseWrapper.response instanceof TextResponse) {
+                
+                    ((TextResponse)responseWrapper.response).getCollection().put("Status", "SUCCESSFUL");
+                    
+                }
                 
             }
             else {
@@ -100,39 +105,39 @@ public class ApplicationLayer implements IApplicationLayer {
                 while (iterator.hasNext()) {
                     
                     Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
-                    ((IApplicationLayer)pairs.getValue()).onTextFrame(text, response);
+                    ((IApplicationLayer)pairs.getValue()).onTextFrame(text, responseWrapper);
                     
                     //The plug-in name is appended to all other data.
-                    response.getCollection().put("PluginName", pairs.getKey());
+                    if (responseWrapper.response instanceof TextResponse) {
+                        
+                        ((TextResponse)responseWrapper.response).getCollection().put("PluginName", pairs.getKey());
+                        
+                    }
                 }
             }
-
-            //responseBuffer.append("}");
         }
         //The service is not available so send a NA status.
         else {
             Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
             
-            response.getCollection().put("Status", "NOT AVAILABLE");
+            ((TextResponse)responseWrapper.response).getCollection().put("Status", "NOT AVAILABLE");
         }
-        
-        //response.data = responseBuffer.toString();
     }
 
-    public void onBinaryFrame(byte[] data, BinaryResponse response) {
+    public void onBinaryFrame(byte[] data, ResponseWrapper responseWrapper) {
 
         //This is temporary until some standard is created...
         if (config.isServiceEnabled("binaryfragmentationtest")) {
             
             //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-            if(!serviceLayer.executeBinary(data, response)) {
+            if(!serviceLayer.executeBinary(data, responseWrapper)) {
                 
                 //Adds an O(n) operation.
                 Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
                 while (iterator.hasNext()) {
                     
                     Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
-                    ((IApplicationLayer)pairs.getValue()).onBinaryFrame(data, response);
+                    ((IApplicationLayer)pairs.getValue()).onBinaryFrame(data, responseWrapper);
                 }
                 //END OF while (iterator.hasNext()) {...
             }

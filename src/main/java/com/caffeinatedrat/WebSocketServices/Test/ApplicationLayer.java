@@ -1,11 +1,7 @@
 package com.caffeinatedrat.WebSocketServices.Test;
 
-import java.text.MessageFormat;
-import java.util.Calendar;
-
-import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
-import com.caffeinatedrat.SimpleWebSockets.TextResponse;
+import com.caffeinatedrat.SimpleWebSockets.ResponseWrapper;
 
 public class ApplicationLayer implements IApplicationLayer {
 
@@ -21,7 +17,7 @@ public class ApplicationLayer implements IApplicationLayer {
     // Methods
     // ----------------------------------------------
         
-    public void onTextFrame(String text, TextResponse response) {
+    public void onTextFrame(String text, ResponseWrapper response) {
 //        if(text.equalsIgnoreCase("WHO"))
 //        {
 //            int maxPlayers = 10;
@@ -59,7 +55,7 @@ public class ApplicationLayer implements IApplicationLayer {
 //        }
     }
 
-    public void onBinaryFrame(byte[] data, BinaryResponse response) {
+    public void onBinaryFrame(byte[] data, ResponseWrapper response) {
         // TODO Auto-generated method stub
 
     }

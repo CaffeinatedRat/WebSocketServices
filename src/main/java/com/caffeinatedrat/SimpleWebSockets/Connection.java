@@ -120,35 +120,56 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    TextResponse response = new TextResponse();
-                                    applicationLayer.onTextFrame(text, response);
+                                    ResponseWrapper wrapper = new ResponseWrapper();
+                                    applicationLayer.onTextFrame(text, wrapper);
 
-                                    String fragment = response.toString();
-                                    Boolean firstFrame = true;
-
-                                    //Fragment the frame if the response is too large.
-                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                    while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
-
-                                        Frame responseFrame = new Frame(this.socket);
-                                        responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
-                                        responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
-                                        responseFrame.Write();
-                                        
-                                        fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
-                                        
-                                        //No longer the first frame.
-                                        firstFrame = false;
-                                    }
-
-                                    //Send the final frame.
-                                    Frame responseFrame = new Frame(this.socket);
-                                    responseFrame.setFinalFragment();
-                                    responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
-                                    responseFrame.setPayload(fragment);
-                                    responseFrame.Write();
+                                    if ( wrapper.response != null) {
                                     
-                                    continueListening = !response.closeConnection;
+                                        if (wrapper.response instanceof TextResponse){
+
+                                            HandleTextResponse(wrapper.response.toString());
+
+                                            /*Boolean firstFrame = true;
+    
+                                            //Fragment the frame if the response is too large.
+                                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+                                            while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
+    
+                                                Frame responseFrame = new Frame(this.socket);
+                                                responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+                                                responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
+                                                responseFrame.Write();
+                                                
+                                                fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
+                                                
+                                                //No longer the first frame.
+                                                firstFrame = false;
+                                            }
+    
+                                            //Send the final frame.
+                                            Frame responseFrame = new Frame(this.socket);
+                                            responseFrame.setFinalFragment();
+                                            responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+                                            responseFrame.setPayload(fragment);
+                                            responseFrame.Write();*/
+
+                                        }
+                                        else if (wrapper.response instanceof BinaryResponse) {
+
+                                            HandleBinaryResponse((BinaryResponse)wrapper.response);
+
+                                        }
+
+                                        continueListening = !wrapper.response.closeConnection;
+
+                                    }
+                                    else {
+                                        
+                                        //If the response object is invalid then terminate the connection.
+                                        continueListening = false;
+                                        
+                                    }
+                                    //END OF if ( wrapper.response != null) {...
                                 }
                                 // END OF if(applicationLayer != null)...
                             }
@@ -161,37 +182,59 @@ public class Connection extends Thread {
                                 
                                 if (applicationLayer != null) {
                                     
-                                    BinaryResponse response = new BinaryResponse();
-                                    applicationLayer.onBinaryFrame(data, response);
+                                    ResponseWrapper wrapper = new ResponseWrapper();
+                                    //BinaryResponse response = new BinaryResponse();
+                                    applicationLayer.onBinaryFrame(data, wrapper);
                                     
-                                    //Keep track of our first frame.
-                                    Boolean firstFrame = true;
-                                    
-                                    //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
-                                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                    while (!response.isEmpty()) {
-                                        
-                                        Frame responseFrame = new Frame(this.socket);
-                                        
-                                        if (firstFrame) {
-                                            responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
-                                            firstFrame = false;
+                                    if (wrapper.response != null) {
+
+                                        if (wrapper.response instanceof TextResponse){
+                                            
+                                            HandleTextResponse(wrapper.response.toString());
+                                            
                                         }
-                                        else {
-                                            responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+                                        else if (wrapper.response instanceof BinaryResponse) {
+                                            
+                                            HandleBinaryResponse((BinaryResponse)wrapper.response);
+                                            
                                         }
-                                        //Set the final fragment.
-                                        if (response.size() == 1) {
-                                            responseFrame.setFinalFragment();
-                                        }
+                                        /*//Keep track of our first frame.
+                                        Boolean firstFrame = true;
                                         
-                                        responseFrame.setPayload(response.dequeue());
-                                        responseFrame.Write();
+                                        //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
+                                        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+                                        while (!response.isEmpty()) {
+                                            
+                                            Frame responseFrame = new Frame(this.socket);
+                                            
+                                            if (firstFrame) {
+                                                responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
+                                                firstFrame = false;
+                                            }
+                                            else {
+                                                responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+                                            }
+                                            //Set the final fragment.
+                                            if (response.size() == 1) {
+                                                responseFrame.setFinalFragment();
+                                            }
+                                            
+                                            responseFrame.setPayload(response.dequeue());
+                                            responseFrame.Write();
+                                            
+                                        }
+                                        //END OF while(!response.isEmpty()) {...
+*/                                      
+                                        
+                                        
+                                        continueListening = !wrapper.response.closeConnection;
+                                    }
+                                    else {
+                                        
+                                        //If the response object is invalid then terminate the connection.
+                                        continueListening = false;
                                         
                                     }
-                                    //END OF while(!response.isEmpty()) {...
-                                    
-                                    continueListening = !response.closeConnection;
                                 }
                                 // END OF if (applicationLayer != null) {...
                             }
@@ -301,8 +344,7 @@ public class Connection extends Thread {
     /**
      * Close the connection.
      */    
-    public void close()
-    {
+    public void close() {
         try {
             if (this.socket != null) {
                 this.socket.close();
@@ -311,5 +353,64 @@ public class Connection extends Thread {
         catch(IOException io) {
             //Do nothing...
         }
+    }
+    
+    private void HandleBinaryResponse(BinaryResponse response) throws InvalidFrameException {
+
+        //Keep track of our first frame.
+        Boolean firstFrame = true;
+        
+        //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
+        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+        while (!response.isEmpty()) {
+            
+            Frame responseFrame = new Frame(this.socket);
+            
+            if (firstFrame) {
+                responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
+                firstFrame = false;
+            }
+            else {
+                responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+            }
+            //Set the final fragment.
+            if (response.size() == 1) {
+                responseFrame.setFinalFragment();
+            }
+            
+            responseFrame.setPayload(response.dequeue());
+            responseFrame.Write();
+            
+        }
+        //END OF while(!response.isEmpty()) {...
+
+    }
+    
+    private void HandleTextResponse(String fragment) throws InvalidFrameException {
+    
+        Boolean firstFrame = true;
+
+        //Fragment the frame if the response is too large.
+        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
+        while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
+
+            Frame responseFrame = new Frame(this.socket);
+            responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+            responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
+            responseFrame.Write();
+            
+            fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
+            
+            //No longer the first frame.
+            firstFrame = false;
+        }
+
+        //Send the final frame.
+        Frame responseFrame = new Frame(this.socket);
+        responseFrame.setFinalFragment();
+        responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+        responseFrame.setPayload(fragment);
+        responseFrame.Write();
+        
     }
 }

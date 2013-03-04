@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -25,17 +25,13 @@
 package com.caffeinatedrat.SimpleWebSockets;
 
 /**
- * An interface for the application layer.
+ * A response wrapper so the user can determine which response type to respond with.
  *
- * @version 1.0.0.0
+ * @version 1.0.0
  * @author CaffeinatedRat
  */
-public interface IApplicationLayer {
+public class ResponseWrapper {
 
-    void onTextFrame(String text, ResponseWrapper responseWrapper);
-    void onBinaryFrame(byte[] data, ResponseWrapper responseWrapper);
-    void onClose();
-    void onPing(byte[] data);
-    void onPong();
+    public Response response = null;
     
 }
