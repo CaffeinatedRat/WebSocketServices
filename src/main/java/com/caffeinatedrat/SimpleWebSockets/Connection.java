@@ -123,6 +123,7 @@ public class Connection extends Thread {
                                     ResponseWrapper wrapper = new ResponseWrapper();
                                     applicationLayer.onTextFrame(text, wrapper);
 
+                                    //Ignore invalid responses
                                     if ( wrapper.response != null) {
                                     
                                         if (wrapper.response instanceof TextResponse){
@@ -186,6 +187,7 @@ public class Connection extends Thread {
                                     //BinaryResponse response = new BinaryResponse();
                                     applicationLayer.onBinaryFrame(data, wrapper);
                                     
+                                    //Ignore invalid responses
                                     if (wrapper.response != null) {
 
                                         if (wrapper.response instanceof TextResponse){
@@ -225,8 +227,6 @@ public class Connection extends Thread {
                                         }
                                         //END OF while(!response.isEmpty()) {...
 */                                      
-                                        
-                                        
                                         continueListening = !wrapper.response.closeConnection;
                                     }
                                     else {
