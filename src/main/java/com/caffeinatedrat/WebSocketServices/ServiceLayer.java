@@ -98,6 +98,11 @@ public class ServiceLayer {
             }
             //END OF if(service.equalsIgnoreCase("fragmentationtest")) {...
         }
+        catch(java.lang.NoSuchMethodException ex) {
+            
+            //If the method is not found then do nothing.
+            
+        }
         catch(Exception ex) {
             Logger.verboseDebug(ex.getMessage());
         }
