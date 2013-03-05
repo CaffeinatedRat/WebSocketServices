@@ -124,7 +124,14 @@ public class JsonHelper {
                 //For most numbers we do not need any formatting or localization but rather the value itself.
                 //IE: The long value 65535 should be serialized as 65535 and not 65,535.
                 else if (element.getValue() instanceof Number) {
-                    jsonBuffer.append(MessageFormat.format("{0,number,#}", element.getValue()));
+                    
+                    // --- CR (3/4/13) --- Support Double & Floats...there is a better way to do this I'm sure.
+                    if ( (element.getValue() instanceof Double) || (element.getValue() instanceof Float) ) {
+                        jsonBuffer.append(MessageFormat.format("{0}", element.getValue()));
+                    }
+                    else {
+                        jsonBuffer.append(MessageFormat.format("{0,number,#}", element.getValue()));
+                    }
                 }
                 //Handle all other cases.
                 else {
