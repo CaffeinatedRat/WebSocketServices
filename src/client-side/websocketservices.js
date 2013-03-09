@@ -32,7 +32,9 @@
 /*
 * -----------------------------------------------------------------
 * Change Log
-* Revision 3 (3/9/13) -- Fixed an issue with the cross-origin property being set for dataurl images.
+* Revision 3 (3/9/13)
+* 1) Fixed an issue with the cross-origin property being set for dataurl images.
+* 2) An image is now preloaded for the face canvases until the remote images load.
 * -----------------------------------------------------------------
 */
 
@@ -64,6 +66,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
 
 	this._images = [];
 	this._defaultSkin = null;
+	this._preloadFaceDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAKdJREFUGFclir0ORUAQhec1RITdxE8kPAibrRVka9EoblRbaQgFCbKUntQ91/2KmTnfHOKcu67LGHMcx7Is27YRAf0XCIIgTdMkSTzPQ+n32LbtPM/7vo0x13X1fR+GIQ3DsCwL5jzPWuvjOD4vBPs8T57n0zTB4kBEj9q2HcdxXdfsZd/3ruvKsqS6rpumiaIIAcRxDFNVFUkphRB4+L4PC5RSRVF8AaVKRHcXMKlqAAAAAElFTkSuQmCC';
 
 	var _canvasId = 0;
 
@@ -335,16 +338,12 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 	//Determine if we've loaded and cached the image.
 	if (that._images[playersName] === undefined) {
 
-		//Get the player's skin...if only we could get the case-sensitive name so we can pull the skins for players that do not have a completely lowercase name.
-		var img = new Image();
+		//Preload a temporary image...
+		var preImg = new Image();
+		preImg.onload = function () {
 
-		img.setAttribute("data-canvasId", id);
-		img.onload = function () {
-
-			// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
-			img.crossOrigin = '';
-
-			var canvas = document.getElementById(this.getAttribute("data-canvasId"));
+			//Preload the image.
+			var canvas = document.getElementById(id);
 			if ((canvas !== undefined) && (canvas)) {
 
 				var context = canvas.getContext("2d");
@@ -353,7 +352,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 
 					context.mozImageSmoothingEnabled = that._imageSmoothing;
 					context.webkitImageSmoothingEnabled = that._imageSmoothing;
-					context.drawImage(this, 8, 8, 8, 8, 0, 0, canvas.width, canvas.height);
+					context.drawImage(this, 0, 0, canvas.width, canvas.height);
 
 				}
 				//END OF if(context !== undefined) {...
@@ -361,32 +360,65 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 			}
 			//END OF if(canvas !== undefined) {...
 
-			//Cache the images so we don't attempt to pull again...although the browser should be handling this.
 			that._images[playersName] = this;
 
-		};
-		img.onerror = function () {
+			//Get the player's skin...if only we could get the case-sensitive name so we can pull the skins for players that do not have a completely lowercase name.
+			var img = new Image();
 
-			//this.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAMAAACVQ462AAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAAHxALIxcJJBgIJBgKJhgLJhoKJxsLJhoMKBsKKBsLKBoNKBwLKRwMKh0NKx4NKx4OLR0OLB4OLx8PLB4RLyANLSAQLyIRMiMQMyQRNCUSOigUPyoVKCgoPz8/JiFbMChyAFtbAGBgAGhoAH9/Qh0KQSEMRSIOQioSUigmUTElYkMvbUMqb0UsakAwdUcvdEgvek4za2trOjGJUj2JRjqlVknMAJmZAJ6eAKioAK+vAMzMikw9gFM0hFIxhlM0gVM5g1U7h1U7h1g6ilk7iFo5j14+kF5Dll9All9BmmNEnGNFnGNGmmRKnGdIn2hJnGlMnWpPlm9bnHJcompHrHZaqn1ms3titXtnrYBttIRttolsvohst4Jyu4lyvYtyvY5yvY50xpaA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPSUN6AAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My4zNqnn4iUAAAKjSURBVEhLpZSLVtNAEIYLpSlLSUITLCBaGhNBQRM01M2mSCoXNUURIkZFxQvv/wz6724Wij2HCM7J6UyS/b+dmZ208rsww6jiqo4FhannZb5yDqjaNgDVwE/8JAmCMqF6fwGwbU0CKjD/+oAq9jcM27gxAFpNQxU3Bwi9Ajy8fgmGZuvaGAcIuwFA12CGce1jJESr6/Ot1i3Tnq5qptFqzet1jRA1F2XHWQFAs3RzwTTNhQd3rOkFU7c0DijmohRg1TR9ZmpCN7/8+PX954fb+sTUjK7VLKOYi1IAaTQtUrfm8pP88/vTw8M5q06sZoOouSgHEDI5vrO/eHK28el04yxf3N8ZnyQooZiLfwA0arNb6d6bj998/+vx8710a7bW4E2Uc1EKsEhz7WiQBK9eL29urrzsB8ngaK1JLDUXpYAkGSQH6e7640fL91dWXjxZ33138PZggA+Sz0WQlAL4gmewuzC1uCenqXevMPWc9XrMX/VXh6Hicx4ByHEeAfRg/wtgSMAvz+CKEkYAnc5SpwuD4z70PM+hUf+4348ixF7EGItjxmQcCx/Dzv/SOkuXAF3PdT3GIujjGLELNYwxhF7M4oi//wsgdlYZdMXCmEUUSsSu0OOBACMoBTiu62BdRPEjYxozXFyIpK7IAE0IYa7jOBRqGlOK0BFq3Kdpup3DthFwP9QDlBCGKEECoHEBEDLAXHAQMQnI8jwFYRQw3AMOQAJoOADoAVcDAh0HZAKQZUMZdC43kdeqAPwUBEsC+M4cIEq5KEEBCl90mR8CVR3nxwCdBBS9OAe020UGnXb7KcxzPY9SXoEEIBZtgE7UDgBKyLMhgBS2YdzjMJb4XHRDAPiQhSGjNOxKQIZTgC8BiMECgarxprjjO0OXiV4MAf4A/x0nbcyiS5EAAAAASUVORK5CYII="
-			this.src = that._defaultSkin;
+			img.setAttribute("data-canvasId", id);
+			img.onload = function () {
 
-			//Cache the images so we don't attempt to pull again...although the browser should be handling this.
-			that._images[playersName] = this;
+				// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
+				img.crossOrigin = '';
 
-		};
+				var canvas = document.getElementById(this.getAttribute("data-canvasId"));
+				if ((canvas !== undefined) && (canvas)) {
 
-		//If this is enabled we will no longer hit the Amazon or ImageServer and just use the default Steve skin.
-		if (this._forceDefaultSkin) {
+					var context = canvas.getContext("2d");
 
-			img.src = this._defaultSkin;
+					if (context !== undefined) {
+
+						context.mozImageSmoothingEnabled = that._imageSmoothing;
+						context.webkitImageSmoothingEnabled = that._imageSmoothing;
+						context.drawImage(this, 8, 8, 8, 8, 0, 0, canvas.width, canvas.height);
+
+					}
+					//END OF if(context !== undefined) {...
+
+				}
+				//END OF if(canvas !== undefined) {...
+
+				//Cache the images so we don't attempt to pull again...although the browser should be handling this.
+				that._images[playersName] = this;
+
+			};
+			img.onerror = function () {
+
+				this.src = that._defaultSkin;
+
+				//Cache the images so we don't attempt to pull again...although the browser should be handling this.
+				that._images[playersName] = this;
+
+			};
+
+			//If this is enabled we will no longer hit the Amazon or ImageServer and just use the default Steve skin.
+			if (that._forceDefaultSkin) {
+
+				img.src = that._defaultSkin;
+
+			}
+			else {
+
+				img.src = that._imageServerURL + playersName + '.png';
+
+			}
+			//END OF if (this._forceDefaultSkin) {...
 
 		}
-		else {
+		//END OF preImg.onload = function() {...
 
-			img.src = this._imageServerURL + playersName + '.png';
+		preImg.src = that._preloadFaceDataUrl;
 
-		}
-		//END OF if (this._forceDefaultSkin) {...
 	}
 	else {
 
