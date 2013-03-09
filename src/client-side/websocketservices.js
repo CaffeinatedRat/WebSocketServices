@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,13 @@
 * -----------------------------------------------------------------
 */
 
+/*
+* -----------------------------------------------------------------
+* Change Log
+* Revision 3 (3/9/13) -- Fixed an issue with the cross-origin property being set for dataurl images.
+* -----------------------------------------------------------------
+*/
+
 //-----------------------------------------------------------------
 // Namespace
 //-----------------------------------------------------------------
@@ -43,8 +50,8 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
 	//-----------------------------------------------------------------
 	// Versioning
 	//-----------------------------------------------------------------
-	CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.5';
-	CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '2';
+	CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.6';
+	CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '3';
 
 	console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
 
@@ -331,14 +338,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 		//Get the player's skin...if only we could get the case-sensitive name so we can pull the skins for players that do not have a completely lowercase name.
 		var img = new Image();
 
-		// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
-		img.crossOrigin = '';
-
 		img.setAttribute("data-canvasId", id);
 		img.onload = function () {
 
+			// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
+			img.crossOrigin = '';
+
 			var canvas = document.getElementById(this.getAttribute("data-canvasId"));
-			if ( (canvas !== undefined) && (canvas) ) {
+			if ((canvas !== undefined) && (canvas)) {
 
 				var context = canvas.getContext("2d");
 
@@ -994,6 +1001,60 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
 				}
 				//END OF if(json.Status == "SUCCESSFUL") {...
+
+			}
+			catch (exception) {
+
+				console.log(exception);
+
+			}
+
+		}
+		//END OF if(msg !== undefined) {...
+
+	};
+	ws.onerror = function (error) {
+
+		console.log('WebSocket Error ' + error);
+
+	};
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.callService = function (service, parameters) {
+
+	//-----------------------------------------------------------------
+	// Parameterization
+	//-----------------------------------------------------------------
+
+	parameters = parameters || {};
+
+	var ws = new WebSocket(this._websocketAddress);
+	var that = this;
+	ws.onopen = function () {
+
+		ws.send(service);
+
+	};
+	ws.onmessage = function (msg) {
+
+		if (msg !== undefined) {
+
+			if (that._debug) {
+
+				console.log(msg.data);
+
+			}
+
+			try {
+
+				var json = jQuery.parseJSON(msg.data);
+
+				//Perform callback.
+				if (parameters.callback) {
+
+					parameters.callback(json);
+
+				}
 
 			}
 			catch (exception) {
