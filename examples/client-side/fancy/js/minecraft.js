@@ -146,24 +146,39 @@ $(document).ready(function () {
 			$('#skinWrapper').removeClass();
 			$('#skinWrapper').addClass('profileBackground_' + $(this).data('environment'));
 
-			profile = new CaffeinatedRat.Minecraft.Profile({
-				container: $('#skinWrapper'),
-				skinImage: wss.getImage(playersName),
-				useWebGL: false,
-				scale: 200
-			});
+			try {
 
-			profile.init();
-			profile.animate();
+				profile = new CaffeinatedRat.Minecraft.SkinProfile({
+					container: $('#skinWrapper'),
+					skinImage: wss.getImage(playersName),
+					useWebGL: true,
+					scale: 200
+				});
+
+				profile.init();
+				profile.animate();
+
+			}
+			catch (err) {
+
+				if (err instanceof CaffeinatedRat.Minecraft.SkinProfile.BrowserNotSupported) {
+
+					$('#elementOverlay').hide();
+					$('#webGLNotSupported').show();
+
+				}
+
+				console.log(err);
+			}
 
 			e.preventDefault();
 		});
 
 	}
-	catch(exception) {
+	catch (exception) {
 
 		console.log(exception.toString());
-		
+
 		//We're assuming the exception was caused by WebSockets not being supported.
 		//Most of the code has been tested to confirm that it is a high likely hood that this issue is a WebSockets one.
 		$('#websocketNotSupported').show();
