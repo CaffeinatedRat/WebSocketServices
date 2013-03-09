@@ -14,8 +14,8 @@ body
     margin: 0px;
 }
 
-div.inline 
-{ 
+div.inline
+{
 	display:inline-block;
 }
 
@@ -48,40 +48,40 @@ Page Classes
     margin-right: auto;
     text-align:left;
     width: 910px;
-	height: 550px;
-	
+	height: 650px;
+
 	background-color: rgba(125, 125, 125, 0.55);
-	
+
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	padding: 15px;
-	
+
 	color: #fff;
 	text-align: center;
 }
 
 #tabs
 {
-	height: 540px;
+	height: 640px;
 	background: rgba(255, 255, 255, 0.65) 50% 50% repeat-x !important;
 }
 
 .tabContainer
 {
-	height: 480px;
+	height: 580px;
 }
 
 .scrollContainer
 {
 	overflow: scroll;
 	overflow-y: auto;
-	overflow-x: hidden;	
+	overflow-x: hidden;
 }
 
 .container
 {
-	height: 450px;
+	height: 550px;
 	text-align: left;
 	padding: 15px;
 }
@@ -103,6 +103,11 @@ Page Classes
 {
 	text-decoration: none;
 	color: #fff;
+}
+
+.clear
+{
+	clear: both;
 }
 
 /*
@@ -157,7 +162,7 @@ Tile Classes
 {
 	background: url('../media/tiles.png') no-repeat 0px 0px transparent;
 	height: 16px;
-	width: 16px;	
+	width: 16px;
 }
 
 .netherTile
@@ -246,13 +251,13 @@ Offline Classes
 
 #websocketNotSupported
 {
-	height: 520px;
+	height: 630px;
 	text-align:left;
 }
 
 #offlineDiv
 {
-	height: 520px;
+	height: 630px;
 }
 
 /*
@@ -263,7 +268,7 @@ Player Classes
 
 .playerContainer
 {
-	height: 440px;
+	height: 500px;
 }
 
 .playerElement > div
@@ -274,7 +279,6 @@ Player Classes
 
 .playerName
 {
-
 }
 
 /*
@@ -324,6 +328,24 @@ Profile Classes
 {
 	float:left;
 	position:absolute;
+}
+
+#webGLNotSupported
+{
+	float: left;
+	position: relative;
+
+	width: 540px;
+	height: 540px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+#webGLNotSupported h2
+{
+	color: black;
+	margin-top: 250px;
+	background-color: rgba(255, 255, 255, 0.65);
 }
 
 /*
