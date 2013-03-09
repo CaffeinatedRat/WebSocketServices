@@ -46,6 +46,12 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.1.6
+
+* Changed the the response methodology, so that a response can be sent as text or binary regardless of the initial state of the request.
+* Added the proper support for double & float values when serialized as JSON.
+* Fixed an issue with an exception being thrown for external services created by other plug-ins.
+
 #### 1.1.5
 
 * Added additional configuration validation checks.
