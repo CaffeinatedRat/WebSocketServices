@@ -35,7 +35,7 @@
 * Revision 3 (3/9/13)
 * 1) Fixed an issue with the cross-origin property being set for dataurl images.
 * 2) An image is now preloaded for the face canvases until the remote images load.
-* Revision 3 (3/14/13)
+* Revision 4 (3/14/13)
 * 1) Fixed some more issues with CORS
 * 2) Fixed an issue where the default skin was not loading when a remote skin cannot be loaded.
 * -----------------------------------------------------------------
@@ -370,6 +370,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 
 			// --- CR (2/27/13) --- Add Cross-Origin capability for servers that enable it.
 			// --- CR (3/14/13) --- This has to be here before we even request an image, otherwise we'll get a CORS error.
+			// So we'll try to attempt to load the CORS images first.
 			img.crossOrigin = '';
 
 			img.setAttribute("data-canvasId", id);
@@ -396,14 +397,18 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 				that._images[playersName] = this;
 
 			};
+			//The image failed to load, but this could be due to the following conditions, but we do not know which one.
+			//1) CORS is not enabled for this image.
+			//2) The image does not exist.
 			img.onerror = function () {
 
-				// --- CR (3/14/13) --- Draw and store the default skin since we're unable to get the skin remotely.
+				//We only need one reference to the canvas that can be shared among all events below.
 				var canvas = document.getElementById(this.getAttribute("data-canvasId"));
-				var img2 = new Image();
-				img2.onload = function () {
+				
+				// --- CR (3/14/13) --- So...let's try to load our image again without CORS enabled.
+				var imgNoCORS = new Image();
+				imgNoCORS.onload = function () {
 
-					
 					if ((canvas !== undefined) && (canvas)) {
 
 						var context = canvas.getContext("2d");
@@ -424,10 +429,54 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.drawPlayersFace = function 
 					that._images[playersName] = this;
 
 				}
+				//The image failed to load because it does not exist at this point.
+				imgNoCORS.onerror = function () {
 
-				img2.src = that._defaultSkin;
+					// --- CR (3/14/13) --- If we reach this point then the image does not exist and we want to use our default skin.
+					var defaultImg = new Image();
+					defaultImg.onload = function () {
+
+						if ((canvas !== undefined) && (canvas)) {
+
+							var context = canvas.getContext("2d");
+
+							if (context !== undefined) {
+
+								context.mozImageSmoothingEnabled = that._imageSmoothing;
+								context.webkitImageSmoothingEnabled = that._imageSmoothing;
+								context.drawImage(this, 8, 8, 8, 8, 0, 0, canvas.width, canvas.height);
+
+							}
+							//END OF if(context !== undefined) {...
+
+						}
+						//END OF if(canvas !== undefined) {...
+
+						//Cache the images so we don't attempt to pull again...although the browser should be handling this.
+						that._images[playersName] = this;
+
+					}
+
+					defaultImg.src = that._defaultSkin;
+
+				}
+				//END No CORS loading....
+
+				//If this is enabled we will no longer hit the Amazon or ImageServer and just use the default Steve skin.
+				if (that._forceDefaultSkin) {
+
+					imgNoCORS.src = that._defaultSkin;
+
+				}
+				else {
+
+					imgNoCORS.src = that._imageServerURL + playersName + '.png';
+
+				}
+				//END OF if (this._forceDefaultSkin) {...
 
 			};
+			//END CORS image loading...
 
 			//If this is enabled we will no longer hit the Amazon or ImageServer and just use the default Steve skin.
 			if (that._forceDefaultSkin) {
