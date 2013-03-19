@@ -46,6 +46,10 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.1.7
+
+* Updated the config.yml so that the offlinePlayers service is renamed to offlineplayers due to the case sensitive nature of the services.
+
 #### 1.1.6
 
 * Changed the the response methodology, so that a response can be sent as text or binary regardless of the initial state of the request.
