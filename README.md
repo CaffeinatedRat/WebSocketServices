@@ -46,6 +46,11 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.1.8
+
+* Fixed an issue with plug-ins that had double quotes blowing up the json serialization.
+* Added a raw time span value for the offlineplayers, who, and whitelist services.  
+
 #### 1.1.7
 
 * Updated the config.yml so that the offlinePlayers service is renamed to offlineplayers due to the case sensitive nature of the services.

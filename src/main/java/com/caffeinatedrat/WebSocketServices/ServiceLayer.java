@@ -200,6 +200,9 @@ public class ServiceLayer {
                 if (pluginDescriptor.getDescription() != null) {
 
                     description =  pluginDescriptor.getDescription().toString().replaceAll("(\r\n|\n)", "");
+                    
+                    // --- CR (3/19/13) --- Fixed an issue with double quotes in the plug-ins description.
+                    description = description.replace("\"", "\\\"");
 
                 }
 
@@ -279,8 +282,10 @@ public class ServiceLayer {
 
             Hashtable<String, Object> collection = new Hashtable<String, Object>();
             
+            // --- CR (3/18/13) --- Added the integer timespan property, so that the client can handle custom processing.
             collection.put("name", playerName);
             collection.put("onlineTime", timePlayed);
+            collection.put("onlineTimeSpan", timeSpan);
             collection.put("environment", environment);
             collection.put("isOperator", players[i].isOp());
             
@@ -306,6 +311,9 @@ public class ServiceLayer {
         
         for(OfflinePlayer offlinePlayer : whiteListedPlayers) {
         
+            // --- CR (3/18/13) --- Preserve the timespan.
+            long timeSpan = 0L;
+            
             String lastPlayed = "Never";
             if(offlinePlayer.isOnline()) {
                 lastPlayed = "Now";
@@ -313,7 +321,7 @@ public class ServiceLayer {
             else {
                 if (offlinePlayer.getLastPlayed() > 0) {
                     
-                    long timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
+                    timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
                     
                     lastPlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
                                 (timeSpan / 3600000L / 24),
@@ -326,9 +334,11 @@ public class ServiceLayer {
             
             Hashtable<String, Object> properties = new Hashtable<String, Object>();
             
+            // --- CR (3/18/13) --- Added the integer timespan property, so that the client can handle custom processing.
             properties.put("name", offlinePlayer.getName());
             properties.put("isOnline",  offlinePlayer.isOnline());
             properties.put("lastPlayed",  lastPlayed);
+            properties.put("lastPlayedTimeSpan", timeSpan);
             properties.put("isOperator", offlinePlayer.isOp());
             properties.put("hasPlayed", offlinePlayer.hasPlayedBefore());
             
@@ -355,6 +365,8 @@ public class ServiceLayer {
         
         for(OfflinePlayer offlinePlayer : offlinePlayers) {
         
+            long timeSpan = 0L;
+            
             String lastPlayed = "Never";
             if(offlinePlayer.isOnline()) {
                 lastPlayed = "Now";
@@ -362,7 +374,7 @@ public class ServiceLayer {
             else {
                 if (offlinePlayer.getLastPlayed() > 0) {
                     
-                    long timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
+                    timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
                     
                     lastPlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
                                 (timeSpan / 3600000L / 24),
@@ -375,9 +387,11 @@ public class ServiceLayer {
             
             Hashtable<String, Object> properties = new Hashtable<String, Object>();
             
+            // --- CR (3/18/13) --- Added the integer timespan property, so that the client can handle custom processing.
             properties.put("name", offlinePlayer.getName());
             properties.put("isOnline", offlinePlayer.isOnline());
             properties.put("lastPlayed", lastPlayed);
+            properties.put("lastPlayedTimeSpan", timeSpan);
             properties.put("isOperator", offlinePlayer.isOp());
             properties.put("isWhitelisted", offlinePlayer.isWhitelisted());
             properties.put("hasPlayed", offlinePlayer.hasPlayedBefore());
@@ -388,6 +402,31 @@ public class ServiceLayer {
         
         return true;
     }
+    
+    /**
+     * Queries information about a single player.
+     * @param arguments Any arguments included with the service.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return True if the service was successfully executed.
+     */
+    protected boolean player(String arguments, TextResponse response) {
+        
+        Hashtable<String, Object> masterCollection = response.getCollection();
+        
+        Player player = this.minecraftServer.getPlayer(arguments);
+        if (player != null) {
+            
+            masterCollection.put("isWhiteListed", player.isWhitelisted());
+            masterCollection.put("isBanned", player.isBanned());
+            masterCollection.put("isOnline", player.isOnline());
+            masterCollection.put("firstPlayed", player.getFirstPlayed());
+            masterCollection.put("level", player.getLevel());
+            masterCollection.put("health", player.getHealth());
+            
+        }
+        
+        return true;
+    }    
 
     /**
      * The simplest and most light-weight service that simply responds with alive and the server time.

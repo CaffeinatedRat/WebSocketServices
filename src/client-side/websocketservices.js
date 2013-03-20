@@ -55,7 +55,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
 	//-----------------------------------------------------------------
 	// Versioning
 	//-----------------------------------------------------------------
-	CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.7';
+	CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.8';
 	CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '4';
 
 	console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);

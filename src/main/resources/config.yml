@@ -23,5 +23,6 @@ services:
   whitelist: true
   offlineplayers: true
   ping: true
+  player: true
   fragmentationtest: false
   binaryfragmentationtest: false
