@@ -328,6 +328,7 @@ Profile Classes
 {
 	float:left;
 	position:absolute;
+	color: white;
 }
 
 #webGLNotSupported
