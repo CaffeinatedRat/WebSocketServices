@@ -4,7 +4,7 @@ WebSocketServices
 This plug-in is an ongoing and evolving project with the intent to bring web support, through websockets, to the Minecraft bukkit servers.
 This implementation of websockets is designed to be light-weight and simple, reducing overhead to the game server itself.
 Clients that support websockets will have the ability to perform simple informational queries, such as who is online, what version the server is running on, etc.
-All text base results will be returned in a simple JSON format for consistency.
+All text based results will be returned in a simple JSON format for consistency.
 
 * Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
 * Bukkit: [http://dev.bukkit.org/server-mods/websocketservices/] (http://dev.bukkit.org/server-mods/websocketservices/)
