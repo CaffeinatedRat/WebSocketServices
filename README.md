@@ -8,7 +8,7 @@ All text based results will be returned in a simple JSON format for consistency.
 
 * Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
 * Bukkit: [http://dev.bukkit.org/server-mods/websocketservices/] (http://dev.bukkit.org/server-mods/websocketservices/)
-* Bugs/Suggestions: CaffeinatedRat@gmail.com
+* Bugs/Suggestions: CaffeinatedRat at gmail dot com
 
 Compilation
 -----------
