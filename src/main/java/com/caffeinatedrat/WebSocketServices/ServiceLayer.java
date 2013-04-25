@@ -266,9 +266,11 @@ public class ServiceLayer {
             
             //Make sure the timespan is valid.
             if (timeSpan > 0) {
+                
+                //--- CR (4/24/13) [1.1.9] --- Fixed the way the hour was being calculated, by modulating by 24 and not 60.
                 timePlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
                             (timeSpan / 3600000L / 24),
-                            (timeSpan / 3600000L % 60),
+                            (timeSpan / 3600000L % 24),
                             (timeSpan / 60000L % 60),
                             (timeSpan / 1000L % 60));
                 
@@ -323,9 +325,10 @@ public class ServiceLayer {
                     
                     timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
                     
+                    // --- CR (4/24/13) [1.1.9] --- Fixed the way the hour was being calculated, by modulating by 24 and not 60.
                     lastPlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
                                 (timeSpan / 3600000L / 24),
-                                (timeSpan / 3600000L % 60),
+                                (timeSpan / 3600000L % 24),
                                 (timeSpan / 60000L % 60),
                                 (timeSpan / 1000L % 60));
                 }
@@ -376,9 +379,10 @@ public class ServiceLayer {
                     
                     timeSpan = new Date().getTime() - offlinePlayer.getLastPlayed();
                     
+                    // --- CR (4/24/13) [1.1.9] --- Fixed the way the hour was being calculated, by modulating by 24 and not 60.
                     lastPlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
                                 (timeSpan / 3600000L / 24),
-                                (timeSpan / 3600000L % 60),
+                                (timeSpan / 3600000L % 24),
                                 (timeSpan / 60000L % 60),
                                 (timeSpan / 1000L % 60));
                 }
@@ -413,15 +417,16 @@ public class ServiceLayer {
         
         Hashtable<String, Object> masterCollection = response.getCollection();
         
-        Player player = this.minecraftServer.getPlayer(arguments);
+        OfflinePlayer player = this.minecraftServer.getOfflinePlayer(arguments);
         if (player != null) {
             
             masterCollection.put("isWhiteListed", player.isWhitelisted());
             masterCollection.put("isBanned", player.isBanned());
             masterCollection.put("isOnline", player.isOnline());
             masterCollection.put("firstPlayed", player.getFirstPlayed());
-            masterCollection.put("level", player.getLevel());
-            masterCollection.put("health", player.getHealth());
+            //masterCollection.put("level", player.getLevel());
+            //masterCollection.put("health", player.getHealth());
+            masterCollection.put("health", player);
             
         }
         
