@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
@@ -51,14 +52,18 @@ public class ServiceLayer {
     
     private org.bukkit.Server minecraftServer;
     private WebSocketServicesConfiguration config;
+    private Map<String, Long> loginTimes;
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public ServiceLayer (org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config) {
+    public ServiceLayer (org.bukkit.Server minecraftServer, Map<String, Long> loginTimes, WebSocketServicesConfiguration config) {
+        
         this.minecraftServer = minecraftServer;
         this.config = config;
+        this.loginTimes = loginTimes;
+        
     }
     
     // ----------------------------------------------
@@ -255,17 +260,29 @@ public class ServiceLayer {
             
             // --- CR (10/9/12) --- Hopefully fixed an issue with the player time when a player has never logged in.
             // NOTE: The last played time will be zero if a player has never logged in; however, the first played time will contain the time value we need.
-            long lastPlayedTime = players[i].getLastPlayed();
-            if (lastPlayedTime == 0L) {
-                
-                lastPlayedTime = players[i].getFirstPlayed();
-                
+//            long lastPlayedTime = players[i].getLastPlayed();
+//            if (lastPlayedTime == 0L) {
+//                
+//                lastPlayedTime = players[i].getFirstPlayed();
+//                
+//            }
+            
+            //long timeSpan = new Date().getTime() - lastPlayedTime;
+            
+            //Get the player's name.
+            String playerName = players[i].getName();
+            
+            // --- CR (4/28/13) --- We will now manage the amount of time a player has been online since the server does not do this.
+            // NOTE: There may be synchronization issues, but we do not really care as these requests can be 'dirty'.
+            long timeSpan = 0L;
+            if (this.loginTimes.containsKey(playerName)) {
+
+                timeSpan = new Date().getTime() - this.loginTimes.get(playerName);
+
             }
-            
-            long timeSpan = new Date().getTime() - lastPlayedTime;
-            
+
             //Make sure the timespan is valid.
-            if (timeSpan > 0) {
+            if (timeSpan > 0L) {
                 
                 //--- CR (4/24/13) [1.1.9] --- Fixed the way the hour was being calculated, by modulating by 24 and not 60.
                 timePlayed = MessageFormat.format("{0}d {1}h {2}m {3}s",
@@ -275,9 +292,6 @@ public class ServiceLayer {
                             (timeSpan / 1000L % 60));
                 
             }
-            
-            //Get the player's name.
-            String playerName = players[i].getName();
             
             //Determine the environment the player is in.
             String environment = players[i].getWorld().getEnvironment().toString();

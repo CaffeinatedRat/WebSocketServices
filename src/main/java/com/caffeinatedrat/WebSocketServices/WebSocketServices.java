@@ -31,7 +31,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
-//import com.caffeinatedrat.WebSocketServices.Test.TestServer;
+import com.caffeinatedrat.WebSocketServices.Listener.*;
 
 /**
  * The bukkit entry point for the WebSocketServices.
@@ -47,6 +47,7 @@ public class WebSocketServices extends JavaPlugin {
 	
     private Server server = null;
     private static Map<String, IApplicationLayer> registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
+    private static Map<String, Long> loginTimes = new HashMap<String, Long>();
     
     // ----------------------------------------------
     // Events
@@ -58,13 +59,19 @@ public class WebSocketServices extends JavaPlugin {
     @Override
     public void onEnable() {
         
+        //Save the default configuration.
         saveDefaultConfig();
+
+        //Register the listeners...
+        getServer().getPluginManager().registerEvents(new PlayerListener(loginTimes), this);
         
+        //Manage the configuration...
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
-        
         Globals.debugLevel = config.getDebugLevel();
-        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), config, registeredApplicationLayers);
         
+        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), loginTimes, config, registeredApplicationLayers);
+        
+        //Start-up the server with all the appropriate configuration values.
         server = new Server(config.getPortNumber(), applicationLayer, config.getIsWhiteListed(), config.getMaximumConnections());
         server.setHandshakeTimeout(config.getHandshakeTimeOut());
         server.setFrameTimeoutTolerance(config.getFrameTimeOutTolerance());
@@ -79,8 +86,10 @@ public class WebSocketServices extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+
         // save the configuration file, if there are no values, write the defaults.
         server.Shutdown();
+        
     }
     
     /*
@@ -96,18 +105,11 @@ public class WebSocketServices extends JavaPlugin {
     // ----------------------------------------------
     
     public static void registerApplicationLayer(Plugin plugin, IApplicationLayer applicationLayer) {
+        
         if (plugin == null) {
             throw new NullPointerException("The plugin cannot be null.");
         }
         
         registeredApplicationLayers.put(plugin.getName(), applicationLayer);
-    }
-
-    /*
-     * Stand-alone entry-point for testing...
-     */
-    public static void main(String[] args) {
-
-        //TestServer.start();
     }
 }

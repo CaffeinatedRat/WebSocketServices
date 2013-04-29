@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -56,11 +56,13 @@ public class ApplicationLayer implements IApplicationLayer {
     // Constructors
     // ----------------------------------------------
     
-    public ApplicationLayer(org.bukkit.Server minecraftServer, WebSocketServicesConfiguration config, Map<String, IApplicationLayer> applicationLayers) {
+    public ApplicationLayer(org.bukkit.Server minecraftServer, Map<String, Long> loginTimes, WebSocketServicesConfiguration config, Map<String, IApplicationLayer> applicationLayers) {
+        
         this.minecraftServer = minecraftServer;
         this.config = config;
-        this.serviceLayer = new ServiceLayer(this.minecraftServer, config);
+        this.serviceLayer = new ServiceLayer(this.minecraftServer, loginTimes, config);
         this.registeredApplicationLayers = applicationLayers;
+
     }
     
     // ----------------------------------------------
