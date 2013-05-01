@@ -57,6 +57,7 @@ The following contains information about new features, bug fixes, and other vers
 #### 1.1.9
 
 * Fixed an issue with the hour being incorrectly calculated for the offlineplayers, who, and whitelist services.
+* Added a listener for player logins to maintain a session time since the server does not do this already.
 
 #### 1.1.8
 
