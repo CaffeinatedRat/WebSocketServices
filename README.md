@@ -54,6 +54,11 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.2.0
+
+* Upgraded to CraftBukkit 1.5.1-R0.2.
+* The player service has been added to return information about a specific player.
+
 #### 1.1.9
 
 * Fixed an issue with the hour being incorrectly calculated for the offlineplayers, who, and whitelist services.

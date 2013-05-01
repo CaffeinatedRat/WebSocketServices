@@ -34,7 +34,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.WeatherType;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -429,18 +431,79 @@ public class ServiceLayer {
      */
     protected boolean player(String arguments, TextResponse response) {
         
+        if ( (arguments == null) || (arguments == "") )
+        {
+            return true;
+        }
+        
         Hashtable<String, Object> masterCollection = response.getCollection();
         
-        OfflinePlayer player = this.minecraftServer.getOfflinePlayer(arguments);
-        if (player != null) {
+        OfflinePlayer offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(arguments);
+        
+        if (offlinePlayerInfo != null) {
             
-            masterCollection.put("isWhiteListed", player.isWhitelisted());
-            masterCollection.put("isBanned", player.isBanned());
-            masterCollection.put("isOnline", player.isOnline());
-            masterCollection.put("firstPlayed", player.getFirstPlayed());
-            //masterCollection.put("level", player.getLevel());
-            //masterCollection.put("health", player.getHealth());
-            masterCollection.put("health", player);
+            masterCollection.put("isWhiteListed", offlinePlayerInfo.isWhitelisted());
+            masterCollection.put("isBanned", offlinePlayerInfo.isBanned());
+            masterCollection.put("isOnline", offlinePlayerInfo.isOnline());
+            masterCollection.put("isOperator", offlinePlayerInfo.isOp());
+            masterCollection.put("firstPlayed", offlinePlayerInfo.getFirstPlayed());
+            masterCollection.put("lastPlayed", offlinePlayerInfo.getLastPlayed());
+            
+            if (offlinePlayerInfo.isOnline()) {
+                
+                Player onlinePlayerInfo = this.minecraftServer.getPlayer(arguments);
+                
+                masterCollection.put("level", onlinePlayerInfo.getLevel());
+                masterCollection.put("health", onlinePlayerInfo.getHealth());
+                masterCollection.put("experience", onlinePlayerInfo.getExp());
+                masterCollection.put("isSleeping", onlinePlayerInfo.isSleeping());
+                masterCollection.put("isDead", onlinePlayerInfo.isDead());
+                
+                int blockX = 0, blockY = 0, blockZ = 0;
+                if (onlinePlayerInfo.getLocation() != null) {
+                    
+                    blockX = onlinePlayerInfo.getLocation().getBlockX();
+                    blockY = onlinePlayerInfo.getLocation().getBlockY();
+                    blockZ = onlinePlayerInfo.getLocation().getBlockZ();
+                }
+                
+                masterCollection.put("location.x", blockX);
+                masterCollection.put("location.y", blockY);
+                masterCollection.put("location.z", blockZ);
+                
+                String environmentName = "UNKNOWN";
+                World world = onlinePlayerInfo.getWorld();
+                if (world != null) {
+                    
+                    Environment environment = world.getEnvironment();
+                    if (environment != null) {
+                        
+                        environmentName = environment.name();
+                        
+                    }
+                    
+                }
+                
+                masterCollection.put("environment", environmentName);
+                
+                String weatherTypeName = "CLEAR";
+                WeatherType weatherType = onlinePlayerInfo.getPlayerWeather();
+                if ( (weatherType != null) ) {
+                
+                    weatherTypeName = weatherType.name();
+                }
+                
+                masterCollection.put("weather", weatherTypeName);
+                
+                long timeSpan = 0L;
+                if (this.loginTimes.containsKey(offlinePlayerInfo.getName())) {
+
+                    timeSpan = new Date().getTime() - this.loginTimes.get(arguments);
+
+                }
+                
+                masterCollection.put("onlineTimeSpan", timeSpan);
+            }
             
         }
         
