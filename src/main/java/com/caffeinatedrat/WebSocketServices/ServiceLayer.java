@@ -448,6 +448,7 @@ public class ServiceLayer {
             masterCollection.put("isOperator", offlinePlayerInfo.isOp());
             masterCollection.put("firstPlayed", offlinePlayerInfo.getFirstPlayed());
             masterCollection.put("lastPlayed", offlinePlayerInfo.getLastPlayed());
+            masterCollection.put("hasPlayedBefore", offlinePlayerInfo.hasPlayedBefore());
             
             if (offlinePlayerInfo.isOnline()) {
                 
@@ -503,6 +504,22 @@ public class ServiceLayer {
                 }
                 
                 masterCollection.put("onlineTimeSpan", timeSpan);
+            }
+            else {
+                
+                //Set the default values for an offline player.  These are required to maintain consistency with the JSON structure.
+                masterCollection.put("level", 0);
+                masterCollection.put("health", 0);
+                masterCollection.put("experience", 0.0f);
+                masterCollection.put("isSleeping", false);
+                masterCollection.put("isDead", false);
+                masterCollection.put("location.x", 0);
+                masterCollection.put("location.y", 0);
+                masterCollection.put("location.z", 0);
+                masterCollection.put("environment", "UNKNOWN");
+                masterCollection.put("weather", "CLEAR");
+                masterCollection.put("onlineTimeSpan", 0L);
+                
             }
             
         }
