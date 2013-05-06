@@ -38,6 +38,8 @@
 * 1) Fixed an issue with the preloaded images disappearing.
 * 2) Added a loading image feature.
 * 3) Added a property to disable the version mismatch warning.
+* Revision 6 (5/1/13)
+* 1) Added support for the player service.
 * -----------------------------------------------------------------
 */
 
@@ -55,8 +57,8 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     //-----------------------------------------------------------------
     // Versioning
     //-----------------------------------------------------------------
-    CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.1.9';
-    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '5';
+    CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.2.0';
+    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '6';
 
     console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
 
@@ -64,14 +66,17 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     // Member vars
     //-----------------------------------------------------------------
 
+    var _canvasId = 0;
+
     this._pingTimerPID = 0;
     this._onlineTimerPID = 0;
+    this._specificPlayerInfoPID = 0;
 
+    //Default values.
     this._images = [];
     this._defaultSkin = null;
     this._preloadFaceDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAEJ0lEQVRoQ+WXOUtsSxSF/Q8mziPOaCAmBmJg4oSBkeKImojigAMiRiaKBgoqaugv3fd9Ra1mv+JUN9crr/v13bDYdap2lfWtU11tN1SKzs5OQ83NzSGrjRobG215ebms4jL/3xBwd3d3kDcAATk/P2+bm5uljOrKAMG3trZmDfin9F+iry4MANK/ebJMIde9AR6WE4B0Iv4aA4rgKxkwMTFRPwYIvKOjI7S5/VMDilQ3Bgjci34ZUE5xmdqNtrY2Q0CRge3r67Oenp6SAOWNt7e3h4vQG6Aa5jDXr4VU5y9Q2oiTFLdRvdBG9Wa7uroCCBvt7+8vbVrPY2NjNjo6GuowRDXMoU/reAOA9feGDEBxG9ULNt3S0hI2LQi9aRnx8vJiHx8f9vX1Ze/v7/b5+Wm3t7c2MDAQaqhljsxjLdbkmfmCp7/mDNCbYrPIP/f29trd3Z09PT2F/Pj4aDc3N/b29mbn5+dB1KTz/DOQ/s2TZQo5bqN6oY0i3lBTU5Pt7OzYycmJjYyMBHhiYWHBHh4eAjxtAlOooZY5zPXHH3lYxpBORM0ZoGO7sbFhh4eHtru7G+Du7+/t+fm59PX2+vpql5eXtr6+HmqoZQ5zWcOvCWQRfM0YoONKnpubC2DHx8elHzT7+/t2cHBgg4ODARgNDw+HfqCpoZY5zGUNv6bgAdb94P+PiNuoXujXm6DPzs7CG93b2wtwS0tLtri4GAzgqw54tLW1ZSsrK6GGWu4D5p6enoas9RA1OgGSjIvbqJ1YW1szL8C9Ylk2uDOAKxJjMzMzZRWXycbFxUVYB9HmIzk5OVnKsez78RMG6K5I9RMGCF5i3b/WAE6AhyfHsu/HTxhQdPzRTxiQfgT+2IDx8XFDQ0NDIXOLe/mxdHxqaspWV1dLmp6eDt8YR0dH4RuCbwUyog/5ekQfINL19XWQnnP1qknHNV+KmPkQ4HcMQPzR2dnZINrauEwQvDbk65FgUmkdXytAzZGh6bhXxMxHJcBK40UbRDKBE+EhfT1Sf5GYlwL6tVDVDeDYawO0/R+XAb4vV686AH07BfSn6T87Ab6Gz72XQCQ276HVVr+vRYyl0H4+/5RJ29vb4feHF32+Jh2PmPnwcAhowckAxnMGeBjMEGgOzBtGm7GiOeScAVdXVyVA9atG/VLEzEeRAV6VxlMggQhMIKkBZBmQQtPWOh4uNYBcZAD9qomY+RBYDpC+cgakn0FtXCCpAb5eBqS1tLWOhxOglBogg7wiZj4ElgOsNF7uEvJQei5XXyQPlzNA+pYBOr45QPWrTm9HEhAZ+TH/9sm+XnN8vWrUZp6HI6eAGpfo0/EnR8x8CCwHWGkcc/QRIacGIi5LbwB1mqNxBLDW5ZkxgaUGCLLohFTNAAEVCaBK9arxfTJA8nBI4NLvGdDQ8AsymdS9DKPFOgAAAABJRU5ErkJggg==';
-
-    var _canvasId = 0;
+    this._specificPlayerInterval = 15000;
 
     //Callbacks
     this._pingConnectedCallback = null;
@@ -82,12 +87,14 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     this._whiteListInfoCallback = null;
     this._offlineInfoCallback = null;
     this._pluginInfoCallback = null;
+    this._specificPlayerInfoCallback = null;
 
     //Templates
     this._templateWho = null;
     this._templateWhiteList = null;
     this._templateOfflinePlayerList = null;
     this._templatePluginList = null;
+    this._templateHearts = null;
 
     //-----------------------------------------------------------------
     // Parameterization
@@ -1071,7 +1078,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getOfflinePlayers = functio
 
                 if (json.Status == "SUCCESSFUL") {
 
-                    $('#wssTotalOfflinePlayers').text(json.OfflinePlayers.length);
+                    $('#wssTotalOfflinePlayers, .wssTotalOfflinePlayers').text(json.OfflinePlayers.length);
 
                     var itemList = $('.wssMinecraftOfflineList');
                     if (itemList.length > 0) {
@@ -1224,6 +1231,200 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
         console.log('WebSocket Error ' + error);
 
     };
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = function (name, parameters) {
+
+    //-----------------------------------------------------------------
+    // Parameterization
+    //-----------------------------------------------------------------
+
+    parameters = parameters || {};
+
+    if (parameters.callback !== undefined) {
+
+        this._specificPlayerInfoCallback = parameters.callback;
+
+    }
+
+    if (parameters.updateTime !== undefined) {
+
+        this._specificPlayerInterval = parameters.updateTime;
+
+    }
+
+    //Ignore invalid name parameters.
+    if ((name === undefined) || (name === '') || (name === null)) {
+
+        if (that._debug) {
+
+            console.log('Invalid name argument');
+
+        }
+
+        return;
+
+    }
+
+    var ws = new WebSocket(this._websocketAddress);
+    var show = false;
+    var that = this;
+    ws.onopen = function () {
+
+        ws.send('player ' + name);
+
+    };
+    ws.onmessage = function (msg) {
+
+        if (msg !== undefined) {
+
+            if (that._debug) {
+
+                console.log(msg.data);
+
+            }
+
+            try {
+
+                var json = jQuery.parseJSON(msg.data);
+
+                //Perform callback.
+                if (that._specificPlayerInfoCallback) {
+
+                    that._specificPlayerInfoCallback(json);
+
+                }
+
+                if (json.Status == "SUCCESSFUL") {
+
+                    var itemList = $('.wssMinecraftSpecificPlayer');
+                    if (itemList.length > 0) {
+
+                        //$(".wssExperienceBar").css('width', (json.experience * 100) + '%');
+                        $(".wssExperienceBar").css('width', (json.experience * 364) + 'px');
+                        $(".wssLevel").text(json.level);
+
+                        var heartContainer = $('.wssHealthContainer');
+                        if (heartContainer.length > 0) {
+
+                            if (that._templateHearts == null) {
+
+                                that._templateHearts = heartContainer.clone();
+
+                            }
+
+                            var listItemTemplate = that._templateHearts.find('.wssListItemTemplate');
+                            if (listItemTemplate.length > 0) {
+
+                                heartContainer.find('.wssListItemTemplate').remove();
+
+                                //Now purge the container.
+                                var listItemContainer = listItemTemplate.clone();
+                                var itemTemplate = listItemContainer.children(':first').detach();
+                                listItemContainer.appendTo(heartContainer);
+
+                                for(var i = 0; i < 10; i++) {
+
+                                    var element = itemTemplate.clone();
+
+                                    //Determine the number of hearts and if they're full or empty.
+                                    var numberofFullHearts = Math.ceil(json.health / 2);
+                                    if ( (json.health > 0) && ( (i + 1) <= numberofFullHearts) ) {
+
+                                        //Determine if it is the last heart and if it's half instead of whole.
+                                        if ( (json.health % 2 === 1) && ( (i + 1) === numberofFullHearts) ) {
+
+                                           element.find('.wssPlayerFullHeart').remove();
+
+                                        }
+                                        else {
+
+                                            element.find('.wssPlayerHalfHeart').remove();
+
+                                        }
+                                        element.find('.wssPlayerEmptyHeart').remove();
+
+                                    }
+                                    //No hearts...
+                                    else {
+
+                                        element.find('.wssPlayerFullHeart').remove();
+                                        element.find('.wssPlayerHalfHeart').remove();
+
+                                    }
+
+                                    element.html(element.html().replace(/#wssHealth#/g, json.health));
+
+                                    element.appendTo(listItemContainer);
+                                }
+                                //END OF for(var i = 0; i < 10; i++) {...
+                            }
+                            //END OF if (listItemTemplate.length > 0) {...
+
+                            /*
+                            var element = heartItemTemplate;
+
+                            element.find('.wssPlayerFullHeart').remove();
+                            element.find('.wssPlayerHalfHeart').remove();
+                            element.find('.wssPlayerEmptyHeart').remove();
+                            */
+                            //element.appendTo(heartItemTemplate);
+
+                        }
+                        //END OF if (heartContainer.length > 0) {...
+
+                    }
+                    //END OF if (itemList.length > 0) {...
+
+                    show = true;
+
+                }
+                //END OF if(json.Status == "SUCCESSFUL") {...
+
+            }
+            catch (exception) {
+
+                console.log(exception);
+
+            }
+
+        }
+        //END OF if(msg !== undefined) {...
+
+    };
+    ws.onclose = function () {
+
+        //We only want to continue this timer when the socket closes.
+        if (that._specificPlayerInterval > 0) {
+
+            var callMethod = function () { that.getSpecificPlayerInfo(name); } 
+
+            that._specificPlayerInfoPID = setTimeout(callMethod, that._specificPlayerInterval);
+
+        }
+
+        if (show) {
+
+            $('.wssMinecraftSpecificPlayer').show();
+
+        }
+
+    };
+    ws.onerror = function (error) {
+
+        console.log('WebSocket Error ' + error);
+
+    };
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.stopSpecificPlayerInfo = function() {
+
+    if (this._specificPlayerInfoPID > 0) {
+
+        this._specificPlayerInfoPID = clearTimeout(this._specificPlayerInfoPID);
+
+    }
+
 }
 
 CaffeinatedRat.Minecraft.WebSocketServices.prototype.callService = function (service, parameters) {
