@@ -6,17 +6,17 @@ Document Classes
 
 body
 {
-    /*background: url('../media/offline.jpg') no-repeat 0% 0% #000000;*/
-    background-color: #000000;
-    font-size: .75em;
-    font-family: Verdana, Helvetica, Sans-Serif;
-    color: #696969;
-    margin: 0px;
+	/*background: url('../media/offline.jpg') no-repeat 0% 0% #000000;*/
+	background-color: #000000;
+	font-size: .75em;
+	font-family: Verdana, Helvetica, Sans-Serif;
+	color: #696969;
+	margin: 0px;
 }
 
 div.inline
 {
-	display:inline-block;
+	display: inline-block;
 }
 
 div.buffer
@@ -44,10 +44,10 @@ Page Classes
 
 .wrapper
 {
-    margin-left: auto;
-    margin-right: auto;
-    text-align:left;
-    width: 910px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: left;
+	width: 910px;
 	height: 650px;
 
 	background-color: rgba(125, 125, 125, 0.55);
@@ -200,6 +200,27 @@ Tile Classes
 	width: 16px;
 }
 
+.fullHeartTile
+{
+    background-position: 0px -16px;
+    height: 16px;
+    width: 16px;
+}
+
+.halfHeartTile
+{
+    background-position: -16px -16px;
+    height: 16px;
+    width: 16px;
+}
+
+.emptyHeartTile
+{
+    background-position: 0px -32px;
+    height: 16px;
+    width: 16px;
+}
+
 .mojangTile
 {
 	background-position: -32px -32px;
@@ -252,7 +273,7 @@ Offline Classes
 #websocketNotSupported
 {
 	height: 630px;
-	text-align:left;
+	text-align: left;
 }
 
 #offlineDiv
@@ -311,24 +332,50 @@ Profile Classes
 
 .profileBackground_normal
 {
-	background-image: url('../media/Normal.jpg')
+	background-image: url('../media/Normal.jpg');
 }
 
 .profileBackground_nether
 {
-	background-image: url('../media/Nether.jpg')
+	background-image: url('../media/Nether.jpg');
 }
 
 .profileBackground_theend
 {
-	background-image: url('../media/TheEnd.jpg')
+	background-image: url('../media/TheEnd.jpg');
 }
 
+/*
+Total Height: 600px
+*/
 .elementOverlay
 {
-	float:left;
-	position:absolute;
-	color: white;
+    float: left;
+    position: absolute;
+    color: white;
+    height: 540px;
+    width: 1px;
+    /*width: 540px;*/
+}
+
+/*
+Height: 0px;
+*/
+
+.controlIcons
+{
+    position: relative;
+    width: 130px;
+}
+
+/*
+Total Height: 540px - 32px = 350px
+*/
+.statusIcons
+{
+    position: relative;
+    top: 425px;
+    width: 540px;
 }
 
 #webGLNotSupported
@@ -351,21 +398,42 @@ Profile Classes
 
 /*
 ------------------------------------
-Demo specific Classes
+Experience Classes
 ------------------------------------
 */
 
-h1.welcome
+.wssExperienceContainer
 {
-	color: #fff;
+    width:364px;
+    height:16px;
 }
 
-.welcome
+.experienceOverlay
 {
-	font-size: 1.0em;
-	color: #000;
+    position: absolute;
 }
 
-.port
+.experienceBar
 {
+    background: url('../media/experience.png') no-repeat 0px 0px transparent;
+    height: 10px;
+    width: 364px;
+}
+
+.experienceProgress
+{
+    background-position: 0px -10px;
+    height: 10px;
+}
+
+.experienceCenter
+{
+    margin: 5px 0px;
+}
+
+.levelContainer
+{
+    text-align:center;
+    vertical-align:top;
+    width:364px;
 }

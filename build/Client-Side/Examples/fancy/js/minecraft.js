@@ -76,6 +76,7 @@ function Init() {
 			if ( profile != null ) {
 				
 				profile.stop();
+				wss.stopSpecificPlayerInfo();
 
 			}
 
@@ -139,12 +140,16 @@ $(document).ready(function () {
 			var playersName = $(this).data('name');
 
 			$('#skinWrapper').text('');
+            //Show the dialog.
+            $('#skinProfile-modal').dialog('open');
+            $('#skinProfile-modal').dialog('option', 'title', playersName + '\'s profile');
 
-			$('#skinProfile-modal').dialog('open');
-			$('#skinProfile-modal').dialog('option', 'title', playersName + '\'s profile');
+			//Update the background based on the environment.
 			$('#skinWrapper').data('name', playersName);
 			$('#skinWrapper').removeClass();
 			$('#skinWrapper').addClass('profileBackground_' + $(this).data('environment'));
+            wss.stopSpecificPlayerInfo();
+            wss.getSpecificPlayerInfo(playersName, { updateTime: 3000 });
 
 			try {
 
@@ -152,7 +157,8 @@ $(document).ready(function () {
 					container: $('#skinWrapper'),
 					skinImage: wss.getImage(playersName),
 					useWebGL: false,
-					scale: 200
+					scale: 200,
+                    positionVector3: new THREE.Vector3(0.0, 200.0, 0.0)
 				});
 
 				profile.init();
