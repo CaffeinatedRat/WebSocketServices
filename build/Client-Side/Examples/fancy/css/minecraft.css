@@ -6,22 +6,22 @@ Document Classes
 
 body
 {
-	/*background: url('../media/offline.jpg') no-repeat 0% 0% #000000;*/
-	background-color: #000000;
-	font-size: .75em;
-	font-family: Verdana, Helvetica, Sans-Serif;
-	color: #696969;
-	margin: 0px;
+    /*background: url('../media/offline.jpg') no-repeat 0% 0% #000000;*/
+    background-color: #000000;
+    font-size: .75em;
+    font-family: Verdana, Helvetica, Sans-Serif;
+    color: #696969;
+    margin: 0px;
 }
 
 div.inline
 {
-	display: inline-block;
+    display: inline-block;
 }
 
 div.buffer
 {
-	margin: 15px 0px;
+    margin: 15px 0px;
 }
 
 /*
@@ -32,82 +32,79 @@ Page Classes
 
 .titlebar
 {
-	margin: 10px 15px;
-	height: 75px;
+    margin: 10px 15px;
+    height: 75px;
 }
 
 .title
 {
-	color: #fff;
-	float: left;
+    color: #fff;
+    float: left;
 }
 
 .wrapper
 {
-	margin-left: auto;
-	margin-right: auto;
-	text-align: left;
-	width: 910px;
-	height: 650px;
-
-	background-color: rgba(125, 125, 125, 0.55);
-
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	border-radius: 5px;
-	padding: 15px;
-
-	color: #fff;
-	text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    width: 910px;
+    height: 650px;
+    background-color: rgba(125, 125, 125, 0.55);
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 15px;
+    color: #fff;
+    text-align: center;
 }
 
 #tabs
 {
-	height: 640px;
-	background: rgba(255, 255, 255, 0.65) 50% 50% repeat-x !important;
+    height: 640px;
+    background: rgba(255, 255, 255, 0.65) 50% 50% repeat-x !important;
 }
 
 .tabContainer
 {
-	height: 580px;
+    height: 580px;
 }
 
 .scrollContainer
 {
-	overflow: scroll;
-	overflow-y: auto;
-	overflow-x: hidden;
+    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .container
 {
-	height: 550px;
-	text-align: left;
-	padding: 15px;
+    height: 550px;
+    text-align: left;
+    padding: 15px;
 }
 
 .container > div
 {
-	padding: 5px;
+    padding: 5px;
 }
 
 #footer
 {
-	margin: 15px;
-	height: 4em;
-	text-align: center;
-	color: #fff;
+    margin: 15px;
+    height: 4em;
+    text-align: center;
+    color: #fff;
 }
 
 #footer a, #footer a:hover, #footer a:visited
 {
-	text-decoration: none;
-	color: #fff;
+    text-decoration: none;
+    color: #fff;
 }
 
 .clear
 {
-	clear: both;
+    clear: both;
 }
 
 /*
@@ -118,17 +115,17 @@ Status Classes
 
 .serverStatus
 {
-	float: right;
+    float: right;
 }
 
 .offline
 {
-	color: red;
+    color: red;
 }
 
 .online
 {
-	color: green;
+    color: green;
 }
 
 /*
@@ -139,17 +136,17 @@ Images Classes
 
 .imgOffline
 {
-	background: url('../media/offline.jpg') no-repeat 0% 0% #000000;
+    background: url('../media/offline.jpg') no-repeat 0% 0% #000000;
 }
 
 .imgDay
 {
-	background: url('../media/day.jpg') no-repeat 0% 0% #000000;
+    background: url('../media/day.jpg') no-repeat 0% 0% #000000;
 }
 
 .imgNight
 {
-	background: url('../media/night.jpg') no-repeat 0% 0% #000000;
+    background: url('../media/night.jpg') no-repeat 0% 0% #000000;
 }
 
 /*
@@ -160,44 +157,44 @@ Tile Classes
 
 .tiles
 {
-	background: url('../media/tiles.png') no-repeat 0px 0px transparent;
-	height: 16px;
-	width: 16px;
+    background: url('../media/tiles.png') no-repeat 0px 0px transparent;
+    height: 16px;
+    width: 16px;
 }
 
 .netherTile
 {
-	background-position: 0px 0px;
-	height: 16px;
-	width: 16px;
+    background-position: 0px 0px;
+    height: 16px;
+    width: 16px;
 }
 
 .normalTile
 {
-	background-position: -48px 0px;
-	height: 16px;
-	width: 16px;
+    background-position: -48px 0px;
+    height: 16px;
+    width: 16px;
 }
 
 .theendTile
 {
-	background-position: -32px 0px;
-	height: 16px;
-	width: 16px;
+    background-position: -32px 0px;
+    height: 16px;
+    width: 16px;
 }
 
 .modTile
 {
-	background-position: -32px -16px;
-	height: 16px;
-	width: 16px;
+    background-position: -32px -16px;
+    height: 16px;
+    width: 16px;
 }
 
 .playerTile
 {
-	background-position: -48px -16px;
-	height: 16px;
-	width: 16px;
+    background-position: -48px -16px;
+    height: 16px;
+    width: 16px;
 }
 
 .fullHeartTile
@@ -223,45 +220,45 @@ Tile Classes
 
 .mojangTile
 {
-	background-position: -32px -32px;
-	height: 16px;
-	width: 16px;
+    background-position: -32px -32px;
+    height: 16px;
+    width: 16px;
 }
 
 .rotateTile
 {
-	background-position: 0px -48px;
-	height: 16px;
-	width: 16px;
+    background-position: 0px -48px;
+    height: 16px;
+    width: 16px;
 }
 
 .moveTile
 {
-	background-position: -32px -48px;
-	height: 16px;
-	width: 16px;
+    background-position: -32px -48px;
+    height: 16px;
+    width: 16px;
 }
 
 .zoomTile
 {
-	background-position: -16px -48px;
-	height: 16px;
-	width: 16px;
+    background-position: -16px -48px;
+    height: 16px;
+    width: 16px;
 }
 
 .imgPlayersFace
 {
-	background-position: -32px 0px;
-	height: 16px;
-	width: 16px;
-	background-size: 100%;
-	-webkit-background-size: 100%;
+    background-position: -32px 0px;
+    height: 16px;
+    width: 16px;
+    background-size: 100%;
+    -webkit-background-size: 100%;
 }
 
 .playersFace
 {
-	width: 16px;
-	height: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 /*
@@ -272,13 +269,13 @@ Offline Classes
 
 #websocketNotSupported
 {
-	height: 630px;
-	text-align: left;
+    height: 630px;
+    text-align: left;
 }
 
 #offlineDiv
 {
-	height: 630px;
+    height: 630px;
 }
 
 /*
@@ -289,13 +286,13 @@ Player Classes
 
 .playerContainer
 {
-	height: 500px;
+    height: 500px;
 }
 
 .playerElement > div
 {
-	padding: 0 5px;
-	vertical-align: top;
+    padding: 0 5px;
+    vertical-align: top;
 }
 
 .playerName
@@ -309,13 +306,13 @@ Plugin Classes
 */
 .wssPluginList, .wssPluginList td
 {
-	border: 1px solid black;
+    border: 1px solid black;
 }
 
 .wssPluginList th
 {
-	border: 1px solid black;
-	background-color: rgba(200, 200, 200, 1.0);
+    border: 1px solid black;
+    background-color: rgba(200, 200, 200, 1.0);
 }
 
 /*
@@ -326,23 +323,23 @@ Profile Classes
 
 #skinWrapper
 {
-	width: 540px;
-	height: 540px;
+    width: 540px;
+    height: 540px;
 }
 
 .profileBackground_normal
 {
-	background-image: url('../media/Normal.jpg');
+    background-image: url('../media/Normal.jpg');
 }
 
 .profileBackground_nether
 {
-	background-image: url('../media/Nether.jpg');
+    background-image: url('../media/Nether.jpg');
 }
 
 .profileBackground_theend
 {
-	background-image: url('../media/TheEnd.jpg');
+    background-image: url('../media/TheEnd.jpg');
 }
 
 /*
@@ -354,8 +351,7 @@ Total Height: 600px
     position: absolute;
     color: white;
     height: 540px;
-    width: 1px;
-    /*width: 540px;*/
+    width: 1px; /*width: 540px;*/
 }
 
 /*
@@ -380,20 +376,19 @@ Total Height: 540px - 32px = 350px
 
 #webGLNotSupported
 {
-	float: left;
-	position: relative;
-
-	width: 540px;
-	height: 540px;
-	vertical-align: middle;
-	text-align: center;
+    float: left;
+    position: relative;
+    width: 540px;
+    height: 540px;
+    vertical-align: middle;
+    text-align: center;
 }
 
 #webGLNotSupported h2
 {
-	color: black;
-	margin-top: 250px;
-	background-color: rgba(255, 255, 255, 0.65);
+    color: black;
+    margin-top: 250px;
+    background-color: rgba(255, 255, 255, 0.65);
 }
 
 /*
@@ -404,8 +399,8 @@ Experience Classes
 
 .wssExperienceContainer
 {
-    width:364px;
-    height:16px;
+    width: 364px;
+    height: 16px;
 }
 
 .experienceOverlay
@@ -433,7 +428,7 @@ Experience Classes
 
 .levelContainer
 {
-    text-align:center;
-    vertical-align:top;
-    width:364px;
+    text-align: center;
+    vertical-align: top;
+    width: 364px;
 }
