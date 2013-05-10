@@ -76,7 +76,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     this._images = [];
     this._defaultSkin = null;
     this._preloadFaceDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAEJ0lEQVRoQ+WXOUtsSxSF/Q8mziPOaCAmBmJg4oSBkeKImojigAMiRiaKBgoqaugv3fd9Ra1mv+JUN9crr/v13bDYdap2lfWtU11tN1SKzs5OQ83NzSGrjRobG215ebms4jL/3xBwd3d3kDcAATk/P2+bm5uljOrKAMG3trZmDfin9F+iry4MANK/ebJMIde9AR6WE4B0Iv4aA4rgKxkwMTFRPwYIvKOjI7S5/VMDilQ3Bgjci34ZUE5xmdqNtrY2Q0CRge3r67Oenp6SAOWNt7e3h4vQG6Aa5jDXr4VU5y9Q2oiTFLdRvdBG9Wa7uroCCBvt7+8vbVrPY2NjNjo6GuowRDXMoU/reAOA9feGDEBxG9ULNt3S0hI2LQi9aRnx8vJiHx8f9vX1Ze/v7/b5+Wm3t7c2MDAQaqhljsxjLdbkmfmCp7/mDNCbYrPIP/f29trd3Z09PT2F/Pj4aDc3N/b29mbn5+dB1KTz/DOQ/s2TZQo5bqN6oY0i3lBTU5Pt7OzYycmJjYyMBHhiYWHBHh4eAjxtAlOooZY5zPXHH3lYxpBORM0ZoGO7sbFhh4eHtru7G+Du7+/t+fm59PX2+vpql5eXtr6+HmqoZQ5zWcOvCWQRfM0YoONKnpubC2DHx8elHzT7+/t2cHBgg4ODARgNDw+HfqCpoZY5zGUNv6bgAdb94P+PiNuoXujXm6DPzs7CG93b2wtwS0tLtri4GAzgqw54tLW1ZSsrK6GGWu4D5p6enoas9RA1OgGSjIvbqJ1YW1szL8C9Ylk2uDOAKxJjMzMzZRWXycbFxUVYB9HmIzk5OVnKsez78RMG6K5I9RMGCF5i3b/WAE6AhyfHsu/HTxhQdPzRTxiQfgT+2IDx8XFDQ0NDIXOLe/mxdHxqaspWV1dLmp6eDt8YR0dH4RuCbwUyog/5ekQfINL19XWQnnP1qknHNV+KmPkQ4HcMQPzR2dnZINrauEwQvDbk65FgUmkdXytAzZGh6bhXxMxHJcBK40UbRDKBE+EhfT1Sf5GYlwL6tVDVDeDYawO0/R+XAb4vV686AH07BfSn6T87Ab6Gz72XQCQ276HVVr+vRYyl0H4+/5RJ29vb4feHF32+Jh2PmPnwcAhowckAxnMGeBjMEGgOzBtGm7GiOeScAVdXVyVA9atG/VLEzEeRAV6VxlMggQhMIKkBZBmQQtPWOh4uNYBcZAD9qomY+RBYDpC+cgakn0FtXCCpAb5eBqS1tLWOhxOglBogg7wiZj4ElgOsNF7uEvJQei5XXyQPlzNA+pYBOr45QPWrTm9HEhAZ+TH/9sm+XnN8vWrUZp6HI6eAGpfo0/EnR8x8CCwHWGkcc/QRIacGIi5LbwB1mqNxBLDW5ZkxgaUGCLLohFTNAAEVCaBK9arxfTJA8nBI4NLvGdDQ8AsymdS9DKPFOgAAAABJRU5ErkJggg==';
-    this._specificPlayerInterval = 15000;
+    this._specificPlayerInterval = 5000;
 
     //Callbacks
     this._pingConnectedCallback = null;
@@ -266,6 +266,8 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     $('.wssMinecraftWhiteList').hide();
     $('.wssMinecraftOfflineList').hide();
     $('.wssMinecraftPluginList').hide();
+    $('.wssMinecraftSpecificPlayer').hide();
+    $('.wssMinecraftServerInfo').hide();
 
 }
 
@@ -741,6 +743,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getServerInfo = function (p
 
     var ws = new WebSocket(this._websocketAddress);
     var that = this;
+    var show = false;
     ws.onopen = function () {
 
         ws.send('info');
@@ -785,6 +788,8 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getServerInfo = function (p
                     $('.wssMinecraftIPAddress').text(json.ipAddress);
                     $('.wssMinecraftTime').text((json.serverTime % 23000 >= 13000) ? "Night" : "Day");
 
+                    show = true;
+
                 }
                 //END OF if(json.Status == "SUCCESSFUL") {...
 
@@ -797,6 +802,20 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getServerInfo = function (p
 
         }
         //END OF if(msg !== undefined) {...
+
+    }
+    ws.onclose = function () {
+
+        if (show) {
+
+            $('.wssMinecraftServerInfo').show();
+
+        }
+        else {
+
+            $('.wssMinecraftServerInfo').hide();
+
+        }
 
     }
     ws.onerror = function (error) {
@@ -814,6 +833,12 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
 
     parameters = parameters || {};
 
+    if (parameters.callback !== undefined) {
+
+        this._playerInfoCallback = parameters.callback;
+
+    }
+
     //Set the update time.
     if (parameters.updateTime !== undefined) {
 
@@ -821,9 +846,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
 
     }
 
-    if (parameters.callback !== undefined) {
+    //Internal parameter.
+    if (parameters.internalCall === undefined) {
 
-        this._playerInfoCallback = parameters.callback;
+        //Prevent additional timers from firing.
+        this.stopPlayerUpdates();
 
     }
 
@@ -898,11 +925,10 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
     };
     ws.onclose = function () {
 
-        var callMethod = function () { that.getPlayerInfo(); }
-
         //We only want to continue this timer when the socket closes.
         if (that._onlineInterval > 0) {
 
+            var callMethod = function () { that.getPlayerInfo({ internalCall: true }); }
             that._onlineTimerPID = setTimeout(callMethod, that._onlineInterval);
 
         }
@@ -918,6 +944,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
             $('.wssMinecraftPlayerList').show();
 
         }
+        else {
+
+            $('.wssMinecraftPlayerList').hide();
+
+        }
 
     }
     ws.onerror = function (error) {
@@ -925,6 +956,17 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
         console.log('WebSocket Error ' + error);
 
     };
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.stopPlayerUpdates = function () {
+
+    if (this._onlineTimerPID > 0) {
+
+        clearTimeout(this._onlineTimerPID);
+        this._onlineTimerPID = 0;
+
+    }
+
 }
 
 CaffeinatedRat.Minecraft.WebSocketServices.prototype.getWhiteListing = function (parameters) {
@@ -1016,6 +1058,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getWhiteListing = function 
         if (show) {
 
             $('.wssMinecraftWhiteList').show();
+
+        }
+        else {
+
+            $('.wssMinecraftWhiteList').hide();
 
         }
 
@@ -1122,6 +1169,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getOfflinePlayers = functio
             $('.wssMinecraftOfflineList').show();
 
         }
+        else {
+
+            $('.wssMinecraftOfflineList').hide();
+
+        }
 
     };
     ws.onerror = function (error) {
@@ -1152,7 +1204,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
         if (that._showLoadingImage) {
 
-            $('<div id="pendingPlugins"><img src="' + that._loadingImageDataUrl + '"></img></div>').insertBefore('.wssPluginList');
+            $('<div id="pendingPlugins"><img src="' + that._loadingImageDataUrl + '"></img></div>').insertBefore('.wssMinecraftPluginList');
 
         }
 
@@ -1182,7 +1234,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
                 if (json.Status == "SUCCESSFUL") {
 
-                    var itemList = $('.wssPluginList');
+                    var itemList = $('.wssMinecraftPluginList');
                     if (itemList.length > 0) {
 
                         if (that._templatePluginList == null) {
@@ -1224,6 +1276,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
             $('.wssMinecraftPluginList').show();
 
         }
+        else {
+
+            $('.wssMinecraftPluginList').hide();
+
+        }
 
     };
     ws.onerror = function (error) {
@@ -1250,6 +1307,14 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
     if (parameters.updateTime !== undefined) {
 
         this._specificPlayerInterval = parameters.updateTime;
+
+    }
+
+    //Internal parameter.
+    if (parameters.internalCall === undefined) {
+
+        //Prevent additional timers from firing.
+        this.stopSpecificPlayerUpdates();
 
     }
 
@@ -1291,7 +1356,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
                 //Perform callback.
                 if (that._specificPlayerInfoCallback) {
 
-                    that._specificPlayerInfoCallback(json);
+                    that._specificPlayerInfoCallback(name, json);
 
                 }
 
@@ -1300,8 +1365,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
                     var itemList = $('.wssMinecraftSpecificPlayer');
                     if (itemList.length > 0) {
 
-                        //$(".wssExperienceBar").css('width', (json.experience * 100) + '%');
-                        $(".wssExperienceBar").css('width', (json.experience * 364) + 'px');
+                        $(".wssExperienceBar").css('width', (json.experience * 100) + '%');
                         $(".wssLevel").text(json.level);
 
                         var heartContainer = $('.wssHealthContainer');
@@ -1323,18 +1387,18 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
                                 var itemTemplate = listItemContainer.children(':first').detach();
                                 listItemContainer.appendTo(heartContainer);
 
-                                for(var i = 0; i < 10; i++) {
+                                for (var i = 0; i < 10; i++) {
 
                                     var element = itemTemplate.clone();
 
                                     //Determine the number of hearts and if they're full or empty.
                                     var numberofFullHearts = Math.ceil(json.health / 2);
-                                    if ( (json.health > 0) && ( (i + 1) <= numberofFullHearts) ) {
+                                    if ((json.health > 0) && ((i + 1) <= numberofFullHearts)) {
 
                                         //Determine if it is the last heart and if it's half instead of whole.
-                                        if ( (json.health % 2 === 1) && ( (i + 1) === numberofFullHearts) ) {
+                                        if ((json.health % 2 === 1) && ((i + 1) === numberofFullHearts)) {
 
-                                           element.find('.wssPlayerFullHeart').remove();
+                                            element.find('.wssPlayerFullHeart').remove();
 
                                         }
                                         else {
@@ -1360,15 +1424,6 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
                                 //END OF for(var i = 0; i < 10; i++) {...
                             }
                             //END OF if (listItemTemplate.length > 0) {...
-
-                            /*
-                            var element = heartItemTemplate;
-
-                            element.find('.wssPlayerFullHeart').remove();
-                            element.find('.wssPlayerHalfHeart').remove();
-                            element.find('.wssPlayerEmptyHeart').remove();
-                            */
-                            //element.appendTo(heartItemTemplate);
 
                         }
                         //END OF if (heartContainer.length > 0) {...
@@ -1397,8 +1452,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
         //We only want to continue this timer when the socket closes.
         if (that._specificPlayerInterval > 0) {
 
-            var callMethod = function () { that.getSpecificPlayerInfo(name); } 
-
+            var callMethod = function () { that.getSpecificPlayerInfo(name, { internalCall: true }); }
             that._specificPlayerInfoPID = setTimeout(callMethod, that._specificPlayerInterval);
 
         }
@@ -1406,6 +1460,11 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
         if (show) {
 
             $('.wssMinecraftSpecificPlayer').show();
+
+        }
+        else {
+
+            $('.wssMinecraftSpecificPlayer').hide();
 
         }
 
@@ -1417,11 +1476,12 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
     };
 }
 
-CaffeinatedRat.Minecraft.WebSocketServices.prototype.stopSpecificPlayerInfo = function() {
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.stopSpecificPlayerUpdates = function () {
 
     if (this._specificPlayerInfoPID > 0) {
 
-        this._specificPlayerInfoPID = clearTimeout(this._specificPlayerInfoPID);
+        clearTimeout(this._specificPlayerInfoPID);
+        this._specificPlayerInfoPID = 0;
 
     }
 

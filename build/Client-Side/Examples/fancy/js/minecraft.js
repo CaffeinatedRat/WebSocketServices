@@ -45,6 +45,10 @@ function pingServerTime(serverTime) {
 
 function Init() {
 
+    //Apply thet JQuery UI look & feel
+    $('#tabs').tabs({});
+    $('.button').button();
+
     //Instantiate our WebSocketServer object.
     //If websockets are not supported then an exception will be thrown.
     //Let the exception be caught at the top level.
@@ -61,9 +65,6 @@ function Init() {
 
     wss.getServerInfo();
 
-    //Apply thet JQuery UI tabs & modal dialog to our page.
-    $('#tabs').tabs({});
-
     //The modal pop-up will contain our player's profile model.
     $("#skinProfile-modal").dialog({
         height: 600,
@@ -76,7 +77,6 @@ function Init() {
             if (profile != null) {
 
                 profile.stop();
-                wss.stopSpecificPlayerInfo();
 
             }
 
@@ -92,27 +92,35 @@ $(document).ready(function () {
 
         //Show server info.
         $('#serverTab').click(function () {
-            wss.getServerInfo();
+
+            wss.getServerInfo()
+
         });
 
         //Show players online.
         $('#playerTab').click(function () {
 
             wss.getPlayerInfo({ updateTime: 15000 });
+
         });
 
         //Show white-listed players.
         $('#whitelistTab').click(function () {
+
             wss.getWhiteListing();
+
         });
 
         //Show offline players.
         $('#offlinePlayersTab').click(function () {
+
             wss.getOfflinePlayers();
+
         });
 
         //Show the plug-ins.
         $('#pluginsTab').click(function () {
+
             wss.getPluginInfo();
         });
 
@@ -140,6 +148,7 @@ $(document).ready(function () {
             var playersName = $(this).data('name');
 
             $('#skinWrapper').text('');
+
             //Show the dialog.
             $('#skinProfile-modal').dialog('open');
             $('#skinProfile-modal').dialog('option', 'title', playersName + '\'s profile');
@@ -148,9 +157,10 @@ $(document).ready(function () {
             $('#skinWrapper').data('name', playersName);
             $('#skinWrapper').removeClass();
             $('#skinWrapper').addClass('profileBackground_' + $(this).data('environment'));
-            wss.stopSpecificPlayerInfo();
-            wss.getSpecificPlayerInfo(playersName, { updateTime: 3000 });
 
+            wss.getSpecificPlayerInfo(playersName, { updateTime: 5000 });
+
+            //Show the minecraft skin.
             try {
 
                 profile = new CaffeinatedRat.Minecraft.SkinProfile({

@@ -99,12 +99,12 @@
                 </div>
                 <div id="tabs-2" class="tabContainer">
                     <div class="container">
-                        <div>
-                            <strong>Players online: </strong><span class="wssMinecraftTotalPlayersOnline"></span>
-                            out of <span class="wssMinecraftMaxNumberOfPlayers"></span>
-                        </div>
-                        <div class="playerContainer scrollContainer">
+                         <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftPlayerList">
+                                <div>
+                                    <strong>Players online: </strong><span class="wssMinecraftTotalPlayersOnline"></span>
+                                    out of <span class="wssMinecraftMaxNumberOfPlayers"></span>
+                                </div>
                                 <ul class="wssListItemTemplate">
                                     <li>
                                         <div class="playerElement">
@@ -122,8 +122,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
-                                                    <strong>#wssPlayerName# </strong></a>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
+                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                </a>
                                             </div>
                                             <div class="inline">
                                                 (#wssPlayerOnlineTime#)
@@ -144,12 +145,12 @@
                 </div>
                 <div id="tabs-3" class="tabContainer">
                     <div class="container">
-                        <div>
-                            <strong>White-listed Players: </strong><span class="wssTotalWhitelistedPlayers">
-                            </span>
-                        </div>
                         <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftWhiteList">
+                                <div>
+                                    <strong>White-listed Players: </strong><span class="wssTotalWhitelistedPlayers">
+                                    </span>
+                                </div>
                                 <ul class="wssListItemTemplate">
                                     <li>
                                         <div class="playerElement">
@@ -167,8 +168,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
-                                                    <strong>#wssPlayerName# </strong></a>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
+                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                </a>
                                             </div>
                                             <div class="inline">
                                                 (#wssPlayerOnlineTime#)
@@ -185,11 +187,11 @@
                 </div>
                 <div id="tabs-4" class="tabContainer">
                     <div class="container">
-                        <div>
-                            <strong>Offline Players: </strong><span id="wssTotalOfflinePlayers"></span>
-                        </div>
                         <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftOfflineList">
+                                <div>
+                                    <strong>Offline Players: </strong><span id="wssTotalOfflinePlayers"></span>
+                                </div>
                                 <ul class="wssListItemTemplate">
                                     <li>
                                         <div class="playerElement">
@@ -207,8 +209,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#">
-                                                    <strong>#wssPlayerName# </strong></a>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
+                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                </a>
                                             </div>
                                             <div class="inline">
                                                 (#wssPlayerOnlineTime#)
@@ -225,7 +228,7 @@
                 </div>
                 <div id="tabs-5" class="tabContainer">
                     <div class="container scrollContainer">
-                        <table class="wssPluginList">
+                        <table class="wssMinecraftPluginList">
                             <thead>
                                 <tr>
                                     <th>
@@ -359,35 +362,23 @@
                     <div class="wssHealthContainer">
                         <div class="wssListItemTemplate">
                             <div class="inline" style="vertical-align: top;">
-                                <div title="Health: #wssHealth#" class="tiles fullHeartTile wssPlayerFullHeart">
-                                </div>
-                                <div title="Health: #wssHealth#" class="tiles halfHeartTile wssPlayerHalfHeart">
-                                </div>
-                                <div title="Health: #wssHealth#" class="tiles emptyHeartTile wssPlayerEmptyHeart">
-                                </div>
+                                <div title="Health: #wssHealth#" class="tiles fullHeartTile wssPlayerFullHeart"></div>
+                                <div title="Health: #wssHealth#" class="tiles halfHeartTile wssPlayerHalfHeart"></div>
+                                <div title="Health: #wssHealth#" class="tiles emptyHeartTile wssPlayerEmptyHeart"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="wssExperienceContainer" style="padding-top: 2px">
-                        <div style="width: 364px;">
-                            <div class="experienceOverlay experienceBar experienceCenter">
-                            </div>
-                            <div class="experienceOverlay experienceBar experienceCenter experienceProgress wssExperienceBar"
-                                style="width: 0%;">
-                            </div>
-                            <div class="experienceOverlay levelContainer">
-                                <strong><span class="wssLevel"></span></strong>
-                            </div>
+                    <div class="wssExperienceContainer" style="padding-top:2px">
+                        <div class="experienceOverlay experienceBar experienceCenter experienceBackground">
+                        </div>
+                        <div class="experienceOverlay experienceBar experienceCenter experienceProgress wssExperienceBar" style="width:0%;">
+                        </div>
+                        <div class="experienceOverlay levelContainer">
+                            <strong>
+                                <span class="wssLevel"></span>
+                            </strong>
                         </div>
                     </div>
-                    <!--                <div class="wssLevelContainer">
-	                        <div class="inline" style="vertical-align: top;">
-	                            <span>
-	                                Level:
-	                            </span>
-	                            <span class="wssLevel"></span>
-	                        </div>
-	                    </div>-->
                 </div>
             </div>
             <div id="skinWrapper">
