@@ -277,12 +277,12 @@
     <div id="footer">
         <div class="buffer">
             <div class="inline">
-                Site Design by <a href="http://www.caffeinatedrat.com">CaffeinatedRat</a>
+                Site developed & designed by <a href="http://www.caffeinatedrat.com">CaffeinatedRat</a>
             </div>
         </div>
         <div class="buffer">
             <div class="inline">
-                Minecraft Copyright (c) 2012
+                Minecraft Copyright (c) 2013
             </div>
             <a href="http://www.mojang.com/">
                 <div class="inline" style="vertical-align: top;">
@@ -302,7 +302,7 @@
                 </div>
             </div>
             <div class="inline">
-                Copyright (c) 2012 <a href="http://painterlypack.net/">Painterly Pack</a>
+                Copyright (c) 2012-2013 <a href="http://painterlypack.net/">Painterly Pack</a>
             </div>
         </div>
     </div>
@@ -313,7 +313,7 @@
                 WebGL is not supported by this browser
             </h2>
         </div>
-        <div id="parentOverlayContainer">
+        <div id="parentOverlayContainer" class="wssMinecraftSpecificPlayer">
             <div id="elementOverlay" class="elementOverlay">
                 <div class="controlIcons">
                     <div>
@@ -358,7 +358,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="statusIcons wssMinecraftSpecificPlayer">
+                <div class="statusIcons">
                     <div class="wssHealthContainer">
                         <div class="wssListItemTemplate">
                             <div class="inline" style="vertical-align: top;">
@@ -381,7 +381,12 @@
                     </div>
                 </div>
             </div>
-            <div id="skinWrapper">
+            <div class="wssPlayerIsDead" style="display:none;">
+                <h2>
+                    Is Dead
+                </h2>
+            </div>
+            <div id="skinWrapper" class="profileBackground_#wssPlayerEnvironment#">
             </div>
         </div>
     </div>

@@ -321,7 +321,7 @@ Profile Classes
 ------------------------------------
 */
 
-#skinWrapper
+#skinWrapper, .skinWrapper
 {
     width: 540px;
     height: 540px;
@@ -342,9 +342,6 @@ Profile Classes
     background-image: url('../media/TheEnd.jpg');
 }
 
-/*
-Total Height: 600px
-*/
 .elementOverlay
 {
     float: left;
@@ -354,27 +351,21 @@ Total Height: 600px
     width: 1px;
 }
 
-/*
-Height: 0px;
-*/
-
 .controlIcons
 {
     position: relative;
     width: 130px;
 }
 
-/*
-Total Height: 540px - 32px = 350px
-*/
 .statusIcons
 {
     position: relative;
     top: 425px;
     width: 540px;
+    pointer-events: none;
 }
 
-#webGLNotSupported
+#webGLNotSupported, .webGLNotSupported
 {
     float: left;
     position: relative;
@@ -384,12 +375,31 @@ Total Height: 540px - 32px = 350px
     text-align: center;
 }
 
-#webGLNotSupported h2
+#webGLNotSupported h2, .webGLNotSupported h2
 {
     color: black;
     margin-top: 250px;
     background-color: rgba(255, 255, 255, 0.65);
 }
+
+.wssPlayerIsDead
+{
+    float: left;
+    position: absolute;
+    width: 540px;
+    vertical-align: middle;
+    text-align: center;
+    top: 250px;
+    pointer-events: none;
+}
+
+.wssPlayerIsDead h2
+{
+    text-shadow: 1px 1px #000000;
+    color: white;
+    background-color: rgba(255, 0, 0, 0.65);
+}
+
 
 /*
 ------------------------------------

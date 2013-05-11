@@ -40,6 +40,8 @@
 * 3) Added a property to disable the version mismatch warning.
 * Revision 6 (5/1/13)
 * 1) Added support for the player service.
+* Revision 7 (5/11/13)
+* 1) Added handling for the template tag wssPlayerIsDead.
 * -----------------------------------------------------------------
 */
 
@@ -58,7 +60,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     // Versioning
     //-----------------------------------------------------------------
     CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.2.0';
-    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '6';
+    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '7';
 
     console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
 
@@ -76,7 +78,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     this._images = [];
     this._defaultSkin = null;
     this._preloadFaceDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAOwwAADsMBx2+oZAAAABp0RVh0U29mdHdhcmUAUGFpbnQuTkVUIHYzLjUuMTAw9HKhAAAEJ0lEQVRoQ+WXOUtsSxSF/Q8mziPOaCAmBmJg4oSBkeKImojigAMiRiaKBgoqaugv3fd9Ra1mv+JUN9crr/v13bDYdap2lfWtU11tN1SKzs5OQ83NzSGrjRobG215ebms4jL/3xBwd3d3kDcAATk/P2+bm5uljOrKAMG3trZmDfin9F+iry4MANK/ebJMIde9AR6WE4B0Iv4aA4rgKxkwMTFRPwYIvKOjI7S5/VMDilQ3Bgjci34ZUE5xmdqNtrY2Q0CRge3r67Oenp6SAOWNt7e3h4vQG6Aa5jDXr4VU5y9Q2oiTFLdRvdBG9Wa7uroCCBvt7+8vbVrPY2NjNjo6GuowRDXMoU/reAOA9feGDEBxG9ULNt3S0hI2LQi9aRnx8vJiHx8f9vX1Ze/v7/b5+Wm3t7c2MDAQaqhljsxjLdbkmfmCp7/mDNCbYrPIP/f29trd3Z09PT2F/Pj4aDc3N/b29mbn5+dB1KTz/DOQ/s2TZQo5bqN6oY0i3lBTU5Pt7OzYycmJjYyMBHhiYWHBHh4eAjxtAlOooZY5zPXHH3lYxpBORM0ZoGO7sbFhh4eHtru7G+Du7+/t+fm59PX2+vpql5eXtr6+HmqoZQ5zWcOvCWQRfM0YoONKnpubC2DHx8elHzT7+/t2cHBgg4ODARgNDw+HfqCpoZY5zGUNv6bgAdb94P+PiNuoXujXm6DPzs7CG93b2wtwS0tLtri4GAzgqw54tLW1ZSsrK6GGWu4D5p6enoas9RA1OgGSjIvbqJ1YW1szL8C9Ylk2uDOAKxJjMzMzZRWXycbFxUVYB9HmIzk5OVnKsez78RMG6K5I9RMGCF5i3b/WAE6AhyfHsu/HTxhQdPzRTxiQfgT+2IDx8XFDQ0NDIXOLe/mxdHxqaspWV1dLmp6eDt8YR0dH4RuCbwUyog/5ekQfINL19XWQnnP1qknHNV+KmPkQ4HcMQPzR2dnZINrauEwQvDbk65FgUmkdXytAzZGh6bhXxMxHJcBK40UbRDKBE+EhfT1Sf5GYlwL6tVDVDeDYawO0/R+XAb4vV686AH07BfSn6T87Ab6Gz72XQCQ276HVVr+vRYyl0H4+/5RJ29vb4feHF32+Jh2PmPnwcAhowckAxnMGeBjMEGgOzBtGm7GiOeScAVdXVyVA9atG/VLEzEeRAV6VxlMggQhMIKkBZBmQQtPWOh4uNYBcZAD9qomY+RBYDpC+cgakn0FtXCCpAb5eBqS1tLWOhxOglBogg7wiZj4ElgOsNF7uEvJQei5XXyQPlzNA+pYBOr45QPWrTm9HEhAZ+TH/9sm+XnN8vWrUZp6HI6eAGpfo0/EnR8x8CCwHWGkcc/QRIacGIi5LbwB1mqNxBLDW5ZkxgaUGCLLohFTNAAEVCaBK9arxfTJA8nBI4NLvGdDQ8AsymdS9DKPFOgAAAABJRU5ErkJggg==';
-    this._specificPlayerInterval = 5000;
+    this._specificPlayerInterval = 0;
 
     //Callbacks
     this._pingConnectedCallback = null;
@@ -292,7 +294,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getImage = function (key) {
 
 }
 
-CaffeinatedRat.Minecraft.WebSocketServices.prototype.mapToTemplate = function (template, parentContainer, collection, mapFunction) {
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.mapToTemplate = function (template, parentContainer, collection, global, mapFunction) {
 
     /// <summary>
     /// Maps the data for the specific mapping function to the template and parent container.
@@ -321,7 +323,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.mapToTemplate = function (t
 
                     if (mapFunction !== undefined) {
 
-                        this[mapFunction](collection[i], listItemContainer, itemTemplate);
+                        this[mapFunction](collection[i], listItemContainer, itemTemplate, global);
 
                     }
                     else {
@@ -523,13 +525,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.manageSkins = function (id,
     //END OF if (this._images[playersName] === undefined) {...
 }
 
-CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = function (player, container, template) {
-
-    /// <summary>
-    /// Performs mapping of the current player object to the container based on the template.
-    /// </summary>
-
-    //template.text(template.text().replace(/ /g, ''));
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerTemplateTags = function (element, player) {
 
     var onlineTime = 'Online: Now';
 
@@ -548,6 +544,52 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = functio
 
     }
 
+    //Define the environment if one is provided.
+    var environment = "normal";
+    if (player.environment !== undefined) {
+
+        environment = player.environment.replace('_', '').toLowerCase();
+
+    }
+
+    //Template Fields
+    element.html(element.html().replace(/#wssPlayerIsOperator#/g, player.isOperator));
+    element.html(element.html().replace(/#wssPlayerName#/g, player.name));
+    element.html(element.html().replace(/#wssPlayerEnvironment#/g, environment));
+    element.html(element.html().replace(/#wssPlayerOnlineTime#/g, onlineTime));
+
+    //Replace the content of all containers as well.
+    element.find('.wssPlayerOnlineTime').text(onlineTime);
+    element.find('.wssPlayerName').text(player.name);
+    element.find('.wssPlayerEnvironment').text(environment);
+
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = function (player, container, template) {
+
+    /// <summary>
+    /// Performs mapping of the current player object to the container based on the template.
+    /// </summary>
+
+    //template.text(template.text().replace(/ /g, ''));
+
+//    var onlineTime = 'Online: Now';
+
+//    if (player.onlineTime === undefined) {
+
+//        if (!player.isOnline) {
+
+//            onlineTime = 'Last Played: ' + player.lastPlayed + ''
+
+//        }
+
+//    }
+//    else {
+
+//        onlineTime = 'Online: ' + player.onlineTime + ''
+
+//    }
+
     //Make srue we clone our template so we don't modify the DOM elements in it.
     var element = template.clone();
 
@@ -563,36 +605,78 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = functio
 
     }
 
-    //Create the canvas element that will display the player's face.
-    var canvasId = "canvas" + this.getCanvasId() + player.name;
-
     //Define the environment if one is provided.
-    var environment = "normal";
-    if (player.environment !== undefined) {
+//    var environment = "normal";
+//    if (player.environment !== undefined) {
 
-        environment = player.environment.replace('_', '').toLowerCase();
+//        environment = player.environment.replace('_', '').toLowerCase();
 
-    }
+//    }
 
     //Do a global search and replace for these tags specifically.
+    //Create the canvas element that will display the player's face.
+    var canvasId = "canvas" + this.getCanvasId() + player.name;
     var canvasElement = '<canvas class="playersFace" id="' + canvasId + '"></canvas>';
 
+    //Template Fields
     element.html(element.html().replace(/#wssPlayerFace#/g, canvasElement));
-    element.html(element.html().replace(/#wssPlayerIsOperator#/g, player.isOperator));
-    element.html(element.html().replace(/#wssPlayerName#/g, player.name));
-    element.html(element.html().replace(/#wssPlayerEnvironment#/g, environment));
-    element.html(element.html().replace(/#wssPlayerOnlineTime#/g, onlineTime));
+    //    element.html(element.html().replace(/#wssPlayerIsOperator#/g, player.isOperator));
+    //    element.html(element.html().replace(/#wssPlayerName#/g, player.name));
+    //    element.html(element.html().replace(/#wssPlayerEnvironment#/g, environment));
+    //    element.html(element.html().replace(/#wssPlayerOnlineTime#/g, onlineTime));
 
     //Replace the content of all containers as well.
-    element.find('.wssPlayerOnlineTime').text(onlineTime);
-    element.find('.wssPlayerName').text(player.name);
-    element.find('.wssPlayerEnvironment').text(environment);
+    //    element.find('.wssPlayerOnlineTime').text(onlineTime);
+    //    element.find('.wssPlayerName').text(player.name);
+    //    element.find('.wssPlayerEnvironment').text(environment);
     element.find('.wssPlayerFace').html(canvasElement);
+
+    this.playerTemplateTags(element, player);
 
     element.appendTo(container);
 
     //Resize the player's face.
     this.manageSkins(canvasId, player.name);
+}
+
+CaffeinatedRat.Minecraft.WebSocketServices.prototype.heartInfoMapping = function (heart, container, template, json) {
+
+    /// <summary>
+    /// Performs mapping of the hearts  to the template.
+    /// </summary>
+
+    var element = template.clone();
+
+    //Determine the number of hearts and if they're full or empty.
+    var numberofFullHearts = Math.ceil(json.health / 2);
+    if ((json.health > 0) && ((i + 1) <= numberofFullHearts)) {
+
+        //Determine if it is the last heart and if it's half instead of whole.
+        if ((json.health % 2 === 1) && ((i + 1) === numberofFullHearts)) {
+
+            element.find('.wssPlayerFullHeart').remove();
+
+        }
+        else {
+
+            element.find('.wssPlayerHalfHeart').remove();
+
+        }
+        element.find('.wssPlayerEmptyHeart').remove();
+
+    }
+    //No hearts...
+    else {
+
+        element.find('.wssPlayerFullHeart').remove();
+        element.find('.wssPlayerHalfHeart').remove();
+
+    }
+
+    element.html(element.html().replace(/#wssHealth#/g, json.health));
+
+    element.appendTo(container);
+
 }
 
 CaffeinatedRat.Minecraft.WebSocketServices.prototype.pluginInfoMapping = function (plugin, container, template) {
@@ -603,6 +687,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.pluginInfoMapping = functio
 
     var element = template.clone();
 
+    //Template Fields
     element.html(element.html().replace(/#wssPluginName#/g, plugin.name));
     element.html(element.html().replace(/#wssPluginVersion#/g, plugin.version));
     element.html(element.html().replace(/#wssPluginAuthor#/g, plugin.author));
@@ -905,7 +990,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPlayerInfo = function (p
 
                     }
 
-                    that.mapToTemplate(that._templateWho, itemList, json.Players, 'playerInfoMapping');
+                    that.mapToTemplate(that._templateWho, itemList, json.Players, null, 'playerInfoMapping');
 
                     show = true;
 
@@ -1030,7 +1115,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getWhiteListing = function 
 
                     }
 
-                    that.mapToTemplate(that._templateWhiteList, itemList, json.Whitelist, 'playerInfoMapping');
+                    that.mapToTemplate(that._templateWhiteList, itemList, json.Whitelist, null, 'playerInfoMapping');
 
                     show = true;
                 }
@@ -1138,7 +1223,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getOfflinePlayers = functio
 
                     }
 
-                    that.mapToTemplate(that._templateOfflinePlayerList, itemList, json.OfflinePlayers, 'playerInfoMapping');
+                    that.mapToTemplate(that._templateOfflinePlayerList, itemList, json.OfflinePlayers, null, 'playerInfoMapping');
 
                     show = true;
 
@@ -1245,7 +1330,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getPluginInfo = function (p
 
                     }
 
-                    that.mapToTemplate(that._templatePluginList, itemList, json.Plugins, 'pluginInfoMapping');
+                    that.mapToTemplate(that._templatePluginList, itemList, json.Plugins, null, 'pluginInfoMapping');
 
                     show = true;
 
@@ -1362,13 +1447,20 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
 
                 if (json.Status == "SUCCESSFUL") {
 
+                    //Append the name.
+                    json.name = name;
+
                     var itemList = $('.wssMinecraftSpecificPlayer');
                     if (itemList.length > 0) {
 
                         $(".wssExperienceBar").css('width', (json.experience * 100) + '%');
                         $(".wssLevel").text(json.level);
+                        $('.wssPlayerIsDead').hide();
+
+                        //that.playerTemplateTags(itemList, json);
 
                         var heartContainer = $('.wssHealthContainer');
+
                         if (heartContainer.length > 0) {
 
                             if (that._templateHearts == null) {
@@ -1376,58 +1468,23 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.getSpecificPlayerInfo = fun
                                 that._templateHearts = heartContainer.clone();
 
                             }
+                            //END OF if (that._templateHearts == null) {...
 
-                            var listItemTemplate = that._templateHearts.find('.wssListItemTemplate');
-                            if (listItemTemplate.length > 0) {
+                            if (!json.isDead) {
 
-                                heartContainer.find('.wssListItemTemplate').remove();
+                                that.mapToTemplate(that._templateHearts, heartContainer, new Array(10), json, 'heartInfoMapping');
+                                $('.wssHealthContainer').show();
 
-                                //Now purge the container.
-                                var listItemContainer = listItemTemplate.clone();
-                                var itemTemplate = listItemContainer.children(':first').detach();
-                                listItemContainer.appendTo(heartContainer);
-
-                                for (var i = 0; i < 10; i++) {
-
-                                    var element = itemTemplate.clone();
-
-                                    //Determine the number of hearts and if they're full or empty.
-                                    var numberofFullHearts = Math.ceil(json.health / 2);
-                                    if ((json.health > 0) && ((i + 1) <= numberofFullHearts)) {
-
-                                        //Determine if it is the last heart and if it's half instead of whole.
-                                        if ((json.health % 2 === 1) && ((i + 1) === numberofFullHearts)) {
-
-                                            element.find('.wssPlayerFullHeart').remove();
-
-                                        }
-                                        else {
-
-                                            element.find('.wssPlayerHalfHeart').remove();
-
-                                        }
-                                        element.find('.wssPlayerEmptyHeart').remove();
-
-                                    }
-                                    //No hearts...
-                                    else {
-
-                                        element.find('.wssPlayerFullHeart').remove();
-                                        element.find('.wssPlayerHalfHeart').remove();
-
-                                    }
-
-                                    element.html(element.html().replace(/#wssHealth#/g, json.health));
-
-                                    element.appendTo(listItemContainer);
-                                }
-                                //END OF for(var i = 0; i < 10; i++) {...
                             }
-                            //END OF if (listItemTemplate.length > 0) {...
+                            else {
 
+                                $('.wssPlayerIsDead').show();
+                                $('.wssHealthContainer').hide();
+
+                            }
+                            //END OF if (!json.isDead) {...
                         }
-                        //END OF if (heartContainer.length > 0) {...
-
+                        //END OF  if (heartContainer.length > 0) {...
                     }
                     //END OF if (itemList.length > 0) {...
 
