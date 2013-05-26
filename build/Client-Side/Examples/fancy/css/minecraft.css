@@ -30,7 +30,14 @@ Page Classes
 ------------------------------------
 */
 
+/*
 .titlebar
+{
+    margin: 10px 15px;
+    height: 75px;
+}
+*/
+header
 {
     margin: 10px 15px;
     height: 75px;
@@ -42,6 +49,23 @@ Page Classes
     float: left;
 }
 
+section
+{
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    width: 910px;
+    height: 650px;
+    background-color: rgba(125, 125, 125, 0.55);
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 15px;
+    color: #fff;
+    text-align: center;
+}
+
+/*
 .wrapper
 {
     margin-left: auto;
@@ -57,6 +81,7 @@ Page Classes
     color: #fff;
     text-align: center;
 }
+*/
 
 #tabs
 {
@@ -88,7 +113,7 @@ Page Classes
     padding: 5px;
 }
 
-#footer
+/*#footer
 {
     margin: 15px;
     height: 4em;
@@ -97,6 +122,20 @@ Page Classes
 }
 
 #footer a, #footer a:hover, #footer a:visited
+{
+    text-decoration: none;
+    color: #fff;
+}
+*/
+
+footer {
+    margin: 15px;
+    /*height: 4em;*/
+    text-align: center;
+    color: #fff;
+}
+
+footer a, footer a:hover, footer a:visited
 {
     text-decoration: none;
     color: #fff;
