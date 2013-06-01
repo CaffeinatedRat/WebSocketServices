@@ -24,6 +24,12 @@ div.buffer
     margin: 15px 0px;
 }
 
+/* IE: To disable image border. */
+img
+{
+    border: 0px none #fff;
+}
+
 /*
 ------------------------------------
 Page Classes
@@ -113,24 +119,8 @@ section
     padding: 5px;
 }
 
-/*#footer
-{
-    margin: 15px;
-    height: 4em;
-    text-align: center;
-    color: #fff;
-}
-
-#footer a, #footer a:hover, #footer a:visited
-{
-    text-decoration: none;
-    color: #fff;
-}
-*/
-
 footer {
     margin: 15px;
-    /*height: 4em;*/
     text-align: center;
     color: #fff;
 }
@@ -193,6 +183,13 @@ Images Classes
 Tile Classes
 ------------------------------------
 */
+
+.caffTile
+{
+    background: url('http://www.caffeinatedrat.com/cr/media/favicon.ico') no-repeat 0px 0px transparent;
+    height: 16px;
+    width: 16px;
+}
 
 .tiles
 {
