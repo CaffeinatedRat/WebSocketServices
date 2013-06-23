@@ -54,6 +54,15 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
+#### 1.3.0
+
+* Upgraded to CraftBukkit 1.5.2-R1.0.
+* Added support for nested JSON structures without the need of a collection.
+* Fixed an issue with the location data for the player service with the nested JSON structure support.
+* Fixed another issue with the WeatherType enumeration causing the player service to fail for CraftBukkit versions lower than 1.5.0.
+* Extracted extensions from services.  An extension can only be invoked by one service name, but can now have any service name assigned to it.
+* Configuration file modified to support extensions.
+
 #### 1.2.0
 
 * Upgraded to CraftBukkit 1.5.1-R0.2.

@@ -15,7 +15,10 @@ websocket:
   whitelist: false
   #Determines if the server is pingable via websockets (This is reserved as a future feature as most browers do not support a websocket ping method).
   pingable: false
+  #Silences the response from all services and extensions that are disabled.
+  muteDisabledServices: false 
 #Configuration for the commands (services) that are supported.
+#WARNING: Service names are case sensitive.
 services:
   who: true
   plugins: true
@@ -26,3 +29,8 @@ services:
   player: true
   fragmentationtest: false
   binaryfragmentationtest: false
+#Configuration for WebSocketServices' extensions.
+#If an extension is not listed here it will not be enabled.
+#WARNING: Plugin names are case sensitive.
+extensions:
+  #ExtensionsName: pluginName

@@ -183,17 +183,36 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
      * @return true if the WebSocketServices server is pingable.
      */
     public boolean getIsPingable() {
-        return getBoolean("websocket.pingable", true);
+        return getBoolean("websocket.pingable", false);
+    }
+
+    /**
+     * Determines if a disabled service should mute its response.
+     * @return true if a disabled service should mute its response.
+     */    
+    public boolean getMuteDisabledServices() {
+        return getBoolean("websocket.muteDisabledServices", false);
     }
     
     /**
      * Determines if a specified service is enabled.
      * @param the name of the service.
      * @return true if the service is enabled.
-     */    
-    public boolean isServiceEnabled(String service) {
+     */
+    public Boolean isServiceEnabled(String serviceName) {
         
-        return getBoolean("services." + service.toLowerCase(), false);
+        return (Boolean)get("services." + serviceName.toLowerCase(), null);
+
+    }
+    
+    /**
+     * Determines if an extension is enabled.
+     * @param the name of the extension.
+     * @return the name of the extension's plugin.
+     */
+    public String getExtensionName(String service) {
+        
+        return getString("extensions." + service.toLowerCase(), "");
         
     }
     

@@ -71,8 +71,6 @@ public class ApplicationLayer implements IApplicationLayer {
     
     public void onTextFrame(String text, ResponseWrapper responseWrapper) {
 
-        responseWrapper.response = new TextResponse();
-        
         // --- CR (3/3/13) --- Prepare for handling arguments for text services.
         String[] tokens = text.split(" ", 2);
         String serviceName = tokens[0];
@@ -84,46 +82,112 @@ public class ApplicationLayer implements IApplicationLayer {
             
         }
         
+        // --- CR (6/22/13) --- We are separating extensions from built-in services.
         //Determine if the service is available and if it is then generate a response.
-        if(config.isServiceEnabled(serviceName)) {
-            
-            //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-            if(serviceLayer.executeText(serviceName, arguments, responseWrapper)) {
+        Boolean service = config.isServiceEnabled(serviceName);
+        
+        //The built-in service was found in the configuration file and is not an extension.
+        if(service != null) {
+
+            //Execute the built-in services.
+            if(service) {
                 
-                if (responseWrapper.response instanceof TextResponse) {
-                
-                    ((TextResponse)responseWrapper.response).getCollection().put("Status", "SUCCESSFUL");
+                //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
+                if(serviceLayer.executeText(serviceName, arguments, responseWrapper)) {
+                    
+                    if (responseWrapper.response instanceof TextResponse) {
+                    
+                        ((TextResponse)responseWrapper.response).getCollection().put("Status", "SUCCESSFUL");
+                        return;
+                    }
                     
                 }
+
+            }
+            //END OF if(service) {...
+
+            Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", serviceName));
+
+        }
+        //The service was not found, determine if this is an extension and run it accordingly.
+        else {
+            
+            // --- CR (6/23/2013) --- Major change in the way the extensions are handled.
+            // Extensions are no longer handled by default, they must be listed in the config.yml.
+            // This allows the administrator to control what extensions can run and even control the names of the services invoked for an extension.
+            // This can prevent service names from conflicting from two or more extensions that use the same service name.
+            // For example, if two extensions use the service name "Map" to invoke both extensions then the extension name can be changed.
+            // extensions.Map: Plugin1
+            // extensions.Map1: Plugin2
+            
+            String extensionName = config.getExtensionName(serviceName);
+            if ((extensionName != null) && (extensionName != "") ) {
+                
+                IApplicationLayer applicationLayer = this.registeredApplicationLayers.get(extensionName);
+                if (applicationLayer != null) {
+                    
+                    applicationLayer.onTextFrame(arguments, responseWrapper);
+                    
+                    if (responseWrapper.response != null) {
+                        
+                        //The plug-in name is appended to all other data.
+                        if (responseWrapper.response instanceof TextResponse) {
+                            
+                            ((TextResponse)responseWrapper.response).getCollection().put("ExtensionName", extensionName);
+                            return;
+                        }
+                        
+                    }
+                    else {
+                        
+                        Logger.verboseDebug(MessageFormat.format("Extension {0} has a null response.", serviceName));
+                        
+                    }
+                    //END OF if (responseWrapper.response != null) {...
+                    
+                }
+                else {
+                    
+                    Logger.verboseDebug(MessageFormat.format("Extension {0} has not registered its application layer.", serviceName));
+                    
+                }
+                //END OF if (applicationLayer != null) {...
                 
             }
             else {
-
-                // --- CR (10/9/12) --- Removed the failure status for now and replaced it with registered application layers.
-                //responseBuffer.append(((responseBuffer.length() > 0) ? "," : "") + "\"Status\": \"FAILURE\"");
                 
-                //Adds an O(n) operation.
-                Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    
-                    Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
-                    ((IApplicationLayer)pairs.getValue()).onTextFrame(text, responseWrapper);
-                    
-                    //The plug-in name is appended to all other data.
-                    if (responseWrapper.response instanceof TextResponse) {
-                        
-                        ((TextResponse)responseWrapper.response).getCollection().put("PluginName", pairs.getKey());
-                        
-                    }
-                }
+                Logger.verboseDebug(MessageFormat.format("Extension {0} has been disabled.", serviceName));
+                
             }
+            //END OF if ((extensionName != null) && (extensionName != "") ) {...
+
+            //Adds an O(n) operation.
+/*            Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
+            while (iterator.hasNext()) {
+                
+                Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
+                ((IApplicationLayer)pairs.getValue()).onTextFrame(text, responseWrapper);
+                
+                //The plug-in name is appended to all other data.
+                if (responseWrapper.response instanceof TextResponse) {
+                    
+                    ((TextResponse)responseWrapper.response).getCollection().put("PluginName", pairs.getKey());
+                    
+                }
+            }*/
+
         }
-        //The service is not available so send a NA status.
-        else {
-            Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", text));
+        //END OF if(service != null) {...
+        
+        //--- CR (6/22/13) --- Mute or hide responses from a disabled service.
+        if(!config.getMuteDisabledServices()) {
+            
+            responseWrapper.response = new TextResponse();
             
             ((TextResponse)responseWrapper.response).getCollection().put("Status", "NOT AVAILABLE");
+            
         }
+
     }
 
     public void onBinaryFrame(byte[] data, ResponseWrapper responseWrapper) {
@@ -146,6 +210,7 @@ public class ApplicationLayer implements IApplicationLayer {
             //END OF if(!serviceLayer.executeBinary(data, response)) {...
         }
         //END OF if (config.isServiceEnabled("binaryfragmentationtest")) {...
+
     }
 
     public void onClose() {

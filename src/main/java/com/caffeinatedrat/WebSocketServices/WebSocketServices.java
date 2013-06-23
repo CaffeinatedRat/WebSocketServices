@@ -89,7 +89,7 @@ public class WebSocketServices extends JavaPlugin {
 
         // save the configuration file, if there are no values, write the defaults.
         server.Shutdown();
-        
+
     }
     
     /*
