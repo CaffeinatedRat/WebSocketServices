@@ -42,6 +42,8 @@
 * 1) Added support for the player service.
 * Revision 7 (5/11/13)
 * 1) Added handling for the template tag wssPlayerIsDead.
+* Revision 8 (6/23/13)
+* 1) Updated the template item wssHealth to be supported as a class.
 * -----------------------------------------------------------------
 */
 
@@ -59,8 +61,8 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     //-----------------------------------------------------------------
     // Versioning
     //-----------------------------------------------------------------
-    CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.2.0';
-    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '7';
+    CaffeinatedRat.Minecraft.WebSocketServices.VERSION = '1.3.0';
+    CaffeinatedRat.Minecraft.WebSocketServices.REVISION = '8';
 
     console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
 
@@ -571,25 +573,6 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = functio
     /// Performs mapping of the current player object to the container based on the template.
     /// </summary>
 
-    //template.text(template.text().replace(/ /g, ''));
-
-//    var onlineTime = 'Online: Now';
-
-//    if (player.onlineTime === undefined) {
-
-//        if (!player.isOnline) {
-
-//            onlineTime = 'Last Played: ' + player.lastPlayed + ''
-
-//        }
-
-//    }
-//    else {
-
-//        onlineTime = 'Online: ' + player.onlineTime + ''
-
-//    }
-
     //Make srue we clone our template so we don't modify the DOM elements in it.
     var element = template.clone();
 
@@ -605,14 +588,6 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = functio
 
     }
 
-    //Define the environment if one is provided.
-//    var environment = "normal";
-//    if (player.environment !== undefined) {
-
-//        environment = player.environment.replace('_', '').toLowerCase();
-
-//    }
-
     //Do a global search and replace for these tags specifically.
     //Create the canvas element that will display the player's face.
     var canvasId = "canvas" + this.getCanvasId() + player.name;
@@ -620,15 +595,6 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.playerInfoMapping = functio
 
     //Template Fields
     element.html(element.html().replace(/#wssPlayerFace#/g, canvasElement));
-    //    element.html(element.html().replace(/#wssPlayerIsOperator#/g, player.isOperator));
-    //    element.html(element.html().replace(/#wssPlayerName#/g, player.name));
-    //    element.html(element.html().replace(/#wssPlayerEnvironment#/g, environment));
-    //    element.html(element.html().replace(/#wssPlayerOnlineTime#/g, onlineTime));
-
-    //Replace the content of all containers as well.
-    //    element.find('.wssPlayerOnlineTime').text(onlineTime);
-    //    element.find('.wssPlayerName').text(player.name);
-    //    element.find('.wssPlayerEnvironment').text(environment);
     element.find('.wssPlayerFace').html(canvasElement);
 
     this.playerTemplateTags(element, player);
@@ -674,6 +640,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype.heartInfoMapping = function
     }
 
     element.html(element.html().replace(/#wssHealth#/g, json.health));
+    element.find('.wssHealth').text(json.health);
 
     element.appendTo(container);
 
