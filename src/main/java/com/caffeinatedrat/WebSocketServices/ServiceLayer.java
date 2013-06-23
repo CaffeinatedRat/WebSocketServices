@@ -438,6 +438,10 @@ public class ServiceLayer {
         
         Hashtable<String, Object> masterCollection = response.getCollection();
         
+        // --- CR (6/22/13) --- Fixed how the JSON structure is nested.
+        Hashtable<String, Object> locationInfo = new Hashtable<String, Object>();
+        masterCollection.put("location", locationInfo);
+        
         OfflinePlayer offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(arguments);
         
         if (offlinePlayerInfo != null) {
@@ -468,9 +472,13 @@ public class ServiceLayer {
                     blockZ = onlinePlayerInfo.getLocation().getBlockZ();
                 }
                 
-                masterCollection.put("location.x", blockX);
-                masterCollection.put("location.y", blockY);
-                masterCollection.put("location.z", blockZ);
+                // --- CR (6/22/13) --- Fixed how the JSON structure is nested.
+                //masterCollection.put("location.x", blockX);
+                //masterCollection.put("location.y", blockY);
+                //masterCollection.put("location.z", blockZ);
+                locationInfo.put("x", blockX);
+                locationInfo.put("y", blockY);
+                locationInfo.put("z", blockZ);
                 
                 String environmentName = "UNKNOWN";
                 World world = onlinePlayerInfo.getWorld();
@@ -488,10 +496,22 @@ public class ServiceLayer {
                 masterCollection.put("environment", environmentName);
                 
                 String weatherTypeName = "CLEAR";
-                WeatherType weatherType = onlinePlayerInfo.getPlayerWeather();
-                if ( (weatherType != null) ) {
                 
-                    weatherTypeName = weatherType.name();
+                // --- CR (6/22/13) --- Check for the enum type for attempting to use it as it will cause a reflection exception.
+                try
+                {
+                    //Check if this enum exists, as it does not in earlier versions.
+                    Class.forName("org.bukkit.WeatherType");
+                    
+                    WeatherType weatherType = onlinePlayerInfo.getPlayerWeather();
+                    if ( (weatherType != null) ) {
+                
+                        weatherTypeName = weatherType.name();
+                    }
+                }
+                catch(ClassNotFoundException ex)
+                {
+                    //Ignore this exception...it's caused by older versions.
                 }
                 
                 masterCollection.put("weather", weatherTypeName);
@@ -513,9 +533,16 @@ public class ServiceLayer {
                 masterCollection.put("experience", 0.0f);
                 masterCollection.put("isSleeping", false);
                 masterCollection.put("isDead", false);
-                masterCollection.put("location.x", 0);
-                masterCollection.put("location.y", 0);
-                masterCollection.put("location.z", 0);
+                
+                // --- CR (6/22/13) --- Fixed how the JSON structure is nested.
+                //masterCollection.put("location.x", 0);
+                //masterCollection.put("location.y", 0);
+                //masterCollection.put("location.z", 0);
+                
+                locationInfo.put("x", 0);
+                locationInfo.put("y", 0);
+                locationInfo.put("z", 0);
+                
                 masterCollection.put("environment", "UNKNOWN");
                 masterCollection.put("weather", "CLEAR");
                 masterCollection.put("onlineTimeSpan", 0L);

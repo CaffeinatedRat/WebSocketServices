@@ -85,15 +85,6 @@ public class JsonHelper {
                         
                         if (object instanceof Hashtable){
                             
-                            /*
-                            //Comma delimit multiple items.
-                            if (j++ > 0) {
-                                
-                                jsonBuffer.append(",");
-                                
-                            }
-                            */
-
                             // --- CR (2/7/13) --- A flag has been added indicating whether the max depth has been reached.
                             // If the maximum depth has been reached then we want to omit the delimiter for this instance.
                             Hashtable<String, Object> internalElement = (Hashtable<String, Object>)object;
@@ -116,7 +107,16 @@ public class JsonHelper {
                     //Do nothing if the element cannot be formatted.
                 }
             }
+            // --- CR (6/22/13) --- Handle nested hashtables for a nested structure.
+            else if (element.getValue() instanceof Hashtable){
+                
+                // If the maximum depth has been reached then we want to omit the delimiter for this instance.
+                Hashtable<String, Object> internalElement = (Hashtable<String, Object>)element.getValue();
+                internalSerialization(internalElement, jsonBuffer, depth + 1, maxDepth);
+                
+            }
             else {
+                
                 //Wrap string items in double quotes.
                 if (element.getValue() instanceof String) {
                     jsonBuffer.append(MessageFormat.format("\"{0}\"", element.getValue()));
@@ -138,6 +138,7 @@ public class JsonHelper {
                     jsonBuffer.append(MessageFormat.format("{0}", element.getValue()));
                 }
                 //END OF if (element.getValue() instanceof String) {...
+                
             }
             //END OF if (element.getValue() instanceof Collection) {...
         }
