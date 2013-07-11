@@ -167,8 +167,8 @@ $(document).ready(function () {
                     container: $('#skinWrapper'),
                     skinImage: wss.getImage(playersName),
                     useWebGL: false,
-                    scale: 200,
-                    positionVector3: new THREE.Vector3(0.0, 200.0, 0.0)
+                    scale: 50,
+                    positionVector3: new THREE.Vector3(0.0, 75.0, 0.0)
                 });
 
                 profile.init();
