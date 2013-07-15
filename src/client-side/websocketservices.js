@@ -630,7 +630,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
         if ((json.health > 0) && ((heart + 1) <= numberofFullHearts)) {
 
             //Determine if it is the last heart and if it's half instead of whole.
-            if ((json.health % 2 === 1) && ((i + heart) === numberofFullHearts)) {
+            if ((json.health % 2 === 1) && ((heart + 1) === numberofFullHearts)) {
 
                 element.find('.wssPlayerFullHeart').remove();
 
