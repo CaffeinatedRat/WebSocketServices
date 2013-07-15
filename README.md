@@ -62,6 +62,7 @@ The following contains information about new features, bug fixes, and other vers
 * Fixed another issue with the WeatherType enumeration causing the player service to fail for CraftBukkit versions lower than 1.5.0.
 * Extracted extensions from services.  An extension can only be invoked by one service name, but can now have any service name assigned to it.
 * Configuration file modified to support extensions.
+* Fixed a major issue in the JSONHelper that enforces a decimal point in doubles & floats even if number is being localized.
 
 #### 1.2.0
 

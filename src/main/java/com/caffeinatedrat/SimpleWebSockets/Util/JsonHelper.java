@@ -127,7 +127,10 @@ public class JsonHelper {
                     
                     // --- CR (3/4/13) --- Support Double & Floats...there is a better way to do this I'm sure.
                     if ( (element.getValue() instanceof Double) || (element.getValue() instanceof Float) ) {
-                        jsonBuffer.append(MessageFormat.format("{0}", element.getValue()));
+                        
+                        // --- CR (7/14/13) --- Handle European numbers that contain commas.
+                        // Understanably, the European users will get a decimal number instead of a comma.
+                        jsonBuffer.append(MessageFormat.format("{0}", element.getValue()).replaceAll(",", "."));
                     }
                     else {
                         jsonBuffer.append(MessageFormat.format("{0,number,#}", element.getValue()));
