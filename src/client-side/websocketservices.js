@@ -47,6 +47,8 @@
 * Revision 9 (7/7/13)
 * 1) Started using the CaffeinatedRat namespace and crlib library and a new version object.
 * 2) Changed the way the prototype methods are written.
+* Revision 10 (7/14/13)
+* 1) Fixed a major bug in managing the hearts.
 * -----------------------------------------------------------------
 */
 
@@ -67,7 +69,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     // Versioning
     //-----------------------------------------------------------------
     CaffeinatedRat.Minecraft.WebSocketServices.SERVER_VERSION = new CaffeinatedRat.Version(1, 3, 0);
-    CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION = '9';
+    CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION = '10';
 
     console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.SERVER_VERSION.toString() + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION);
     //console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.VERSION + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.REVISION);
@@ -331,7 +333,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
                     listItemContainer.appendTo(parentContainer);
 
                     //And attach all processed player elements to our container.
-                    for (i = 0; i < collection.length; i++) {
+                    for (var i = 0; i < collection.length; i++) {
 
                         if (mapFunction !== undefined) {
 
@@ -346,7 +348,7 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
                         }
 
                     }
-                    //END OF for (i = 0; i < collection.length; i++) {...
+                    //END OF for (var i = 0; i < collection.length; i++) {...
 
                 }
                 else {
@@ -625,10 +627,10 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
 
         //Determine the number of hearts and if they're full or empty.
         var numberofFullHearts = Math.ceil(json.health / 2);
-        if ((json.health > 0) && ((i + 1) <= numberofFullHearts)) {
+        if ((json.health > 0) && ((heart + 1) <= numberofFullHearts)) {
 
             //Determine if it is the last heart and if it's half instead of whole.
-            if ((json.health % 2 === 1) && ((i + 1) === numberofFullHearts)) {
+            if ((json.health % 2 === 1) && ((i + heart) === numberofFullHearts)) {
 
                 element.find('.wssPlayerFullHeart').remove();
 
@@ -1450,7 +1452,12 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
 
                                 if (!json.isDead) {
 
-                                    that.mapToTemplate(that._templateHearts, heartContainer, new Array(10), json, 'heartInfoMapping');
+                                    var collection = new Int32Array(10);
+                                    for (var i = 0; i < 10; i++) {
+                                        collection[i] = i;
+                                    }
+
+                                    that.mapToTemplate(that._templateHearts, heartContainer, collection, json, 'heartInfoMapping');
                                     $('.wssHealthContainer').show();
 
                                 }
