@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2013, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -25,13 +25,19 @@
 package com.caffeinatedrat.SimpleWebSockets;
 
 /**
- * A response wrapper so the user can determine which response type to respond with.
+ * An interface for the application layer.
  *
- * @version 1.0.0
+ * @version 1.0.0.0
  * @author CaffeinatedRat
  */
-public class ResponseWrapper {
+public interface IMasterApplicationLayer {
 
-    public Response response = null;
+    void onTextFrame(String text, ConnectionData sessionWrapper);
+    void onBinaryFrame(byte[] data, ConnectionData sessionWrapper);
+    void onClose();
+    void onPing(byte[] data);
+    void onPong();
     
+    // --- CR (7/18/13) --- Add an idle event for connections that keep alive.
+    void onIdle(ConnectionData responseWrapper);
 }

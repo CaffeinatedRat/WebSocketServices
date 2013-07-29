@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -45,7 +45,7 @@ public class Connection extends Thread {
     // ----------------------------------------------
     
     private Socket socket;
-    private IApplicationLayer applicationLayer;
+    private IMasterApplicationLayer masterApplicationLayer;
     private com.caffeinatedrat.SimpleWebSockets.Server webSocketServer; 
     
     // ----------------------------------------------
@@ -63,9 +63,9 @@ public class Connection extends Thread {
     // Constructors
     // ----------------------------------------------
     
-    public Connection(Socket socket, IApplicationLayer applicationLayer, com.caffeinatedrat.SimpleWebSockets.Server webSocketServer) {
-        if (applicationLayer == null) {
-            throw new IllegalArgumentException("The applicationLayer is invalid (null).");
+    public Connection(Socket socket, IMasterApplicationLayer masterApplicationLayer, com.caffeinatedrat.SimpleWebSockets.Server webSocketServer) {
+        if (masterApplicationLayer == null) {
+            throw new IllegalArgumentException("The masterApplicationLayer is invalid (null).");
         }
 
         if (webSocketServer == null) {
@@ -73,7 +73,7 @@ public class Connection extends Thread {
         }
         
         this.socket = socket;
-        this.applicationLayer = applicationLayer;
+        this.masterApplicationLayer = masterApplicationLayer;
         this.webSocketServer = webSocketServer;
     }
     
@@ -91,246 +91,226 @@ public class Connection extends Thread {
         Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
         
         try {
-
+            
             try {
-
+                
                 Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
                 
                 if (handshake.processRequest()) {
                     
                     Logger.debug("Handshaking successful.");
                     
+                    //Get the connection idle timeout value.
+                    //int idleTimeout = getWebSocketServer().getIdleTimeOut();
+                    
+                    //Get the start time for our connection.
+                    //Date startTime = new Date();
+                    
+                    Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance()); 
+                    
+                    // --- CR (7/21/13) --- The response wrapper has now become connection data, and has been moved outside the loop.
+                    ConnectionData connectionData = new ConnectionData();
                     boolean continueListening = true;
+                    boolean startBlocking = false;
                     while ( (!socket.isClosed()) && (continueListening) ) {
-
+                        
                         //TODO: Add management of fragmented frames.
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
                         //Wait for the next frame.
-                        Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance());
-                        frame.Read();
+                        //Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance());
                         
-                        switch (frame.getOpCode()) {
-
-                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
-                            case TEXT_DATA_FRAME:
-                            {
-                                String text = frame.getPayloadAsString();
-                                Logger.debug(text);
-                                
-                                if (applicationLayer != null) {
-                                    
-                                    ResponseWrapper wrapper = new ResponseWrapper();
-                                    applicationLayer.onTextFrame(text, wrapper);
-
-                                    //Ignore invalid responses
-                                    if ( wrapper.response != null) {
-                                    
-                                        if (wrapper.response instanceof TextResponse){
-
-                                            HandleTextResponse(wrapper.response.toString());
-
-                                            /*Boolean firstFrame = true;
-    
-                                            //Fragment the frame if the response is too large.
-                                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                            while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
-    
-                                                Frame responseFrame = new Frame(this.socket);
-                                                responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
-                                                responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
-                                                responseFrame.Write();
-                                                
-                                                fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
-                                                
-                                                //No longer the first frame.
-                                                firstFrame = false;
-                                            }
-    
-                                            //Send the final frame.
-                                            Frame responseFrame = new Frame(this.socket);
-                                            responseFrame.setFinalFragment();
-                                            responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
-                                            responseFrame.setPayload(fragment);
-                                            responseFrame.Write();*/
-
-                                        }
-                                        else if (wrapper.response instanceof BinaryResponse) {
-
-                                            HandleBinaryResponse((BinaryResponse)wrapper.response);
-
-                                        }
-
-                                        continueListening = !wrapper.response.closeConnection;
-
-                                    }
-                                    else {
-                                        
-                                        //If the response object is invalid then terminate the connection.
-                                        continueListening = false;
-                                        
-                                    }
-                                    //END OF if ( wrapper.response != null) {...
-                                }
-                                // END OF if(applicationLayer != null)...
-                            }
-                            break;
+                        // --- CR (7/20/13) --- If false is returned then there was nothing in the buffer to read.
+                        if (frame.isAvailable() || !startBlocking) {
                             
-                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
-                            case BINARY_DATA_FRAME:
-                            {
-                                byte[] data = frame.getPayloadAsBytes();
-                                
-                                if (applicationLayer != null) {
-                                    
-                                    ResponseWrapper wrapper = new ResponseWrapper();
-                                    //BinaryResponse response = new BinaryResponse();
-                                    applicationLayer.onBinaryFrame(data, wrapper);
-                                    
-                                    //Ignore invalid responses
-                                    if (wrapper.response != null) {
-
-                                        if (wrapper.response instanceof TextResponse){
-                                            
-                                            HandleTextResponse(wrapper.response.toString());
-                                            
-                                        }
-                                        else if (wrapper.response instanceof BinaryResponse) {
-                                            
-                                            HandleBinaryResponse((BinaryResponse)wrapper.response);
-                                            
-                                        }
-                                        /*//Keep track of our first frame.
-                                        Boolean firstFrame = true;
-                                        
-                                        //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
-                                        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                                        while (!response.isEmpty()) {
-                                            
-                                            Frame responseFrame = new Frame(this.socket);
-                                            
-                                            if (firstFrame) {
-                                                responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
-                                                firstFrame = false;
-                                            }
-                                            else {
-                                                responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
-                                            }
-                                            //Set the final fragment.
-                                            if (response.size() == 1) {
-                                                responseFrame.setFinalFragment();
-                                            }
-                                            
-                                            responseFrame.setPayload(response.dequeue());
-                                            responseFrame.Write();
-                                            
-                                        }
-                                        //END OF while(!response.isEmpty()) {...
-*/                                      
-                                        continueListening = !wrapper.response.closeConnection;
-                                    }
-                                    else {
-                                        
-                                        //If the response object is invalid then terminate the connection.
-                                        continueListening = false;
-                                        
-                                    }
-                                }
-                                // END OF if (applicationLayer != null) {...
-                            }
-                            break;
+                            frame.read();
                             
-                            //Terminate the connection.
-                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-                            case CONNECTION_CLOSE_CONTROL_FRAME:
-                            {
-                                if (applicationLayer != null) {
-                                    applicationLayer.onClose();
+                            //Determine what type of operation has been requested.
+                            //NOTE: Standard browsers currently do not support ping events.
+                            switch (frame.getOpCode()) {
+                            
+                                //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
+                                case TEXT_DATA_FRAME: {
+                                    
+                                    String text = frame.getPayloadAsString();
+                                    Logger.debug(text);
+                                    
+                                    if (masterApplicationLayer != null) {
+                                        
+                                        masterApplicationLayer.onTextFrame(text, connectionData);
+                                        
+                                    }
+                                    // END OF if(masterApplicationLayer != null)...
                                 }
-                                
-                                close();
                                 break;
-                            }
                                 
-                            //Respond to the ping.
-                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.2
-                            case PING_CONTROL_FRAME:
-                            {
-                                //Is pinging supported?
-                                if(!getWebSocketServer().isPingable()) {
+                                //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
+                                case BINARY_DATA_FRAME: {
+                                    
+                                    byte[] data = frame.getPayloadAsBytes();
+                                    
+                                    if (masterApplicationLayer != null) {
+                                        
+                                        masterApplicationLayer.onBinaryFrame(data, connectionData);
+                                        
+                                    }
+                                    // END OF if (masterApplicationLayer != null) {...
+                                }
+                                break;
+                                
+                                //Terminate the connection.
+                                //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
+                                case CONNECTION_CLOSE_CONTROL_FRAME: {
+                                    
+                                    if (masterApplicationLayer != null) {
+                                        
+                                        masterApplicationLayer.onClose();
+                                        
+                                    }
+                                    
+                                    close();
                                     break;
                                 }
-                                
-                                if (applicationLayer != null) {
-                                    applicationLayer.onPing(frame.getPayloadAsBytes());
+                                    
+                                //Respond to the ping.
+                                //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.2
+                                case PING_CONTROL_FRAME: {
+                                    
+                                    //Is pinging supported?
+                                    if(!getWebSocketServer().isPingable()) {
+                                        
+                                        break;
+                                        
+                                    }
+                                    
+                                    if (masterApplicationLayer != null) {
+                                        
+                                        masterApplicationLayer.onPing(frame.getPayloadAsBytes());
+                                        
+                                    }
+                                    
+                                    Frame responseFrame = new Frame(this.socket);
+                                    responseFrame.setFinalFragment();
+                                    responseFrame.setOpCode(OPCODE.PONG_CONTROL_FRAME);
+                                    
+                                    //Send any body data per the spec.
+                                    responseFrame.setPayload(frame.getPayloadAsBytes());
+                                    responseFrame.write();
                                 }
-                                
-                                Frame responseFrame = new Frame(this.socket);
-                                responseFrame.setFinalFragment();
-                                responseFrame.setOpCode(OPCODE.PONG_CONTROL_FRAME);
-                                
-                                //Send any body data per the spec.
-                                responseFrame.setPayload(frame.getPayloadAsBytes());
-                                responseFrame.Write();
-                            }
-                            break;
-                                
-                            //What?  Who did we ping?  Ignore this for now.
-                            //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.3
-                            case PONG_CONTROL_FRAME:
-                            {
-                                if (applicationLayer != null) {
-                                    applicationLayer.onPong();
-                                }
-                                
-                                Logger.verboseDebug("A pong frame was received.");
-                            }
-                            break;
-                            
-                            default:
                                 break;
+                                    
+                                //What?  Who did we ping?  Ignore this for now.
+                                //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.3
+                                case PONG_CONTROL_FRAME: {
+                                    
+                                    if (masterApplicationLayer != null) {
+                                        
+                                        masterApplicationLayer.onPong();
+                                        
+                                    }
+                                    
+                                    Logger.verboseDebug("A pong frame was received.");
+                                }
+                                break;
+                                
+                                default:
+                                    break;
+                                    
+                            }
+                            //END OF switch(frame.getOpCode())...
+                            
                         }
-                        //END OF switch(frame.getOpCode())...
+                        else {
+                            
+                            if (masterApplicationLayer != null) {
+                                
+                                masterApplicationLayer.onIdle(connectionData);
+                                
+                                try {
+                                    Thread.sleep(1000);
+                                }
+                                catch(InterruptedException ie) {
+                                    
+                                }
+                            }
+                            //END OF if (applicationLayer != null) {...
+                            
+                        }
+                        //END OF if (frame.read()) {
                         
-                        //Firefox needs to know we're closing or it will throw an error.
-                        //Technically according to the RFC we should be sending a close frame before terminating the server anyways.
-                        //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-                        if (!continueListening) {
-                            Frame closeFrame = new Frame(this.socket);
-                            closeFrame.setFinalFragment();
-                            closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
-                            closeFrame.setPayload("Bye bye...");
-                            closeFrame.Write();
+                        Session session = connectionData.getSession();
+                        
+                        //The session & response must both be valid.
+                        if ( (session != null) && ( session.response != null ) ) {
+                            
+                            //The connectionData needs to be in an active state, otherwise it's ignored.
+                            if (connectionData.getState() > 0) {
+                                
+                                if (session.response instanceof TextResponse){
+                                    
+                                    writeTextResponseFrame(session.response.toString());
+                                    
+                                }
+                                else if (session.response instanceof BinaryResponse) {
+                                    
+                                    writeBinaryResponseFrame((BinaryResponse)session.response);
+                                    
+                                }
+                                
+                                continueListening = continueListening && !session.response.closeConnection;
+                                
+                                //Reset the state.
+                                connectionData.resetState();
+                            }
+                            //END OF if (connectionData.getState() > 0) {...
+                            
                         }
+                        else {
+                            
+                            //If the response object is invalid then terminate the connection.
+                            continueListening = false;
+                            
+                        }
+                        //END OF if ( (session != null) && ( session.response != null ) ) {...
+                        
+                        if (!continueListening) {
+                            
+                            //Firefox needs to know we're closing or it will throw an error, while Chrome could care less.
+                            //Technically according to the RFC we should be sending a close frame before terminating the server anyways.
+                            writeCloseFrame("Bye bye...");
+                            
+                        }
+                        else {
+                            
+                            startBlocking = true;
+                            
+                            //Disable blocking...
+                            frame.waitForEvent();
+                            
+                        }
+
                     }
                     //END OF while(!socket.isClosed())...
                 }
                 else {
-                    Logger.debug("Handshaking failure.");
                     
-                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-                    Frame closeFrame = new Frame(this.socket);
-                    closeFrame.setFinalFragment();
-                    closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
-                    closeFrame.setPayload("The handshaking has failed.");
-                    closeFrame.Write();
+                    Logger.debug("Handshaking failure.");
+                    writeCloseFrame("The handshaking has failed.");
                 }
                 //END OF if(handshake.processRequest())...
             }
             catch (InvalidFrameException invalidFrame) {
+                
                 Logger.debug("The frame is invalid.");
                 
                 try {
-                    //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-                    Frame closeFrame = new Frame(this.socket);
-                    closeFrame.setFinalFragment();
-                    closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
-                    closeFrame.setPayload("The frame was invalid.");
-                    closeFrame.Write();
+                    
+                    writeCloseFrame("The frame was invalid.");
                 }
                 catch(InvalidFrameException ife) {
                     //Do nothing...
                 }
+                
             }
 
             Logger.debug("Connection terminated.");
@@ -343,7 +323,7 @@ public class Connection extends Thread {
     
     /**
      * Close the connection.
-     */    
+     */
     public void close() {
         try {
             if (this.socket != null) {
@@ -355,7 +335,37 @@ public class Connection extends Thread {
         }
     }
     
-    private void HandleBinaryResponse(BinaryResponse response) throws InvalidFrameException {
+    
+    // ----------------------------------------------
+    // Frame specific handling.
+    // ----------------------------------------------
+    
+    /**
+     * Close the connection.
+     * @param message The message to include in the close frame as to why the frame is closing.
+     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
+     */
+    private void writeCloseFrame(String message) throws InvalidFrameException {
+        
+        if (this.socket != null) {
+        
+            //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
+            Frame closeFrame = new Frame(this.socket);
+            closeFrame.setFinalFragment();
+            closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
+            closeFrame.setPayload(message);
+            closeFrame.write();
+            
+        }
+        
+    }
+    
+    /**
+     * Writes a binary response frame to the client.
+     * @param response The binary response to write to the client.
+     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
+     */
+    private void writeBinaryResponseFrame(BinaryResponse response) throws InvalidFrameException {
 
         //Keep track of our first frame.
         Boolean firstFrame = true;
@@ -367,26 +377,37 @@ public class Connection extends Thread {
             Frame responseFrame = new Frame(this.socket);
             
             if (firstFrame) {
+                
                 responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
                 firstFrame = false;
+                
             }
             else {
+                
                 responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+                
             }
             //Set the final fragment.
             if (response.size() == 1) {
+                
                 responseFrame.setFinalFragment();
+                
             }
             
             responseFrame.setPayload(response.dequeue());
-            responseFrame.Write();
+            responseFrame.write();
             
         }
         //END OF while(!response.isEmpty()) {...
 
     }
     
-    private void HandleTextResponse(String fragment) throws InvalidFrameException {
+    /**
+     * Writes a text response frame to the client.
+     * @param fragment The string value to return the client.
+     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
+     */
+    private void writeTextResponseFrame(String fragment) throws InvalidFrameException {
     
         Boolean firstFrame = true;
 
@@ -397,7 +418,7 @@ public class Connection extends Thread {
             Frame responseFrame = new Frame(this.socket);
             responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
             responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
-            responseFrame.Write();
+            responseFrame.write();
             
             fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
             
@@ -410,7 +431,7 @@ public class Connection extends Thread {
         responseFrame.setFinalFragment();
         responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
         responseFrame.setPayload(fragment);
-        responseFrame.Write();
+        responseFrame.write();
         
     }
 }

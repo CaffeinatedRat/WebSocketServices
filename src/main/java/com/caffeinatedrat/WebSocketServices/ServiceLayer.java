@@ -42,7 +42,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
-import com.caffeinatedrat.SimpleWebSockets.ResponseWrapper;
+import com.caffeinatedrat.SimpleWebSockets.Session;
 import com.caffeinatedrat.SimpleWebSockets.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -74,31 +74,39 @@ public class ServiceLayer {
     
     /**
      * Determine which text service to execute.
+     * Precondition: The name should be lower-case.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
      * @param arguments Any arguments included with the service.
-     * @param responseWrapper The response to the client.
+     * @param session The current session.
      * @return True if the service was successfully executed.
      */
-    public boolean executeText(String service, String arguments, ResponseWrapper responseWrapper) {
+    public boolean executeText(String service, String arguments, Session session) {
+        
+        if (session == null) {
+            
+            throw new IllegalArgumentException("The session is invalid (null).");
+            
+        }
         
         try {
 
             //Handle special conditions for the testing services.
-            if(service.equalsIgnoreCase("fragmentationtest")) {
+            if(service.equals("fragmentationtest")) {
                 
-                return fragmentationtest(arguments, responseWrapper);
+                return fragmentationtest(arguments, session);
                 
             }
             else
             {
                 
-                responseWrapper.response = new TextResponse();
+                session.response = new TextResponse();
                 
+                // --- CR (7/21/13) --- We're still going to perform a lower-case check here in the event someone attempts to call this method explicitly.
                 if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
                     
-                    Method method = this.getClass().getDeclaredMethod(service.toLowerCase(), String.class, TextResponse.class);
+                    Method method = this.getClass().getDeclaredMethod(service, String.class, TextResponse.class);
                     method.setAccessible(true);
-                    return (Boolean)method.invoke(this, arguments, responseWrapper.response);
+                    return (Boolean)method.invoke(this, arguments, session.response);
                     
                 }
                 
@@ -120,21 +128,28 @@ public class ServiceLayer {
     /**
      * Determine which binary service to execute.
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
-     * @param responseWrapper The response to the client.
+     * @param session The current session.
      * @return True if the service was successfully executed.
      */    
-    public boolean executeBinary(byte[] data, ResponseWrapper responseWrapper) {
+    public boolean executeBinary(byte[] data, Session session) {
 
+        if (session == null) {
+            
+            throw new IllegalArgumentException("The session is invalid (null).");
+            
+        }
+        
         try {
         
-            responseWrapper.response = new BinaryResponse();
+            session.response = new BinaryResponse();
             
             if(data.length > 0) {
                 byte controlByte = data[0];
                 if(controlByte == 0x01) {
-                    return binaryfragmentationtest(data, (BinaryResponse)responseWrapper.response);
+                    return binaryfragmentationtest(data, (BinaryResponse)session.response);
                 }
             }
+            
         }
         catch(Exception ex) {
             Logger.verboseDebug(ex.getMessage());
@@ -150,7 +165,7 @@ public class ServiceLayer {
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
-     */    
+     */
     protected boolean info(String arguments, TextResponse response) {
 
         //Get the normal world and assume it is the first in the list.
@@ -174,8 +189,9 @@ public class ServiceLayer {
         collection.put("port", this.minecraftServer.getPort());
         collection.put("ipAddress", this.minecraftServer.getIp());
         collection.put("serverTime", world.getTime());
-        
+
         return true;
+        
     }
     
     /**
@@ -237,6 +253,7 @@ public class ServiceLayer {
         //END OF for (int i = 0; i < plugins.length; i++) {...
         
         return true;
+        
     }
     
     /**
@@ -311,6 +328,7 @@ public class ServiceLayer {
         }
 
         return true;
+        
     }
     
     /**
@@ -366,6 +384,7 @@ public class ServiceLayer {
         //END OF for(OfflinePlayer offlinePlayer : whiteListedPlayers) {...
 
         return true;
+        
     }
     
     /**
@@ -524,6 +543,7 @@ public class ServiceLayer {
                 }
                 
                 masterCollection.put("onlineTimeSpan", timeSpan);
+                
             }
             else {
                 
@@ -581,14 +601,14 @@ public class ServiceLayer {
     /**
      * Performs a fragmentation test for a text response.
      * @param arguments Any arguments included with the service.
-     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @param session The current session.
      * @return True if the service was successfully executed.
      */
-    protected boolean fragmentationtest(String arguments, ResponseWrapper responseWrapper) {
+    protected boolean fragmentationtest(String arguments, Session session) {
         
         if (arguments.equalsIgnoreCase("binary")) {
         
-            responseWrapper.response = new BinaryResponse();
+            session.response = new BinaryResponse();
             
             byte[] newData = new byte[65535];
             for (int i = 0; i < 65535; i++) {
@@ -597,7 +617,7 @@ public class ServiceLayer {
                 
             }
             
-            ((BinaryResponse)responseWrapper.response).enqueue(newData);
+            ((BinaryResponse)session.response).enqueue(newData);
             
             //Test fragementation
             newData = new byte[10];
@@ -607,14 +627,14 @@ public class ServiceLayer {
                 
             }
             
-            ((BinaryResponse)responseWrapper.response).enqueue(newData);
+            ((BinaryResponse)session.response).enqueue(newData);
         }
         //Handle all other conditions as text.
         else {
         
-            responseWrapper.response = new TextResponse();
+            session.response = new TextResponse();
             
-            Hashtable<String, Object> collection = ((TextResponse)responseWrapper.response).getCollection();
+            Hashtable<String, Object> collection = ((TextResponse)session.response).getCollection();
             
             StringBuilder fragmentationData = new StringBuilder();
     

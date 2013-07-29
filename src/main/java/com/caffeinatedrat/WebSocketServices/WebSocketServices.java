@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -69,16 +69,18 @@ public class WebSocketServices extends JavaPlugin {
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
         Globals.debugLevel = config.getDebugLevel();
         
-        ApplicationLayer applicationLayer = new ApplicationLayer(getServer(), loginTimes, config, registeredApplicationLayers);
+        IMasterApplicationLayer masterApplicationLayer = new MasterApplicationLayer(getServer(), loginTimes, config, registeredApplicationLayers);
         
         //Start-up the server with all the appropriate configuration values.
-        server = new Server(config.getPortNumber(), applicationLayer, config.getIsWhiteListed(), config.getMaximumConnections());
+        server = new Server(config.getPortNumber(), masterApplicationLayer, config.getIsWhiteListed(), config.getMaximumConnections());
         server.setHandshakeTimeout(config.getHandshakeTimeOut());
         server.setFrameTimeoutTolerance(config.getFrameTimeOutTolerance());
         server.setOriginCheck(config.getCheckOrigin());
         server.setPingable(config.getIsPingable());
+        server.setIdleTimeOut(config.getIdleConnectionTimeOut());
         
         server.start();
+        
     }
     
     /*
@@ -107,9 +109,13 @@ public class WebSocketServices extends JavaPlugin {
     public static void registerApplicationLayer(Plugin plugin, IApplicationLayer applicationLayer) {
         
         if (plugin == null) {
+            
             throw new NullPointerException("The plugin cannot be null.");
+            
         }
         
-        registeredApplicationLayers.put(plugin.getName(), applicationLayer);
+        // --- CR (7/21/13) --- Force the plug-in name to lower-case.
+        registeredApplicationLayers.put(plugin.getName().toLowerCase(), applicationLayer);
+        
     }
 }

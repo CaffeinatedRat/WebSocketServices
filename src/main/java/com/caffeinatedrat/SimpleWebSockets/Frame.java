@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -98,13 +98,61 @@ public class Frame {
             return this.isFrame;
         }
     }
+
+    /**
+     * A simple, small thread that allows for a non-blocking instance of a frame.
+     * When activity is detected and the buffer contains data then the frame will start blocking again to read important data.
+     * We do not need a full-fledged non-blocking architecture at this time, since most of the time the framework is blocking.
+     */
+    public class EventThread extends Thread {
+        
+        WebSocketsReader reader;
+        boolean dataAvailable;
+        
+        public EventThread(WebSocketsReader reader) {
+          
+            this.reader = reader;
+            this.dataAvailable = false;
+            
+        }
+        
+        @Override
+        public void run() {
+            
+            try {
+                
+                Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
+                
+                reader.mark(0);
+                
+                //Wait for data...
+                reader.read();
+                
+                //Reset to the beginning of the stream.
+                reader.reset();
+                
+                //Note that data is available...we don't care if the this value is dirty at the time we are checking...
+                this.dataAvailable = true;
+                
+                Logger.verboseDebug(MessageFormat.format("Thread {0} has spun down...", this.getName()));
+                
+            } catch (IOException e) {
+                
+                Logger.verboseDebug(MessageFormat.format("Unable to monitor for frame data. {0}", e.getMessage()));
+                
+            }
+            
+        }
+        
+    }    
     
     // ----------------------------------------------
     // Member Vars (fields)
     // ----------------------------------------------
     
-    //private WebSocketsReader inputStream;
-    //private OutputStream outputStream;
+    private EventThread eventThread = null;
+    
+    private WebSocketsReader reader = null;
     private Socket socket;
     
     private byte controlByte;
@@ -252,11 +300,20 @@ public class Frame {
     // Constructors
     // ----------------------------------------------
     
-    public Frame(Socket socket) {
+    public Frame(Socket socket) throws InvalidFrameException {
+        
         this(socket, 1000);
+        
     }
     
-    public Frame(Socket socket, int timeout) {
+    public Frame(Socket socket, int timeout) throws InvalidFrameException {
+        
+        if (socket == null) {
+            
+            throw new IllegalArgumentException("The socket is invalid (null).");
+            
+        }
+        
         this.socket = socket;
         
         //Initialize to zero.
@@ -265,12 +322,26 @@ public class Frame {
         this.payloadLength = 0L; 
         
         this.timeoutInMilliseconds = timeout;
+        
+        try {
+        
+            this.reader = new WebSocketsReader(this.socket.getInputStream());
+            
+        }
+        catch (IOException ioException) {
+            
+            Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
+            throw new InvalidFrameException();
+            
+        }
+        
     }
     
     /**
      * Copy constructor
      */
     public Frame(Frame frame) {
+        
         this.socket = frame.socket;
         this.controlByte = frame.controlByte;
         this.descriptorByte = frame.descriptorByte;
@@ -278,17 +349,19 @@ public class Frame {
         this.payloadLength = frame.payloadLength;
         this.payload = frame.payload;
         this.timeoutInMilliseconds = frame.timeoutInMilliseconds;
+        
     }
     
     // ----------------------------------------------
     // Methods
     // ----------------------------------------------
+
     
     /**
      * Reads a websocket frame.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
      */
-    public void Read()
+    public void read()
         throws InvalidFrameException {
         
         int preserveOriginalTimeout = 0;
@@ -300,8 +373,8 @@ public class Frame {
             this.socket.setSoTimeout(this.timeoutInMilliseconds);
 
             //Suppress this warning as closing the stream after the event is completed will also close the socket.
-            @SuppressWarnings("resource")
-            WebSocketsReader inputStream = new WebSocketsReader(socket.getInputStream());
+            //WebSocketsReader inputStream = new WebSocketsReader(socket.getInputStream());
+            WebSocketsReader inputStream = this.reader;
             
             byte[] buffer = new byte[8];
             inputStream.readFully(buffer, 0, 2);
@@ -324,7 +397,9 @@ public class Frame {
             if (this.payloadLength == 126) {
                 //NOTE: Websockets uses a big endian byte order.
                 inputStream.readFully(buffer, 0, 2);
-                this.payloadLength = (short)((((int)buffer[0]) << 8) | ((int)buffer[1]));
+                
+                // --- CR (7/19/13) --- Fixed a major issue where the cast is preserving the signed value.
+                this.payloadLength = (long)((((int)buffer[0] & 0xFF) << 8) | ((int)buffer[1] & 0xFF));
             }
             //Per the RFC if the payloadLen described in the description byte is 127 then the payload length can be up to 2^64 in size.
             //An example can be found at http://tools.ietf.org/html/rfc6455#section-5.7
@@ -334,7 +409,7 @@ public class Frame {
                 inputStream.readFully(buffer, 0, 8);
                 //Unrolled loop since the loop's size is static and to improve performance slightly.
                 this.payloadLength = ((((long)buffer[0]) << 56) | ((long)buffer[1] << 48) | ((long)buffer[2] << 40) | ((long)buffer[3] << 32) | ((long)buffer[4] << 24) | ((long)buffer[5] << 16) | ((long)buffer[6] << 8) | buffer[7]);
-            }   
+            }
             
             //Read the mask if one exists.
             if (isMasked()) {
@@ -369,6 +444,7 @@ public class Frame {
                 }
             }
             //END OF if(this.payloadLength > 0)...
+
         }
         catch (SocketTimeoutException socketTimeout) {
             Logger.verboseDebug(MessageFormat.format("A socket timeout has occured.  {0}", socketTimeout.getMessage()));
@@ -381,9 +457,8 @@ public class Frame {
         catch (IOException ioException) {
             Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
             throw new InvalidFrameException();
-        }        
+        }
         finally {
-            
             try {
                 //Reset the original timeout.
                 this.socket.setSoTimeout(preserveOriginalTimeout);
@@ -395,10 +470,10 @@ public class Frame {
     }
     
     /**
-     * Reads a websocket frame.
+     * Writes a websocket frame.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
      */    
-    public void Write()
+    public void write()
         throws InvalidFrameException {
         
         int preserveOriginalTimeout = 0;
@@ -485,4 +560,27 @@ public class Frame {
             }
         }
     }
+    
+    public boolean isAvailable() {
+        
+        if ( (this.eventThread != null) && (this.eventThread.dataAvailable) ) {
+            
+            this.eventThread = null;
+            return true;
+            
+        }
+        
+        return false;
+    }
+    
+    public void waitForEvent() {
+        
+        if ( (this.eventThread == null) && (this.reader != null) ) {
+        
+            this.eventThread = new EventThread(this.reader);
+            this.eventThread.start();
+        
+        }
+
+    }    
 }

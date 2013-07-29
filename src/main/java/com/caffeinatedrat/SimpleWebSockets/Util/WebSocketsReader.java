@@ -47,10 +47,11 @@ public class WebSocketsReader extends BufferedInputStream {
      * 
      * @param in
      * @see java.io.BufferedInputStream(InputStream in, int size)
-     */    
+     */
     public WebSocketsReader(InputStream in) {
         super(in);
     }
+    
 
     /**
      * Instantiates a WebSocketsReader object.
@@ -58,11 +59,12 @@ public class WebSocketsReader extends BufferedInputStream {
      * @param in
      * @param size
      * @see java.io.BufferedInputStream(InputStream in, int size)
-     */     
+     */
     public WebSocketsReader(InputStream in, int size) {
         super(in, size);
     }
 
+    
     // ----------------------------------------------
     // Methods
     // ----------------------------------------------
@@ -71,6 +73,8 @@ public class WebSocketsReader extends BufferedInputStream {
      * Guarantees that the full number of bytes are read based on the len argument.
      * Setting the SoTimeout value is recommended so that the blocking will fail over n number of seconds.
      * TimeComplexity O(n) -- where n is the number of bytes to read.
+     * NOTES: CR (7-28-13) --- This method may not be necessary at all.
+     * It seems like the reader blocks until all data is read; however, low network latency may cause issues with lost bytes so we'll keep this method for now.
      * 
      * @param b destination buffer.
      * @param off offset at which to start storing bytes.
@@ -97,4 +101,5 @@ public class WebSocketsReader extends BufferedInputStream {
             throw io;
         }
     }
+    
 }

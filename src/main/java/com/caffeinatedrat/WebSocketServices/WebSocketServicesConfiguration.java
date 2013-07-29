@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -171,6 +171,26 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     }
 
     /**
+     * Safely returns the idle timeout in milliseconds.
+     * @return safely returns the idle timeout in milliseconds.
+     */
+    public int getIdleConnectionTimeOut() {
+        
+        int timeout = getInt("websocket.idleConnectionTimeOut", 3000);
+        
+        //Validate
+        if (timeout < 0) {
+        
+            Logger.warning(MessageFormat.format("The idle connection timeout {0} is invalid, defaulting to 3000.", timeout));
+            return 3000;
+            
+        }
+        
+        return timeout;
+        
+    }
+    
+    /**
      * Determines if the origin is checked when establishing a connection.
      * @return true if the origin is checked when establishing a connection.
      */
@@ -196,23 +216,28 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     
     /**
      * Determines if a specified service is enabled.
+     * Precondition: The serviceName should be lower-case.
      * @param the name of the service.
      * @return true if the service is enabled.
      */
     public Boolean isServiceEnabled(String serviceName) {
         
-        return (Boolean)get("services." + serviceName.toLowerCase(), null);
+        // --- CR (7/21/13) --- Removed the lower-case check as this is now a precondition.
+        return (Boolean)get("services." + serviceName, null);
 
     }
     
     /**
      * Determines if an extension is enabled.
+     * Precondition: The serviceName should be lower-case.
      * @param the name of the extension.
      * @return the name of the extension's plugin.
      */
     public String getExtensionName(String service) {
         
-        return getString("extensions." + service.toLowerCase(), "");
+        // --- CR (7/21/13) --- Removed the lower-case check as this is now a precondition.
+        // --- CR (7/21/13) --- Force the extension name to lower-case.
+        return getString("extensions." + service, "").toLowerCase();
         
     }
     

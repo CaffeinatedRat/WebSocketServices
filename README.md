@@ -6,7 +6,8 @@ This implementation of websockets is designed to be light-weight and simple, red
 Clients that support websockets will have the ability to perform simple informational queries, such as who is online, what version the server is running on, etc.
 All text based results will be returned in a simple JSON format for consistency.
 
-* Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
+* WebSocketServices Website Sample: [http://www.caffeinatedrat.com/minecraft](http://www.caffeinatedrat.com/minecraft)
+* Author's Website: [http://www.caffeinatedrat.com](http://www.caffeinatedrat.com)
 * Bukkit: [http://dev.bukkit.org/server-mods/websocketservices/] (http://dev.bukkit.org/server-mods/websocketservices/)
 * Bugs/Suggestions: CaffeinatedRat at gmail dot com
 
@@ -53,6 +54,10 @@ Change Log
 -----------
 
 The following contains information about new features, bug fixes, and other version changes.
+
+#### 1.3.1
+
+* Added support for persistent connections.
 
 #### 1.3.0
 

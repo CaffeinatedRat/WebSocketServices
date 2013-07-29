@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -45,16 +45,18 @@ public class Server extends Thread {
     // ----------------------------------------------
     
     private ServerSocket serverSocket;
+    
     private boolean isServerRunning;
     private int port;
     private int maximumThreads;
     private int handshakeTimeOutInMilliseconds;
     private int frameTimeOutToleranceInMilliseconds;
+    private int idleTimeOutInMilliseconds;
     private boolean checkOrigin;
     private boolean pingable;
     private HashSet<String> whitelist = null;
     
-    private IApplicationLayer applicationLayer;
+    private IMasterApplicationLayer masterApplicationLayer;
     
     //Keep track of all threads.
     private LinkedList<Connection> threads = null;
@@ -112,6 +114,22 @@ public class Server extends Thread {
     }
     
     /**
+     * Returns the amount of time in milliseconds that a connection will idle before terminating.
+     * @return The idle timeout in milliseconds.
+     */
+    public int getIdleTimeOut() {
+        return this.idleTimeOutInMilliseconds;
+    }
+    
+    /**
+     * Sets the amount of time in milliseconds that a connection will idle before terminating.
+     * @param timeout The idle timeout in milliseconds.
+     */
+    public void setIdleTimeOut(int timeout) {
+        this.idleTimeOutInMilliseconds = timeout;
+    }
+    
+    /**
      * Determines if the origin is checked during the handshake.
      * @return If the origin is checked during handshaking.
      */
@@ -160,18 +178,18 @@ public class Server extends Thread {
     // Constructors
     // ----------------------------------------------
 
-    public Server(int port, IApplicationLayer applicationLayer) {
-        this(port, applicationLayer, false, 32);
+    public Server(int port, IMasterApplicationLayer masterApplicationLayer) {
+        this(port, masterApplicationLayer, false, 32);
     }
     
-    public Server(int port, IApplicationLayer applicationLayer, boolean isWhiteListed) {
-        this(port, applicationLayer, isWhiteListed, 32);
+    public Server(int port, IMasterApplicationLayer masterApplicationLayer, boolean isWhiteListed) {
+        this(port, masterApplicationLayer, isWhiteListed, 32);
     }    
     
-    public Server(int port, IApplicationLayer applicationLayer, boolean isWhiteListed, int maximumThreads) {
+    public Server(int port, IMasterApplicationLayer masterApplicationLayer, boolean isWhiteListed, int maximumThreads) {
         
-        if(applicationLayer == null) {
-            throw new IllegalArgumentException("The applicationLayer is invalid (null).");
+        if(masterApplicationLayer == null) {
+            throw new IllegalArgumentException("The masterApplicationLayer is invalid (null).");
         }
                
         this.isServerRunning = true;
@@ -179,7 +197,7 @@ public class Server extends Thread {
         
         //Properties
         this.port = port;
-        this.applicationLayer = applicationLayer;
+        this.masterApplicationLayer = masterApplicationLayer;
         this.maximumThreads = maximumThreads;
         this.handshakeTimeOutInMilliseconds = 1000;
         this.frameTimeOutToleranceInMilliseconds = 3000;
@@ -219,49 +237,38 @@ public class Server extends Thread {
                 //Wait for incoming connections.
                 Socket socket = serverSocket.accept();
 
-                // -- CR (9/16/12) --- Whoops, we can't check the user against the white-list at this point in time, since the IPAddress is from the user and not the domain...stupid mistake.
-                // -- CR (9/10/12) --- Moved the white-listing here to prevent any unnecessary threads from being launched.
-                //String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
-                
-                //Determine if the IP is supported via the white-list.
-                //TODO: Allow local access.
-                //if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) ) {
-                
-                    //Try to reclaim any threads if we are exceeding our maximum.
-                    //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
-                    //NOTE: Minimal unit testing has been done here...more testing is required.
-                    if (threads.size() + 1 > this.maximumThreads) {
-                        for (int i = 0; i < threads.size(); i ++) {
-                            if (!threads.get(i).isAlive()) {
-                                threads.remove(i);
-                            }
+                //Try to reclaim any threads if we are exceeding our maximum.
+                //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
+                //NOTE: Minimal unit testing has been done here...more testing is required.
+                if (threads.size() + 1 > this.maximumThreads) {
+                    for (int i = 0; i < threads.size(); i ++) {
+                        if (!threads.get(i).isAlive()) {
+                            threads.remove(i);
                         }
                     }
-    
-                    //Make sure we have enough threads before accepting.
-                    //NOTE: Minimal unit testing has been done here...more testing is required.
-                    if ( (threads.size() + 1) <= this.maximumThreads) {
-                        Connection t = new Connection(socket, this.applicationLayer, this);
-                        t.start();
-                        threads.add(t);
-                    }
-                    else {
-                        Logger.debug("The server has reached its thread maximum...");
-                    }
-                //}
-                //Reject the connection.
-                //else {
+                }
+
+                //Make sure we have enough threads before accepting.
+                //NOTE: Minimal unit testing has been done here...more testing is required.
+                if ( (threads.size() + 1) <= this.maximumThreads) {
                     
-                //    socket.close();
-                //    Logger.debug(MessageFormat.format("{0} is not white-listed.", remoteAddress));
-                //}
-                //END OF if ( (this.whitelist == null) || (this.whitelist.contains(remoteAddress)) )...
+                    Connection t = new Connection(socket, this.masterApplicationLayer, this);
+                    t.start();
+                    threads.add(t);
+                    
+                }
+                else {
+                    Logger.debug("The server has reached its thread maximum...");
+                }
+
             }
             //END OF while ( (this.isServerRunning) && (!serverSocket.isClosed()) )...
             
             Logger.info("WebSocket server stopping...");
+            
         }
         catch (IOException ioException) {
+            
             Logger.info(MessageFormat.format("The port {0} could not be opened for WebSockets.", this.port));
             Logger.debug(ioException.getMessage());
             
@@ -272,6 +279,7 @@ public class Server extends Thread {
                     t.close();
                 }
             }
+            
         }
     }
     
@@ -279,6 +287,7 @@ public class Server extends Thread {
      * Begins shutting down the server.
      */
     public void Shutdown() {
+        
         this.isServerRunning = false;
         try {
             this.serverSocket.close();
@@ -286,12 +295,14 @@ public class Server extends Thread {
         catch(IOException io) {
             //Do nothing...
         }
+        
     }
     
     /**
      * Attempts to load the white-list.
      */
     private boolean loadWhiteList() {
+        
         File whitelistFile = new File(Globals.PLUGIN_FOLDER + "/" + Globals.WHITE_LIST_FILENAME);
         
         if (whitelistFile.exists()) {
@@ -338,5 +349,6 @@ public class Server extends Thread {
         //END OF if(whitelistFile.exists())...
         
         return false;
+        
     }
 }

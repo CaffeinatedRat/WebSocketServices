@@ -24,20 +24,37 @@
 
 package com.caffeinatedrat.SimpleWebSockets;
 
-/**
- * An interface for the application layer.
- *
- * @version 1.0.0.0
- * @author CaffeinatedRat
- */
-public interface IApplicationLayer {
+import java.util.Date;
 
-    void onTextFrame(String text, Session session);
-    void onBinaryFrame(byte[] data, Session session);
-    void onClose();
-    void onPing(byte[] data);
-    void onPong();
+public class Session {
+
+    // ----------------------------------------------
+    //  Member Vars (fields)
+    // ----------------------------------------------
+    public Object data = null;
+    public Response response = null;
+    private final Date startTime;
     
-    // --- CR (7/18/13) --- Add an idle event for connections that keep alive.
-    void onIdle(Session session);
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------
+    
+    /**
+     * Returns the start time of when the session was established.
+     * @return the start time of when the session was established.
+     */
+    public Date getStartTime() {
+        
+        return this.startTime;
+        
+    }
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------
+    public Session(Date startTime) {
+        
+        this.startTime = startTime;
+        
+    }
 }
