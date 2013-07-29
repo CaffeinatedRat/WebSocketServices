@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,8 @@ package com.caffeinatedrat.SimpleWebSockets;
  * @author CaffeinatedRat
  */
 public class Response {
+
     // --- CR (9/16/12) --- Automatically terminate a connection.  Only leave it open when someone specifically asks for it.
     public boolean closeConnection = true;
+    
 }
