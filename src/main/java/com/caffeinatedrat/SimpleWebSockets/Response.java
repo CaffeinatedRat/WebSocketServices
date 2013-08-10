@@ -33,6 +33,7 @@ package com.caffeinatedrat.SimpleWebSockets;
 public class Response {
 
     // --- CR (9/16/12) --- Automatically terminate a connection.  Only leave it open when someone specifically asks for it.
-    public boolean closeConnection = true;
+    // --- CR (8/10/13) --- Moved to ConnectionData.
+    //public boolean closeConnection = true;
     
 }

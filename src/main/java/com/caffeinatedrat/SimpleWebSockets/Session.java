@@ -33,28 +33,67 @@ public class Session {
     // ----------------------------------------------
     public Object data = null;
     public Response response = null;
-    private final Date startTime;
-    
+    private final ConnectionData connectionData;
+
     // ----------------------------------------------
     // Properties
     // ----------------------------------------------
     
     /**
-     * Returns the start time of when the session was established.
-     * @return the start time of when the session was established.
+     * Returns the start time of when the connection was established.
+     * @return the start time of when the connection was established.
      */
     public Date getStartTime() {
         
-        return this.startTime;
+        return this.connectionData.getStartTime();
+        
+    }
+    
+    /**
+     * Returns the id of the connection the session is associated with.
+     * @return the start time of when the session was established.
+     */    
+    public String getConnectionId() {
+        
+        return this.connectionData.getId();
+        
+    }
+    
+    /**
+     * Returns the IP address of the peer.
+     * @return the IP address of the peer.
+     */
+    public String getIPAddress() {
+        
+        return this.connectionData.getIPAddress();
+        
+    }    
+    
+    /**
+     * Closes the connection.
+     */
+    public void closeConnection() {
+        
+        this.connectionData.closeConnection();
+        this.data = null;
+        
+    }
+    
+    /**
+     * Keeps the connection open.
+     */
+    public void persistConnection() {
+        
+        this.connectionData.persistConnection();
         
     }
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
-    public Session(Date startTime) {
+    public Session(ConnectionData connectionData) {
         
-        this.startTime = startTime;
+        this.connectionData = connectionData;
         
     }
 }

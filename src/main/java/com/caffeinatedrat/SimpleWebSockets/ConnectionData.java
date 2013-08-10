@@ -44,6 +44,11 @@ public class ConnectionData {
     private String sessionName = "";
     private final Date startTime = new Date();
     private int state = 0;
+    private final String id;
+    private final String ipAddress;
+    
+    // --- CR (8/10/13) --- The persist connection was moved from Response to here.
+    private Boolean persistConnection = false;
     
     // ----------------------------------------------
     // Properties
@@ -68,7 +73,27 @@ public class ConnectionData {
         return this.session;
         
     }
+    
+    /**
+     * Returns the id of the connection.
+     * @return the id of the connection.
+     */    
+    public String getId() {
+        
+        return this.id;
+        
+    }
 
+    /**
+     * Returns the IP address of the peer.
+     * @return the IP address of the peer.
+     */
+    public String getIPAddress() {
+        
+        return this.ipAddress;
+        
+    }
+    
     /**
      * Returns the start time of when the connection was established.
      * @return the start time of when the connection was established.
@@ -108,10 +133,41 @@ public class ConnectionData {
         
     }
     
+    /**
+     * Closes the connection.
+     */
+    public void closeConnection() {
+        
+        this.persistConnection = false;
+        
+    }
+    
+    /**
+     * Keeps the connection open.
+     */
+    public void persistConnection() {
+        
+        this.persistConnection = true;
+        
+    }
+    
+    /**
+     * Determines if the connection is in a closing state.
+     * @return true if the connection is in a closing state.
+     */
+    public boolean isConnectionClosing() {
+        
+        return !this.persistConnection;
+        
+    }
+    
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
-    public ConnectionData() {
+    public ConnectionData(String id, String ipAddress) {
+        
+        this.id = id;
+        this.ipAddress = ipAddress;
         
     }
     
@@ -128,7 +184,7 @@ public class ConnectionData {
         
         if (this.session == null) {
             
-            this.session = new Session(this.startTime);
+            this.session = new Session(this);
             this.sessionName = sessionName;
             
         }
