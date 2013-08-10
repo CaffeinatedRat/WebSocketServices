@@ -50,6 +50,13 @@ public class JsonHelper {
      */    
     private static boolean internalSerialization(Hashtable<String, Object> collection, StringBuilder jsonBuffer, int depth, int maxDepth) {
         
+        //Don't bother with empty collections.
+        if (collection.isEmpty()) {
+            
+            return false;
+            
+        }
+        
         // --- CR (2/7/13) --- We will now log when the maximum depth is exceeded in verbose mode.
         //Add a depth restriction to prevent overflow.
         if (depth > maxDepth) {
