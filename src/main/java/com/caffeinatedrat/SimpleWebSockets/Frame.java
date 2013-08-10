@@ -138,7 +138,7 @@ public class Frame {
                 
             } catch (IOException e) {
                 
-                Logger.verboseDebug(MessageFormat.format("Unable to monitor for frame data. {0}", e.getMessage()));
+                //Logger.verboseDebug(MessageFormat.format("Unable to monitor for frame data. {0}", e.getMessage()));
                 
             }
             
@@ -472,7 +472,7 @@ public class Frame {
     /**
      * Writes a websocket frame.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
-     */    
+     */
     public void write()
         throws InvalidFrameException {
         
@@ -561,6 +561,10 @@ public class Frame {
         }
     }
     
+    /**
+     * Returns true if there is data available for the frame.
+     * @return true if there is data available for the frame.
+     */
     public boolean isAvailable() {
         
         if ( (this.eventThread != null) && (this.eventThread.dataAvailable) ) {
@@ -573,7 +577,10 @@ public class Frame {
         return false;
     }
     
-    public void waitForEvent() {
+    /**
+     * Begins waiting for a frame without blocking.
+     */
+    public void beginWaitingForFrame() {
         
         if ( (this.eventThread == null) && (this.reader != null) ) {
         
