@@ -27,6 +27,8 @@ package com.caffeinatedrat.SimpleWebSockets;
 import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.caffeinatedrat.SimpleWebSockets.Frame.OPCODE;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -41,12 +43,18 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.*;
 public class Connection extends Thread {
     
     // ----------------------------------------------
+    // Statics
+    // ----------------------------------------------
+    private static AtomicLong counter = new AtomicLong(0L);
+    
+    // ----------------------------------------------
     // Member Vars (fields)
     // ----------------------------------------------
     
     private Socket socket;
     private IMasterApplicationLayer masterApplicationLayer;
-    private com.caffeinatedrat.SimpleWebSockets.Server webSocketServer; 
+    private com.caffeinatedrat.SimpleWebSockets.Server webSocketServer;
+    private String id;
     
     // ----------------------------------------------
     // Properties
@@ -75,6 +83,10 @@ public class Connection extends Thread {
         this.socket = socket;
         this.masterApplicationLayer = masterApplicationLayer;
         this.webSocketServer = webSocketServer;
+        
+        //Create the connection id.
+        this.id = MessageFormat.format("{0}-{1,number,#}", counter.incrementAndGet(), new Date().getTime());
+        
     }
     
     // ----------------------------------------------
@@ -89,6 +101,7 @@ public class Connection extends Thread {
     public void run() {
         
         Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
+        Logger.debug(MessageFormat.format("Connection {0} established.", this.id));
         
         try {
             
@@ -108,10 +121,13 @@ public class Connection extends Thread {
                     
                     Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance()); 
                     
+                    // --- CR (8/6/13) --- Get the peer ip address.
+                    String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
+                   
                     // --- CR (7/21/13) --- The response wrapper has now become connection data, and has been moved outside the loop.
-                    ConnectionData connectionData = new ConnectionData();
+                    ConnectionData connectionData = new ConnectionData(this.id, remoteAddress);
                     boolean continueListening = true;
-                    boolean startBlocking = false;
+                    boolean initialBlocking = true;
                     while ( (!socket.isClosed()) && (continueListening) ) {
                         
                         //TODO: Add management of fragmented frames.
@@ -120,9 +136,12 @@ public class Connection extends Thread {
                         //Wait for the next frame.
                         //Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance());
                         
-                        // --- CR (7/20/13) --- If false is returned then there was nothing in the buffer to read.
-                        if (frame.isAvailable() || !startBlocking) {
+                        // --- CR (7/20/13) --- Start blocking only if a frame is available or this is the initial connection.
+                        if (frame.isAvailable() || initialBlocking) {
                             
+                            //If we enter this block, we are either:
+                            //1) Blocking until we receive a frame during the initial opening of the connection.
+                            //2) Blocking to receive a new frame.
                             frame.read();
                             
                             //Determine what type of operation has been requested.
@@ -219,7 +238,11 @@ public class Connection extends Thread {
                             }
                             //END OF switch(frame.getOpCode())...
                             
+                            //The initial blocking is completed.
+                            initialBlocking = false;
+                            
                         }
+                        //There is no new frame available so we'll perform any idle tasks.
                         else {
                             
                             if (masterApplicationLayer != null) {
@@ -227,7 +250,7 @@ public class Connection extends Thread {
                                 masterApplicationLayer.onIdle(connectionData);
                                 
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(500);
                                 }
                                 catch(InterruptedException ie) {
                                     
@@ -238,9 +261,8 @@ public class Connection extends Thread {
                         }
                         //END OF if (frame.read()) {
                         
+                        //The session & response must both be valid in order to respond to the client.
                         Session session = connectionData.getSession();
-                        
-                        //The session & response must both be valid.
                         if ( (session != null) && ( session.response != null ) ) {
                             
                             //The connectionData needs to be in an active state, otherwise it's ignored.
@@ -257,35 +279,28 @@ public class Connection extends Thread {
                                     
                                 }
                                 
-                                continueListening = continueListening && !session.response.closeConnection;
-                                
                                 //Reset the state.
                                 connectionData.resetState();
                             }
                             //END OF if (connectionData.getState() > 0) {...
                             
                         }
-                        else {
-                            
-                            //If the response object is invalid then terminate the connection.
-                            continueListening = false;
-                            
-                        }
                         //END OF if ( (session != null) && ( session.response != null ) ) {...
+
+                        //Determine if we need to persist the connection or terminate it.
+                        continueListening = !connectionData.isConnectionClosing();
                         
                         if (!continueListening) {
                             
                             //Firefox needs to know we're closing or it will throw an error, while Chrome could care less.
-                            //Technically according to the RFC we should be sending a close frame before terminating the server anyways.
+                            //Technically according to the RFC we should be sending a close frame before terminating the connection anyways.
                             writeCloseFrame("Bye bye...");
                             
                         }
                         else {
                             
-                            startBlocking = true;
-                            
                             //Disable blocking...
-                            frame.waitForEvent();
+                            frame.beginWaitingForFrame();
                             
                         }
 
@@ -313,7 +328,7 @@ public class Connection extends Thread {
                 
             }
 
-            Logger.debug("Connection terminated.");
+            Logger.debug(MessageFormat.format("Connection {0} terminated.", this.id));
             Logger.verboseDebug(MessageFormat.format("Thread {0} has spun down...", this.getName()));
         }
         finally {
@@ -409,6 +424,11 @@ public class Connection extends Thread {
      */
     private void writeTextResponseFrame(String fragment) throws InvalidFrameException {
     
+        // --- CR (8/10/13) --- Do not write an empty fragment.
+        if (fragment.length() == 0) {
+            return;
+        }
+        
         Boolean firstFrame = true;
 
         //Fragment the frame if the response is too large.
