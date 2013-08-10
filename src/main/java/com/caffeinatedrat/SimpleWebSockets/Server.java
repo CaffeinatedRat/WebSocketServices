@@ -269,8 +269,13 @@ public class Server extends Thread {
         }
         catch (IOException ioException) {
             
-            Logger.info(MessageFormat.format("The port {0} could not be opened for WebSockets.", this.port));
-            Logger.debug(ioException.getMessage());
+            // --- CR (8/10/13) --- Only log the event if the server is still running.  This should prevent an error message from appearing when the server is restarted.
+            if (this.isServerRunning) {
+                
+                Logger.info(MessageFormat.format("The port {0} could not be opened for WebSockets.", this.port));
+                Logger.debug(ioException.getMessage());
+                
+            }
             
             //Close all threads.
             //TimeComplexity: O(n) -- Where n is the number of threads valid or invalid.
