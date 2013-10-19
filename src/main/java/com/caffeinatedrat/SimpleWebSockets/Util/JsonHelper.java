@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -136,7 +136,7 @@ public class JsonHelper {
                     if ( (element.getValue() instanceof Double) || (element.getValue() instanceof Float) ) {
                         
                         // --- CR (7/14/13) --- Handle European numbers that contain commas.
-                        // Understanably, the European users will get a decimal number instead of a comma.
+                        // Understandably the European users will get a decimal number instead of a comma.
                         jsonBuffer.append(MessageFormat.format("{0}", element.getValue()).replaceAll(",", "."));
                     }
                     else {
