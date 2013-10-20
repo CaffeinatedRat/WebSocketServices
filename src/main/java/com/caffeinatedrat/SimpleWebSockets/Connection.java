@@ -109,7 +109,7 @@ public class Connection extends Thread {
                 
                 Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
                 
-                if (handshake.processRequest()) {
+                if (handshake.negotiateRequest()) {
                     
                     Logger.debug("Handshaking successful.");
                     
