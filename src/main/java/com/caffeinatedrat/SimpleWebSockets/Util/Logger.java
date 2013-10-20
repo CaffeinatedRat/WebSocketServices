@@ -27,8 +27,6 @@ package com.caffeinatedrat.SimpleWebSockets.Util;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 
-import com.caffeinatedrat.SimpleWebSockets.Globals;
-
 /**
  * A utility class that appends the plug-in's name to the log.
  *
@@ -37,11 +35,21 @@ import com.caffeinatedrat.SimpleWebSockets.Globals;
  */
 public class Logger {
     
-    private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("Minecraft");
-
+    // --- CR (10/20/13) --- Provide a way for the logger to be overridden.
+    public static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("Minecraft");
+    public static int debugLevel = 0;
+    
     // ----------------------------------------------
     // Methods
     // ----------------------------------------------
+    
+    public static boolean isDebug() {
+        return (debugLevel > 0);
+    }
+    
+    public static boolean isVerboseDebug() {
+        return ((debugLevel & 0x02) == 0x02);
+    }
     
     public static void severe(String msg) {
         logger.log(Level.SEVERE, MessageFormat.format("[WebSocketServices] {0}", msg));
@@ -56,14 +64,14 @@ public class Logger {
     }
     
     public static void debug(String msg) {
-        if (Globals.isDebug()) {
+        if (isDebug()) {
             logger.log(Level.INFO, MessageFormat.format("[WebSocketServices] {0}", msg));
         }
     }
     
     public static void verboseDebug(String msg)
     {
-        if (Globals.isVerboseDebug()) {
+        if (isVerboseDebug()) {
             logger.log(Level.INFO, MessageFormat.format("[WebSocketServices] {0}", msg));
         }
     }    

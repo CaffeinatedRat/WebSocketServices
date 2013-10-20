@@ -31,6 +31,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.caffeinatedrat.SimpleWebSockets.*;
+import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 import com.caffeinatedrat.WebSocketServices.Listener.*;
 
 /**
@@ -67,7 +68,7 @@ public class WebSocketServices extends JavaPlugin {
         
         //Manage the configuration...
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
-        Globals.debugLevel = config.getDebugLevel();
+        Logger.debugLevel = config.getDebugLevel();
         
         IMasterApplicationLayer masterApplicationLayer = new MasterApplicationLayer(getServer(), loginTimes, config, registeredApplicationLayers);
         

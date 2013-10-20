@@ -42,14 +42,10 @@ public class Globals {
     // ----------------------------------------------
     // Global Vars.
     // ----------------------------------------------
-    public static int debugLevel = 0;
 
     // ----------------------------------------------
     // Properties
     // ----------------------------------------------
-    
-    public static boolean isDebug() { return (debugLevel > 0); }
-    public static boolean isVerboseDebug() { return ((debugLevel & 0x02) == 0x02); }
     
     // ----------------------------------------------
     // Data Types.
