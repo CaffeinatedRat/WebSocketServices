@@ -33,7 +33,7 @@ import com.caffeinatedrat.SimpleWebSockets.IMasterApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.ConnectionData;
 import com.caffeinatedrat.SimpleWebSockets.Session;
-import com.caffeinatedrat.SimpleWebSockets.TextResponse;
+import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 /**
@@ -76,7 +76,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
      * @param text The action being requested.
      * @param connectionData The connection data associated with this connection.
      */
-    public void onTextFrame(String text, ConnectionData connectionData) {
+    public void onTextFrame(String[] text, ConnectionData connectionData) {
         
         // --- CR (7/21/13) --- Force the serviceName to lower-case to get rid of all lower-case checking headaches.
         // --- CR (3/3/13) --- Prepare for handling arguments for text services.
@@ -208,7 +208,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         
     }
 
-    public void onBinaryFrame(byte[] data, ConnectionData connectionData) {
+    public void onBinaryFrame(byte[][] data, ConnectionData connectionData) {
         
         Session session = connectionData.getSession();
         

@@ -22,22 +22,18 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets;
+package com.caffeinatedrat.SimpleWebSockets.Responses;
 
 /**
- * An interface for the application layer.
+ * A simple response object.
  *
  * @version 1.0.0.0
  * @author CaffeinatedRat
  */
-public interface IMasterApplicationLayer {
+public class Response {
 
-    void onTextFrame(String text, ConnectionData sessionWrapper);
-    void onBinaryFrame(byte[][] data, ConnectionData sessionWrapper);
-    void onClose();
-    void onPing(byte[] data);
-    void onPong();
+    // --- CR (9/16/12) --- Automatically terminate a connection.  Only leave it open when someone specifically asks for it.
+    // --- CR (8/10/13) --- Moved to ConnectionData.
+    //public boolean closeConnection = true;
     
-    // --- CR (7/18/13) --- Add an idle event for connections that keep alive.
-    void onIdle(ConnectionData responseWrapper);
 }

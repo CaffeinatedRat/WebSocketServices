@@ -22,7 +22,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets;
+package com.caffeinatedrat.SimpleWebSockets.Frames;
 
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -59,6 +59,7 @@ public class Frame {
     public enum OPCODE {
         
         //0-2 are valid data frames.
+        //Per the RFC, Non-control frames have a the most significant bit set to 1.
         CONTINUATION_DATA_FRAME(0, true),
         TEXT_DATA_FRAME(1, true),
         BINARY_DATA_FRAME(2, true),
@@ -71,6 +72,7 @@ public class Frame {
         RESERVED6_DATA_FRAME(7, true),
         
         //8-10 are valid control frames.
+        //http://tools.ietf.org/html/rfc6455#section-5.5
         CONNECTION_CLOSE_CONTROL_FRAME(8, false),
         PING_CONTROL_FRAME(9, false),
         PONG_CONTROL_FRAME(10, false),
@@ -83,74 +85,31 @@ public class Frame {
         RESERVED5_CONTROL_FRAME(15, true);
         
         private final int opCode;
-        private final boolean isFrame;
         
-        OPCODE(int opCode, boolean isFrame) {
+        // --- CR(11/10/13) --- Not sure what I was doing with this before...but make it reserved for now.
+        @SuppressWarnings("unused")
+        private final boolean reserved;
+        
+        OPCODE(int opCode, boolean reserved) {
             this.opCode = opCode;
-            this.isFrame = isFrame;
+            this.reserved = reserved;
         }
         
         public int getValue() {
             return this.opCode;
         }
         
-        public boolean isFrame() {
-            return this.isFrame;
+        // --- CR(11/10/13) --- Added a way of detecting control frames based on the RFC that do not require manually assigning the frame type.
+        //Per the RFC, Control frames have a the most significant bit set to 1.
+        //http://tools.ietf.org/html/rfc6455#section-5.5
+        public boolean isControlFrame() {
+            return ((this.opCode & 8) == 8);
         }
     }
-
-    /**
-     * A simple, small thread that allows for a non-blocking instance of a frame.
-     * When activity is detected and the buffer contains data then the frame will start blocking again to read important data.
-     * We do not need a full-fledged non-blocking architecture at this time, since most of the time the framework is blocking.
-     */
-    public class EventThread extends Thread {
-        
-        WebSocketsReader reader;
-        boolean dataAvailable;
-        
-        public EventThread(WebSocketsReader reader) {
-          
-            this.reader = reader;
-            this.dataAvailable = false;
-            
-        }
-        
-        @Override
-        public void run() {
-            
-            try {
-                
-                Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
-                
-                reader.mark(0);
-                
-                //Wait for data...
-                reader.read();
-                
-                //Reset to the beginning of the stream.
-                reader.reset();
-                
-                //Note that data is available...we don't care if the this value is dirty at the time we are checking...
-                this.dataAvailable = true;
-                
-                Logger.verboseDebug(MessageFormat.format("Thread {0} has spun down...", this.getName()));
-                
-            } catch (IOException e) {
-                
-                //Logger.verboseDebug(MessageFormat.format("Unable to monitor for frame data. {0}", e.getMessage()));
-                
-            }
-            
-        }
-        
-    }    
     
     // ----------------------------------------------
     // Member Vars (fields)
     // ----------------------------------------------
-    
-    private EventThread eventThread = null;
     
     private WebSocketsReader reader = null;
     private Socket socket;
@@ -291,9 +250,18 @@ public class Frame {
     /**
      * Gets the timeout value for the frame.
      * @return timeout The time in milliseconds before the frame fails.
-     */    
+     */
     public int getTimeOut() {
         return this.timeoutInMilliseconds;
+    }
+    
+    
+    /**
+     * Read-Only property for retrieving the WebSocketsReader used to read the frames.
+     * @return the WebSocketsReader used to read the frames.
+     */
+    public WebSocketsReader getReader() {
+        return this.reader;
     }
     
     // ----------------------------------------------
@@ -384,7 +352,10 @@ public class Frame {
             
             //Verify that the frame is valid.
             if (!isReservedValid()) {
-                throw new InvalidFrameException();
+                
+                // --- CR(11/10/13) --- Added details on why this frame is invalid.
+                throw new InvalidFrameException("The reserved bits are invalid.");
+                
             }
             
             //The description byte determines if the frame data is masked and the size of the application data.
@@ -448,11 +419,11 @@ public class Frame {
         }
         catch (SocketTimeoutException socketTimeout) {
             Logger.verboseDebug(MessageFormat.format("A socket timeout has occured.  {0}", socketTimeout.getMessage()));
-            throw new InvalidFrameException();
+            throw new InvalidFrameException("The frame was not completed in time.");
         }
         catch (EndOfStreamException eofsException) {
             Logger.verboseDebug("Invalid frame.  The client has unexpectedly disconnected.");
-            throw new InvalidFrameException();
+            throw new InvalidFrameException("The client terminated the connection before completing the frame.");
         }
         catch (IOException ioException) {
             Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
@@ -543,7 +514,7 @@ public class Frame {
         }
         catch (SocketTimeoutException socketTimeout) {
             Logger.verboseDebug(MessageFormat.format("A socket timeout has occured.  {0}", socketTimeout.getMessage()));
-            throw new InvalidFrameException();
+            throw new InvalidFrameException("The frame was not completed in time.");
         }
         catch(IOException ioException) {
             Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
@@ -561,33 +532,4 @@ public class Frame {
         }
     }
     
-    /**
-     * Returns true if there is data available for the frame.
-     * @return true if there is data available for the frame.
-     */
-    public boolean isAvailable() {
-        
-        if ( (this.eventThread != null) && (this.eventThread.dataAvailable) ) {
-            
-            this.eventThread = null;
-            return true;
-            
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Begins waiting for a frame without blocking.
-     */
-    public void beginWaitingForFrame() {
-        
-        if ( (this.eventThread == null) && (this.reader != null) ) {
-        
-            this.eventThread = new EventThread(this.reader);
-            this.eventThread.start();
-        
-        }
-
-    }    
 }

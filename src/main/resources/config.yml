@@ -9,6 +9,8 @@ websocket:
   handshakeTimeOutTolerance: 1000
   #Sets the number of milliseconds that the server will wait for a frame to complete before terminating the connection.
   frameTimeOutTolerance: 3000
+  #Sets the maximum number of frames that can be sent in a single request to your server.  The higher this value is the more likely someone can reduce your servers performance if they flood you with large size requests.
+  maximumFragmentationSize: 2
   #Sets the number of milliseconds that the server will wait before terminating an idle connection.  If this is zero the connection will wait indefinitely.
   idleConnectionTimeOut: 30000
   #Determines if the origin is valid during the handshake.  If the origin is null, it is invalid and the connection is rejected.

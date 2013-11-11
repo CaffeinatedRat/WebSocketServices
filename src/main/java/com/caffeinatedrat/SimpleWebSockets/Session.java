@@ -26,6 +26,8 @@ package com.caffeinatedrat.SimpleWebSockets;
 
 import java.util.Date;
 
+import com.caffeinatedrat.SimpleWebSockets.Responses.Response;
+
 public class Session {
 
     // ----------------------------------------------

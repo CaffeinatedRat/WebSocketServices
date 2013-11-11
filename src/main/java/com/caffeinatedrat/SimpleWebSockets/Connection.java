@@ -30,7 +30,12 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caffeinatedrat.SimpleWebSockets.Frame.OPCODE;
+import com.caffeinatedrat.SimpleWebSockets.Frames.Frame;
+import com.caffeinatedrat.SimpleWebSockets.Frames.Frame.OPCODE;
+import com.caffeinatedrat.SimpleWebSockets.Frames.FrameReader;
+import com.caffeinatedrat.SimpleWebSockets.Frames.IFrameEvent;
+import com.caffeinatedrat.SimpleWebSockets.Responses.BinaryResponse;
+import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.*;
 
@@ -40,7 +45,7 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.*;
  * @version 1.0.0.0
  * @author CaffeinatedRat
  */
-public class Connection extends Thread {
+public class Connection extends Thread implements IFrameEvent {
     
     // ----------------------------------------------
     // Statics
@@ -93,7 +98,6 @@ public class Connection extends Thread {
     // Methods
     // ----------------------------------------------
     
-    
     /**
      * Begins managing an individual connection.
      */
@@ -107,7 +111,10 @@ public class Connection extends Thread {
             
             try {
                 
-                Handshake handshake = new Handshake(this.socket, getWebSocketServer().getHandshakeTimeout(), getWebSocketServer().isOriginChecked(), getWebSocketServer().getWhiteList());
+                // --- CR (11/11/13) --- For readability...
+                Server theServer = getWebSocketServer();
+                
+                Handshake handshake = new Handshake(this.socket, theServer.getHandshakeTimeout(), theServer.isOriginChecked(), theServer.getWhiteList());
                 
                 if (handshake.negotiateRequest()) {
                     
@@ -119,7 +126,7 @@ public class Connection extends Thread {
                     //Get the start time for our connection.
                     //Date startTime = new Date();
                     
-                    Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance()); 
+                    FrameReader frame = new FrameReader(this.socket, this, theServer.getFrameTimeoutTolerance(), theServer.getMaximumFragmentationSize()); 
                     
                     // --- CR (8/6/13) --- Get the peer ip address.
                     String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
@@ -127,36 +134,38 @@ public class Connection extends Thread {
                     // --- CR (7/21/13) --- The response wrapper has now become connection data, and has been moved outside the loop.
                     ConnectionData connectionData = new ConnectionData(this.id, remoteAddress);
                     boolean continueListening = true;
-                    boolean initialBlocking = true;
                     while ( (!socket.isClosed()) && (continueListening) ) {
                         
                         //TODO: Add management of fragmented frames.
                         //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
                         
-                        //Wait for the next frame.
-                        //Frame frame = new Frame(this.socket, getWebSocketServer().getFrameTimeoutTolerance());
-                        
-                        // --- CR (7/20/13) --- Start blocking only if a frame is available or this is the initial connection.
-                        if (frame.isAvailable() || initialBlocking) {
-                            
-                            //If we enter this block, we are either:
-                            //1) Blocking until we receive a frame during the initial opening of the connection.
-                            //2) Blocking to receive a new frame.
-                            frame.read();
+                        // --- CR (11/11/13) --- Begin reading one or more frames and block only if there is data available.
+                        // If the return value is true then data was available and read.
+                        if (frame.read()) {
                             
                             //Determine what type of operation has been requested.
                             //NOTE: Standard browsers currently do not support ping events.
-                            switch (frame.getOpCode()) {
+                            switch (frame.getFrameType()) {
                             
                                 //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
                                 case TEXT_DATA_FRAME: {
                                     
-                                    String text = frame.getPayloadAsString();
-                                    Logger.debug(text);
+                                    String[] payload = frame.getPayloadAsString();
+                                    
+                                    //Only construct this if logging is set to debug.
+                                    if (Logger.isDebug()) {
+                                        
+                                        StringBuilder stringbuilder = new StringBuilder();
+                                        for(String item : payload) {
+                                            stringbuilder.append(item);
+                                        }
+                                        
+                                        Logger.debug(stringbuilder.toString());
+                                    }
                                     
                                     if (masterApplicationLayer != null) {
                                         
-                                        masterApplicationLayer.onTextFrame(text, connectionData);
+                                        masterApplicationLayer.onTextFrame(payload, connectionData);
                                         
                                     }
                                     // END OF if(masterApplicationLayer != null)...
@@ -166,11 +175,9 @@ public class Connection extends Thread {
                                 //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
                                 case BINARY_DATA_FRAME: {
                                     
-                                    byte[] data = frame.getPayloadAsBytes();
-                                    
                                     if (masterApplicationLayer != null) {
                                         
-                                        masterApplicationLayer.onBinaryFrame(data, connectionData);
+                                        masterApplicationLayer.onBinaryFrame(frame.getPayload(), connectionData);
                                         
                                     }
                                     // END OF if (masterApplicationLayer != null) {...
@@ -195,26 +202,11 @@ public class Connection extends Thread {
                                 //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.2
                                 case PING_CONTROL_FRAME: {
                                     
-                                    //Is pinging supported?
-                                    if(!getWebSocketServer().isPingable()) {
-                                        
-                                        break;
-                                        
-                                    }
+                                    //We already have the logic in this method.  Just reuse it.
+                                    //NOTE: Per the RFC, control frames can never be fragmented.
+                                    //http://tools.ietf.org/html/rfc6455#section-5.4
+                                    onControlFrame(OPCODE.PING_CONTROL_FRAME, frame.getPayload()[0]);
                                     
-                                    if (masterApplicationLayer != null) {
-                                        
-                                        masterApplicationLayer.onPing(frame.getPayloadAsBytes());
-                                        
-                                    }
-                                    
-                                    Frame responseFrame = new Frame(this.socket);
-                                    responseFrame.setFinalFragment();
-                                    responseFrame.setOpCode(OPCODE.PONG_CONTROL_FRAME);
-                                    
-                                    //Send any body data per the spec.
-                                    responseFrame.setPayload(frame.getPayloadAsBytes());
-                                    responseFrame.write();
                                 }
                                 break;
                                     
@@ -222,13 +214,11 @@ public class Connection extends Thread {
                                 //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.3
                                 case PONG_CONTROL_FRAME: {
                                     
-                                    if (masterApplicationLayer != null) {
-                                        
-                                        masterApplicationLayer.onPong();
-                                        
-                                    }
+                                    //We already have the logic in this method.  Just reuse it.
+                                    //NOTE: Per the RFC, control frames can never be fragmented.
+                                    //http://tools.ietf.org/html/rfc6455#section-5.4
+                                    onControlFrame(OPCODE.PONG_CONTROL_FRAME, frame.getPayload()[0]);
                                     
-                                    Logger.verboseDebug("A pong frame was received.");
                                 }
                                 break;
                                 
@@ -237,9 +227,6 @@ public class Connection extends Thread {
                                     
                             }
                             //END OF switch(frame.getOpCode())...
-                            
-                            //The initial blocking is completed.
-                            initialBlocking = false;
                             
                         }
                         //There is no new frame available so we'll perform any idle tasks.
@@ -300,7 +287,7 @@ public class Connection extends Thread {
                         else {
                             
                             //Disable blocking...
-                            frame.beginWaitingForFrame();
+                            frame.startNonBlocking();
                             
                         }
 
@@ -311,12 +298,13 @@ public class Connection extends Thread {
                     
                     Logger.debug("Handshaking failure.");
                     writeCloseFrame("The handshaking has failed.");
+                    
                 }
                 //END OF if(handshake.processRequest())...
             }
             catch (InvalidFrameException invalidFrame) {
                 
-                Logger.debug("The frame is invalid.");
+                Logger.debug(MessageFormat.format("The frame is invalid for the following reasons: {0}", invalidFrame.getMessage()));
                 
                 try {
                     
@@ -454,4 +442,55 @@ public class Connection extends Thread {
         responseFrame.write();
         
     }
+    
+    // ----------------------------------------------
+    // Events
+    // ----------------------------------------------
+    
+    public void onControlFrame(Frame.OPCODE opcode, byte[] payload) throws InvalidFrameException  {
+        
+        switch(opcode) {
+        
+            case PING_CONTROL_FRAME: {
+                
+                //Is pinging supported?
+                if(!getWebSocketServer().isPingable()) {
+                    
+                    break;
+                    
+                }
+                
+                if (masterApplicationLayer != null) {
+                    
+                    masterApplicationLayer.onPing(payload);
+                    
+                }
+                
+                Frame responseFrame = new Frame(this.socket);
+                responseFrame.setFinalFragment();
+                responseFrame.setOpCode(OPCODE.PONG_CONTROL_FRAME);
+                
+                //Send any body data per the spec.
+                responseFrame.setPayload(payload);
+                responseFrame.write();
+            }
+            break;
+                
+            case PONG_CONTROL_FRAME: {
+                
+                if (masterApplicationLayer != null) {
+                    
+                    masterApplicationLayer.onPong();
+                    
+                }
+                
+                Logger.verboseDebug("A pong frame was received.");
+            }
+            break;
+            
+        }
+        //END OF switch(opcode) {...
+        
+    }
+
 }

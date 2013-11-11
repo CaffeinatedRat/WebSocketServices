@@ -171,6 +171,26 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     }
 
     /**
+     * Safely returns the maximum fragmentation size.
+     * @return returns the maximum fragmentation size.
+     */    
+    public int getMaximumFragmentationSize() {
+     
+        int maximumFragmentationSize = getInt("websocket.maximumFragmentationSize", 2);
+        
+        //Validate
+        if (maximumFragmentationSize < 0) {
+        
+            Logger.warning(MessageFormat.format("The maximum fragmentation size {0} is invalid, defaulting to 2.", maximumFragmentationSize));
+            return 2;
+            
+        }
+        
+        return maximumFragmentationSize;
+        
+    }
+    
+    /**
      * Safely returns the idle timeout in milliseconds.
      * @return safely returns the idle timeout in milliseconds.
      */

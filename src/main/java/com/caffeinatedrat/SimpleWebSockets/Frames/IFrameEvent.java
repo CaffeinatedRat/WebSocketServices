@@ -22,55 +22,19 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets;
+package com.caffeinatedrat.SimpleWebSockets.Frames;
 
-import java.util.Hashtable;
-
-import com.caffeinatedrat.SimpleWebSockets.Util.JsonHelper;
+import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
 
 /**
- * A simple response object for text data.
+ * An interface for frame events.
  *
  * @version 1.0.0.0
  * @author CaffeinatedRat
  */
-public class TextResponse extends Response {
-    
-    // ----------------------------------------------
-    // Member Vars (fields)
-    // ----------------------------------------------
-    private String data = "";
-    private Hashtable<String, Object> responseCollection;
-    
-    // ----------------------------------------------
-    // Properties
-    // ----------------------------------------------    
-    public Hashtable<String, Object> getCollection() {
-        return this.responseCollection;
-    }
-    
-    // ----------------------------------------------
-    // Constructors
-    // ----------------------------------------------    
-    public TextResponse() {
-        responseCollection = new Hashtable<String, Object>();
-    }
-    
-    public TextResponse(String data) {
-        this.data = data;
-        this.responseCollection = null;
-    }
+public interface IFrameEvent {
 
-    // ----------------------------------------------
-    // Methods
-    // ----------------------------------------------    
-    @Override
-    public String toString() {
-        
-        if (data == "") {
-            data = JsonHelper.serialize(responseCollection);
-        }
-        
-        return data;
-    }
+    //Is invoked when a control frame is encountered during fragmentation.
+    void onControlFrame(Frame.OPCODE opcode, byte[] payload) throws InvalidFrameException;
+    
 }

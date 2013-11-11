@@ -58,6 +58,8 @@ The following contains information about new features, bug fixes, and other vers
 #### 1.3.1
 
 * Added support for persistent connections.
+* Frame fragmentation supported.
+* Upgraded to CraftBukkit 1.6.2-R1.0 (The plug-in is robust enough to have backwards & forwards compatibility + or - two versions).
 
 #### 1.3.0
 

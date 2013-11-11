@@ -40,4 +40,9 @@ public class InvalidFrameException extends Exception {
     public InvalidFrameException() {
         super("This frame is invalid.");
     }
+    
+    // --- CR (11/13/2013) --- Added the ability to provide a message as to why the frame was invalid.
+    public InvalidFrameException(String message) {
+        super(message);
+    }    
 }

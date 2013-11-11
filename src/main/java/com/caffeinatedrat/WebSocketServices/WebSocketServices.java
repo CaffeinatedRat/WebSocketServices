@@ -79,6 +79,7 @@ public class WebSocketServices extends JavaPlugin {
         server.setOriginCheck(config.getCheckOrigin());
         server.setPingable(config.getIsPingable());
         server.setIdleTimeOut(config.getIdleConnectionTimeOut());
+        server.setMaximumFragmentationSize(config.getMaximumFragmentationSize());
         
         server.start();
         

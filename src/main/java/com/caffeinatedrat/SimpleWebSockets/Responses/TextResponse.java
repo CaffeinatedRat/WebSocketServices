@@ -22,18 +22,55 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets;
+package com.caffeinatedrat.SimpleWebSockets.Responses;
+
+import java.util.Hashtable;
+
+import com.caffeinatedrat.SimpleWebSockets.Util.JsonHelper;
 
 /**
- * A simple response object.
+ * A simple response object for text data.
  *
  * @version 1.0.0.0
  * @author CaffeinatedRat
  */
-public class Response {
-
-    // --- CR (9/16/12) --- Automatically terminate a connection.  Only leave it open when someone specifically asks for it.
-    // --- CR (8/10/13) --- Moved to ConnectionData.
-    //public boolean closeConnection = true;
+public class TextResponse extends Response {
     
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    private String data = "";
+    private Hashtable<String, Object> responseCollection;
+    
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------    
+    public Hashtable<String, Object> getCollection() {
+        return this.responseCollection;
+    }
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------    
+    public TextResponse() {
+        responseCollection = new Hashtable<String, Object>();
+    }
+    
+    public TextResponse(String data) {
+        this.data = data;
+        this.responseCollection = null;
+    }
+
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------    
+    @Override
+    public String toString() {
+        
+        if (data == "") {
+            data = JsonHelper.serialize(responseCollection);
+        }
+        
+        return data;
+    }
 }

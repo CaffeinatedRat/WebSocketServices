@@ -32,8 +32,8 @@ package com.caffeinatedrat.SimpleWebSockets;
  */
 public interface IApplicationLayer {
 
-    void onTextFrame(String text, Session session);
-    void onBinaryFrame(byte[] data, Session session);
+    void onTextFrame(String[] text, Session session);
+    void onBinaryFrame(byte[][] data, Session session);
     void onClose();
     void onPing(byte[] data);
     void onPong();

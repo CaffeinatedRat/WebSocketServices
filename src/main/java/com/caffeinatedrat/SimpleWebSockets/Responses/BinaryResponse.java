@@ -22,7 +22,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets;
+package com.caffeinatedrat.SimpleWebSockets.Responses;
 
 import java.util.LinkedList;
 import java.util.Queue;

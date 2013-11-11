@@ -51,6 +51,7 @@ public class Server extends Thread {
     private int maximumThreads;
     private int handshakeTimeOutInMilliseconds;
     private int frameTimeOutToleranceInMilliseconds;
+    private int maximumFragmentationSize;
     private int idleTimeOutInMilliseconds;
     private boolean checkOrigin;
     private boolean pingable;
@@ -111,6 +112,22 @@ public class Server extends Thread {
      */
     public void setFrameTimeoutTolerance(int timeout) {
         this.frameTimeOutToleranceInMilliseconds = timeout;
+    }
+    
+    /**
+     * Returns the maximum fragmentation size.
+     * @return The maximum fragmentation size.
+     */
+    public int getMaximumFragmentationSize() {
+        return this.maximumFragmentationSize;
+    }
+    
+    /**
+     * Sets the maximum fragmentation size.
+     * @param timeout The maximum fragmentation size.
+     */
+    public void setMaximumFragmentationSize(int maximumFragmentationSize) {
+        this.maximumFragmentationSize = maximumFragmentationSize;
     }
     
     /**
@@ -201,6 +218,7 @@ public class Server extends Thread {
         this.maximumThreads = maximumThreads;
         this.handshakeTimeOutInMilliseconds = 1000;
         this.frameTimeOutToleranceInMilliseconds = 3000;
+        this.maximumFragmentationSize = 2;
         this.checkOrigin = true;
         this.pingable = true;
         

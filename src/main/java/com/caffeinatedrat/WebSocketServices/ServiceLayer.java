@@ -41,9 +41,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-import com.caffeinatedrat.SimpleWebSockets.BinaryResponse;
 import com.caffeinatedrat.SimpleWebSockets.Session;
-import com.caffeinatedrat.SimpleWebSockets.TextResponse;
+import com.caffeinatedrat.SimpleWebSockets.Responses.BinaryResponse;
+import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 public class ServiceLayer {
@@ -131,7 +131,7 @@ public class ServiceLayer {
      * @param session The current session.
      * @return True if the service was successfully executed.
      */    
-    public boolean executeBinary(byte[] data, Session session) {
+    public boolean executeBinary(byte[][] data, Session session) {
 
         if (session == null) {
             
@@ -144,10 +144,12 @@ public class ServiceLayer {
             session.response = new BinaryResponse();
             
             if(data.length > 0) {
+                
                 byte controlByte = data[0];
                 if(controlByte == 0x01) {
                     return binaryfragmentationtest(data, (BinaryResponse)session.response);
                 }
+                
             }
             
         }
@@ -658,7 +660,8 @@ public class ServiceLayer {
      * @param response A binary response
      * @return True if the service was successfully executed.
      */    
-    protected boolean binaryfragmentationtest(byte[] data, BinaryResponse response) {
+    protected boolean binaryfragmentationtest(byte[][] data, BinaryResponse response) {
+        
         if (data.length > 1) {
             for (int i = 1; i < 4; i++) {
                 byte[] newData = new byte[data.length - 1];
