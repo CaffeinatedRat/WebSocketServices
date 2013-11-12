@@ -25,6 +25,7 @@
 package com.caffeinatedrat.SimpleWebSockets.Frames;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
+import com.caffeinatedrat.SimpleWebSockets.Payload.Payload;
 
 /**
  * An interface for frame events.
@@ -35,6 +36,6 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
 public interface IFrameEvent {
 
     //Is invoked when a control frame is encountered during fragmentation.
-    void onControlFrame(Frame.OPCODE opcode, byte[] payload) throws InvalidFrameException;
+    void onControlFrame(Frame.OPCODE opcode, Payload payload) throws InvalidFrameException;
     
 }

@@ -33,6 +33,7 @@ import com.caffeinatedrat.SimpleWebSockets.IMasterApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.ConnectionData;
 import com.caffeinatedrat.SimpleWebSockets.Session;
+import com.caffeinatedrat.SimpleWebSockets.Payload.*;
 import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -76,12 +77,12 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
      * @param text The action being requested.
      * @param connectionData The connection data associated with this connection.
      */
-    public void onTextFrame(String[] text, ConnectionData connectionData) {
+    public void onTextFrame(TextPayload textPayload, ConnectionData connectionData) {
         
         // --- CR (7/21/13) --- Force the serviceName to lower-case to get rid of all lower-case checking headaches.
         // --- CR (3/3/13) --- Prepare for handling arguments for text services.
         //Separate the service name and arguments from the incoming data.
-        String[] tokens = text.split(" ", 2);
+        String[] tokens = textPayload.toString().split(" ", 2);
         String serviceName = tokens[0].toLowerCase();
         String arguments = null;
         
@@ -208,7 +209,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         
     }
 
-    public void onBinaryFrame(byte[][] data, ConnectionData connectionData) {
+    public void onBinaryFrame(Payload payload, ConnectionData connectionData) {
         
         Session session = connectionData.getSession();
         
@@ -219,14 +220,14 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
             if (config.isServiceEnabled("binaryfragmentationtest")) {
                 
                 //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-                if(!serviceLayer.executeBinary(data, session)) {
+                if(!serviceLayer.executeBinary(payload, session)) {
                     
                     //Adds an O(n) operation.
                     Iterator<Entry<String, IApplicationLayer>> iterator = this.registeredApplicationLayers.entrySet().iterator();
                     while (iterator.hasNext()) {
                         
                         Map.Entry<String, IApplicationLayer> pairs = (Map.Entry<String, IApplicationLayer>)iterator.next();
-                        ((IApplicationLayer)pairs.getValue()).onBinaryFrame(data, session);
+                        ((IApplicationLayer)pairs.getValue()).onBinaryFrame(payload, session);
                         
                     }
                     //END OF while (iterator.hasNext()) {...
@@ -244,7 +245,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         // TODO Auto-generated method stub
     }
 
-    public void onPing(byte[] data) {
+    public void onPing(Payload payload) {
         // TODO Auto-generated method stub
 
     }

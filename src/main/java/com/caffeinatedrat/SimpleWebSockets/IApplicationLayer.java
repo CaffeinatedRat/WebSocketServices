@@ -24,6 +24,8 @@
 
 package com.caffeinatedrat.SimpleWebSockets;
 
+import com.caffeinatedrat.SimpleWebSockets.Payload.*;
+
 /**
  * An interface for the application layer.
  *
@@ -32,10 +34,10 @@ package com.caffeinatedrat.SimpleWebSockets;
  */
 public interface IApplicationLayer {
 
-    void onTextFrame(String[] text, Session session);
-    void onBinaryFrame(byte[][] data, Session session);
+    void onTextFrame(TextPayload textPayload, Session session);
+    void onBinaryFrame(Payload payload, Session session);
     void onClose();
-    void onPing(byte[] data);
+    void onPing(Payload payload);
     void onPong();
     
     // --- CR (7/18/13) --- Add an idle event for connections that keep alive.

@@ -374,12 +374,15 @@ public class Frame {
             }
             //Per the RFC if the payloadLen described in the description byte is 127 then the payload length can be up to 2^64 in size.
             //An example can be found at http://tools.ietf.org/html/rfc6455#section-5.7
-            //NOTE: Chrome does not support this at the time.
+            //NOTE: Chrome does not support this at the time (See note below).
+            //NOTE2: When calculated this length has the capability of being 2^64 in length of contiguous memory, 1 zettabyte...not ready for this type of this memory usage.
             else if (this.payloadLength == 127) {
+                
                 //NOTE: Websockets uses a big endian byte order.
                 inputStream.readFully(buffer, 0, 8);
                 //Unrolled loop since the loop's size is static and to improve performance slightly.
                 this.payloadLength = ((((long)buffer[0]) << 56) | ((long)buffer[1] << 48) | ((long)buffer[2] << 40) | ((long)buffer[3] << 32) | ((long)buffer[4] << 24) | ((long)buffer[5] << 16) | ((long)buffer[6] << 8) | buffer[7]);
+                
             }
             
             //Read the mask if one exists.

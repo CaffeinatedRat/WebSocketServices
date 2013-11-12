@@ -30,12 +30,9 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.caffeinatedrat.SimpleWebSockets.Frames.Frame;
-import com.caffeinatedrat.SimpleWebSockets.Frames.Frame.OPCODE;
-import com.caffeinatedrat.SimpleWebSockets.Frames.FrameReader;
-import com.caffeinatedrat.SimpleWebSockets.Frames.IFrameEvent;
-import com.caffeinatedrat.SimpleWebSockets.Responses.BinaryResponse;
-import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
+import com.caffeinatedrat.SimpleWebSockets.Frames.*;
+import com.caffeinatedrat.SimpleWebSockets.Payload.*;
+import com.caffeinatedrat.SimpleWebSockets.Responses.*;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.*;
 
@@ -150,22 +147,17 @@ public class Connection extends Thread implements IFrameEvent {
                                 //RFC: http://tools.ietf.org/html/rfc6455#section-5.6
                                 case TEXT_DATA_FRAME: {
                                     
-                                    String[] payload = frame.getPayloadAsString();
+                                    TextPayload textPayload = frame.getTextPayload();
                                     
                                     //Only construct this if logging is set to debug.
                                     if (Logger.isDebug()) {
                                         
-                                        StringBuilder stringbuilder = new StringBuilder();
-                                        for(String item : payload) {
-                                            stringbuilder.append(item);
-                                        }
-                                        
-                                        Logger.debug(stringbuilder.toString());
+                                        Logger.debug(textPayload.toString());
                                     }
                                     
                                     if (masterApplicationLayer != null) {
                                         
-                                        masterApplicationLayer.onTextFrame(payload, connectionData);
+                                        masterApplicationLayer.onTextFrame(textPayload, connectionData);
                                         
                                     }
                                     // END OF if(masterApplicationLayer != null)...
@@ -205,7 +197,7 @@ public class Connection extends Thread implements IFrameEvent {
                                     //We already have the logic in this method.  Just reuse it.
                                     //NOTE: Per the RFC, control frames can never be fragmented.
                                     //http://tools.ietf.org/html/rfc6455#section-5.4
-                                    onControlFrame(OPCODE.PING_CONTROL_FRAME, frame.getPayload()[0]);
+                                    onControlFrame(Frame.OPCODE.PING_CONTROL_FRAME, frame.getPayload());
                                     
                                 }
                                 break;
@@ -217,7 +209,7 @@ public class Connection extends Thread implements IFrameEvent {
                                     //We already have the logic in this method.  Just reuse it.
                                     //NOTE: Per the RFC, control frames can never be fragmented.
                                     //http://tools.ietf.org/html/rfc6455#section-5.4
-                                    onControlFrame(OPCODE.PONG_CONTROL_FRAME, frame.getPayload()[0]);
+                                    onControlFrame(Frame.OPCODE.PONG_CONTROL_FRAME, frame.getPayload());
                                     
                                 }
                                 break;
@@ -355,7 +347,7 @@ public class Connection extends Thread implements IFrameEvent {
             //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
             Frame closeFrame = new Frame(this.socket);
             closeFrame.setFinalFragment();
-            closeFrame.setOpCode(OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
+            closeFrame.setOpCode(Frame.OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
             closeFrame.setPayload(message);
             closeFrame.write();
             
@@ -381,13 +373,13 @@ public class Connection extends Thread implements IFrameEvent {
             
             if (firstFrame) {
                 
-                responseFrame.setOpCode(OPCODE.BINARY_DATA_FRAME);
+                responseFrame.setOpCode(Frame.OPCODE.BINARY_DATA_FRAME);
                 firstFrame = false;
                 
             }
             else {
                 
-                responseFrame.setOpCode(OPCODE.CONTINUATION_DATA_FRAME);
+                responseFrame.setOpCode(Frame.OPCODE.CONTINUATION_DATA_FRAME);
                 
             }
             //Set the final fragment.
@@ -424,7 +416,7 @@ public class Connection extends Thread implements IFrameEvent {
         while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
 
             Frame responseFrame = new Frame(this.socket);
-            responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+            responseFrame.setOpCode( firstFrame ? Frame.OPCODE.TEXT_DATA_FRAME : Frame.OPCODE.CONTINUATION_DATA_FRAME);
             responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
             responseFrame.write();
             
@@ -437,7 +429,7 @@ public class Connection extends Thread implements IFrameEvent {
         //Send the final frame.
         Frame responseFrame = new Frame(this.socket);
         responseFrame.setFinalFragment();
-        responseFrame.setOpCode( firstFrame ? OPCODE.TEXT_DATA_FRAME : OPCODE.CONTINUATION_DATA_FRAME);
+        responseFrame.setOpCode( firstFrame ? Frame.OPCODE.TEXT_DATA_FRAME : Frame.OPCODE.CONTINUATION_DATA_FRAME);
         responseFrame.setPayload(fragment);
         responseFrame.write();
         
@@ -447,7 +439,7 @@ public class Connection extends Thread implements IFrameEvent {
     // Events
     // ----------------------------------------------
     
-    public void onControlFrame(Frame.OPCODE opcode, byte[] payload) throws InvalidFrameException  {
+    public void onControlFrame(Frame.OPCODE opcode, Payload payload) throws InvalidFrameException  {
         
         switch(opcode) {
         
@@ -468,10 +460,10 @@ public class Connection extends Thread implements IFrameEvent {
                 
                 Frame responseFrame = new Frame(this.socket);
                 responseFrame.setFinalFragment();
-                responseFrame.setOpCode(OPCODE.PONG_CONTROL_FRAME);
+                responseFrame.setOpCode(Frame.OPCODE.PONG_CONTROL_FRAME);
                 
                 //Send any body data per the spec.
-                responseFrame.setPayload(payload);
+                responseFrame.setPayload(payload.get(0));
                 responseFrame.write();
             }
             break;

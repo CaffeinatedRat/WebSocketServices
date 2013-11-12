@@ -34,6 +34,8 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 import com.caffeinatedrat.SimpleWebSockets.Util.WebSocketsReader;
 
+import com.caffeinatedrat.SimpleWebSockets.Payload.*;
+
 public class FrameReader {
 
     /**
@@ -122,33 +124,25 @@ public class FrameReader {
     }
     
     /**
-     * Read-Only property that returns the payload.
-     * @return A jagged byte array that contains the payload.
+     * Read-Only property that returns the Payload.
+     * TODO: Eliminate the framecollection...and ToArray method.
+     * @return The Payload.
      */
-    public byte[][] getPayloadAsBytes() {
-        return (byte[][])this.frameCollection.toArray();
+    public Payload getPayload() {
+        
+        return new Payload((byte[][])this.frameCollection.toArray());
+        
     }
     
     /**
-     * Read-Only property that returns the payload as an array of strings.
-     * @return An array of strings.
+     * Read-Only property that returns the TextPayload.
+     * TODO: Eliminate the framecollection...and ToArray method.
+     * @return The TextPayload.
      */    
-    public String[] getPayloadAsString() {
+    public TextPayload getTextPayload() {
         
-        String[] payload = new String[frameCollection.size()];
-
-        int count = 0;
-        for(byte[] payloadChunk : frameCollection) {
-            
-            if ( (payloadChunk != null && payloadChunk.length > 0) ) {
-                
-                payload[count++] = new String(payloadChunk, 0, payloadChunk.length);
-                
-            }
-            
-        }
+        return new TextPayload((byte[][])this.frameCollection.toArray());
         
-        return payload;
     }
     
     // ----------------------------------------------
@@ -260,7 +254,7 @@ public class FrameReader {
 
                         if (frameEventLayer != null) {
                             
-                            frameEventLayer.onControlFrame(currentFrameType, frame.getPayloadAsBytes());
+                            frameEventLayer.onControlFrame(currentFrameType, new Payload(new byte[][] {frame.getPayloadAsBytes()} ));
                             
                         }
                         
@@ -270,6 +264,7 @@ public class FrameReader {
                 }
                 else if (currentFrameType == Frame.OPCODE.CONTINUATION_DATA_FRAME){
                     
+                    //TODO: Implement a packed symmetrical array so that we can stop dealing with jagged arrays.
                     frameCollection.add(this.frame.getPayloadAsBytes());
                     
                 }
