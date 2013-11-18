@@ -241,14 +241,14 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
      * @return true if the service is enabled.
      */
     public Boolean isServiceEnabled(String serviceName) {
-        
+       
         // --- CR (7/21/13) --- Removed the lower-case check as this is now a precondition.
         return (Boolean)get("services." + serviceName, null);
 
     }
     
     /**
-     * Determines if an extension is enabled.
+     * Returns the name of the extension.
      * Precondition: The serviceName should be lower-case.
      * @param the name of the extension.
      * @return the name of the extension's plugin.
@@ -272,11 +272,27 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
         
         try {
             load(new File(plugin.getDataFolder(), "config.yml"));
+            
+            fixIt();
+            
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
             Logger.severe("Cannot load config.yml");
         } catch (InvalidConfigurationException e) {
             Logger.severe("Cannot load config.yml");
         }
+    }
+    
+    // ----------------------------------------------
+    // Methods
+    // ----------------------------------------------
+    
+    /**
+     * A hacky way of fixing issues with case-sensitive service names that would plague the config.yml resource file.
+     */
+    private void fixIt() {
+        
+        this.addDefault("services.offlinePlayers", this.getString("services.offlineplayers"));
+        
     }
 }
