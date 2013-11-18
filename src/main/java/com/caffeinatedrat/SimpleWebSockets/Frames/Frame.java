@@ -381,7 +381,7 @@ public class Frame {
                 //NOTE: Websockets uses a big endian byte order.
                 inputStream.readFully(buffer, 0, 8);
                 //Unrolled loop since the loop's size is static and to improve performance slightly.
-                this.payloadLength = ((((long)buffer[0]) << 56) | ((long)buffer[1] << 48) | ((long)buffer[2] << 40) | ((long)buffer[3] << 32) | ((long)buffer[4] << 24) | ((long)buffer[5] << 16) | ((long)buffer[6] << 8) | buffer[7]);
+                this.payloadLength = (long)((((long)buffer[0] & 0xFF) << 56) | (((long)buffer[1] & 0xFF) << 48) | (((long)buffer[2] & 0xFF) << 40) | (((long)buffer[3]& 0xFF) << 32) | (((long)buffer[4] & 0xFF) << 24) | (((long)buffer[5] & 0xFF) << 16) | (((long)buffer[6]& 0xFF) << 8) | (buffer[7]& 0xFF));
                 
             }
             
