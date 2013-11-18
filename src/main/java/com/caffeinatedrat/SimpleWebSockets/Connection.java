@@ -133,9 +133,6 @@ public class Connection extends Thread implements IFrameEvent {
                     boolean continueListening = true;
                     while ( (!socket.isClosed()) && (continueListening) ) {
                         
-                        //TODO: Add management of fragmented frames.
-                        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-                        
                         // --- CR (11/11/13) --- Begin reading one or more frames and block only if there is data available.
                         // If the return value is true then data was available and read.
                         if (frame.read()) {
@@ -249,12 +246,12 @@ public class Connection extends Thread implements IFrameEvent {
                                 
                                 if (session.response instanceof TextResponse){
                                     
-                                    writeTextResponseFrame(session.response.toString());
+                                    FrameWriter.writeText(this.socket, session.response.toString());
                                     
                                 }
                                 else if (session.response instanceof BinaryResponse) {
                                     
-                                    writeBinaryResponseFrame((BinaryResponse)session.response);
+                                    FrameWriter.writeBinary(this.socket, (BinaryResponse)session.response);
                                     
                                 }
                                 
@@ -273,13 +270,13 @@ public class Connection extends Thread implements IFrameEvent {
                             
                             //Firefox needs to know we're closing or it will throw an error, while Chrome could care less.
                             //Technically according to the RFC we should be sending a close frame before terminating the connection anyways.
-                            writeCloseFrame("Bye bye...");
+                            FrameWriter.writeClose(this.socket, "Bye bye...");
                             
                         }
                         else {
                             
                             //Disable blocking...
-                            frame.startNonBlocking();
+                            frame.stopBlocking();
                             
                         }
 
@@ -289,7 +286,7 @@ public class Connection extends Thread implements IFrameEvent {
                 else {
                     
                     Logger.debug("Handshaking failure.");
-                    writeCloseFrame("The handshaking has failed.");
+                    FrameWriter.writeClose(this.socket, "The handshaking has failed.");
                     
                 }
                 //END OF if(handshake.processRequest())...
@@ -300,7 +297,8 @@ public class Connection extends Thread implements IFrameEvent {
                 
                 try {
                     
-                    writeCloseFrame("The frame was invalid.");
+                    FrameWriter.writeClose(this.socket, "The frame was invalid.");
+                    
                 }
                 catch(InvalidFrameException ife) {
                     //Do nothing...
@@ -328,111 +326,6 @@ public class Connection extends Thread implements IFrameEvent {
         catch(IOException io) {
             //Do nothing...
         }
-    }
-    
-    
-    // ----------------------------------------------
-    // Frame specific handling.
-    // ----------------------------------------------
-    
-    /**
-     * Close the connection.
-     * @param message The message to include in the close frame as to why the frame is closing.
-     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
-     */
-    private void writeCloseFrame(String message) throws InvalidFrameException {
-        
-        if (this.socket != null) {
-        
-            //RFC: http://tools.ietf.org/html/rfc6455#section-5.5.1
-            Frame closeFrame = new Frame(this.socket);
-            closeFrame.setFinalFragment();
-            closeFrame.setOpCode(Frame.OPCODE.CONNECTION_CLOSE_CONTROL_FRAME);
-            closeFrame.setPayload(message);
-            closeFrame.write();
-            
-        }
-        
-    }
-    
-    /**
-     * Writes a binary response frame to the client.
-     * @param response The binary response to write to the client.
-     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
-     */
-    private void writeBinaryResponseFrame(BinaryResponse response) throws InvalidFrameException {
-
-        //Keep track of our first frame.
-        Boolean firstFrame = true;
-        
-        //Added basic fragmentation support; however, this puts the burden on the application layer to handle its fragments.
-        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-        while (!response.isEmpty()) {
-            
-            Frame responseFrame = new Frame(this.socket);
-            
-            if (firstFrame) {
-                
-                responseFrame.setOpCode(Frame.OPCODE.BINARY_DATA_FRAME);
-                firstFrame = false;
-                
-            }
-            else {
-                
-                responseFrame.setOpCode(Frame.OPCODE.CONTINUATION_DATA_FRAME);
-                
-            }
-            //Set the final fragment.
-            if (response.size() == 1) {
-                
-                responseFrame.setFinalFragment();
-                
-            }
-            
-            responseFrame.setPayload(response.dequeue());
-            responseFrame.write();
-            
-        }
-        //END OF while(!response.isEmpty()) {...
-
-    }
-    
-    /**
-     * Writes a text response frame to the client.
-     * @param fragment The string value to return the client.
-     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
-     */
-    private void writeTextResponseFrame(String fragment) throws InvalidFrameException {
-    
-        // --- CR (8/10/13) --- Do not write an empty fragment.
-        if (fragment.length() == 0) {
-            return;
-        }
-        
-        Boolean firstFrame = true;
-
-        //Fragment the frame if the response is too large.
-        //RFC: http://tools.ietf.org/html/rfc6455#section-5.4
-        while (fragment.length() > Frame.MAX_PAYLOAD_SIZE) {
-
-            Frame responseFrame = new Frame(this.socket);
-            responseFrame.setOpCode( firstFrame ? Frame.OPCODE.TEXT_DATA_FRAME : Frame.OPCODE.CONTINUATION_DATA_FRAME);
-            responseFrame.setPayload(fragment.substring(0, (int)Frame.MAX_PAYLOAD_SIZE));
-            responseFrame.write();
-            
-            fragment = fragment.substring((int)Frame.MAX_PAYLOAD_SIZE);
-            
-            //No longer the first frame.
-            firstFrame = false;
-        }
-
-        //Send the final frame.
-        Frame responseFrame = new Frame(this.socket);
-        responseFrame.setFinalFragment();
-        responseFrame.setOpCode( firstFrame ? Frame.OPCODE.TEXT_DATA_FRAME : Frame.OPCODE.CONTINUATION_DATA_FRAME);
-        responseFrame.setPayload(fragment);
-        responseFrame.write();
-        
     }
     
     // ----------------------------------------------
