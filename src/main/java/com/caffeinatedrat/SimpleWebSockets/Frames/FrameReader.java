@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -27,8 +27,6 @@ package com.caffeinatedrat.SimpleWebSockets.Frames;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -101,7 +99,10 @@ public class FrameReader {
     private IFrameEvent frameEventLayer = null;
     
     private Frame.OPCODE frameType;
-    private List<byte[]> frameCollection;
+    
+    //Manage our own jagged array...
+    private byte[][] payloadFragments;
+    //private List<byte[]> payloadFragments; 
     
     // ----------------------------------------------
     // Properties
@@ -130,7 +131,7 @@ public class FrameReader {
      */
     public Payload getPayload() {
         
-        return new Payload((byte[][])this.frameCollection.toArray());
+        return new Payload(this.payloadFragments);
         
     }
     
@@ -141,7 +142,7 @@ public class FrameReader {
      */    
     public TextPayload getTextPayload() {
         
-        return new TextPayload((byte[][])this.frameCollection.toArray());
+        return new TextPayload(this.payloadFragments);
         
     }
     
@@ -189,8 +190,10 @@ public class FrameReader {
     public boolean read()
             throws InvalidFrameException {
         
-        //We need a dynamic collection since we do not know how many fragments will be available.
-        this.frameCollection = new ArrayList<byte[]>();
+        //Allocate a buffer the size of our maximum number of fragmented frames. 
+        byte[][] rawPayloadFragments = new byte[maxNumberOfFragmentedFrames][];
+        @SuppressWarnings("unused")
+        long totalCount = 0L;
         
         // --- CR (7/20/13) --- Start blocking only if a frame is available or this is the initial connection.
         if (isAvailable() || this.initialBlocking) {
@@ -211,8 +214,9 @@ public class FrameReader {
                 
             }
 
-            //Add the first frame's date to our 'stack'.
-            frameCollection.add(this.frame.getPayloadAsBytes());
+            //Add the first block of payload data to our collection of fragments.
+            rawPayloadFragments[0] = this.frame.getPayloadAsBytes();
+            totalCount = this.frame.getPayloadLength();
             
             // --- CR (11/11/13) --- Support for fragmented frames.
             //http://tools.ietf.org/html/rfc6455#section-5.4
@@ -237,13 +241,14 @@ public class FrameReader {
                         //Set the frametype to closed.
                         this.frameType = Frame.OPCODE.CONNECTION_CLOSE_CONTROL_FRAME;
                         
-                        //Instantiate a new collection with a capacity of 1.
-                        if (this.frameCollection.size() > 0) {
-                            this.frameCollection = new ArrayList<byte[]>(1);
+                        //Release the previous payload and construct a new one with a capacity of only one.
+                        if (rawPayloadFragments[0].length > 1) {
+                            rawPayloadFragments = new byte[1][];
                         }
                         
-                        //Add the payload.
-                        this.frameCollection.add(frame.getPayloadAsBytes());
+                        //Add to the payload.
+                        rawPayloadFragments[0] = this.frame.getPayloadAsBytes();
+                        totalCount = this.frame.getPayloadLength();
                         
                         //Terminate the loop.
                         break;
@@ -254,7 +259,7 @@ public class FrameReader {
 
                         if (frameEventLayer != null) {
                             
-                            frameEventLayer.onControlFrame(currentFrameType, new Payload(new byte[][] {frame.getPayloadAsBytes()} ));
+                            frameEventLayer.onControlFrame(currentFrameType, new Payload(new byte[][] {this.frame.getPayloadAsBytes()} ));
                             
                         }
                         
@@ -264,9 +269,9 @@ public class FrameReader {
                 }
                 else if (currentFrameType == Frame.OPCODE.CONTINUATION_DATA_FRAME){
                     
-                    //TODO: Implement a packed symmetrical array so that we can stop dealing with jagged arrays.
-                    frameCollection.add(this.frame.getPayloadAsBytes());
-                    
+                    //Add to the payload.
+                    rawPayloadFragments[fragmentCount] = this.frame.getPayloadAsBytes();
+                    totalCount += this.frame.getPayloadLength();
                 }
                 else  {
                     
@@ -281,7 +286,7 @@ public class FrameReader {
             //END OF while( !this.frame.isFinalFragment() && fragmentCount < this.maxNumberOfFragmentedFrames ) {...
             
             //Determine if the loop terminated due to too many fragments.
-            if (fragmentCount >= this.maxNumberOfFragmentedFrames) {
+            if (fragmentCount > this.maxNumberOfFragmentedFrames) {
                 
                 //Invalid fragmentation.
                 throw new InvalidFrameException(MessageFormat.format("Fragmentation exceeded {0}.", this.maxNumberOfFragmentedFrames));
@@ -290,6 +295,15 @@ public class FrameReader {
             
             //Blocking has ended unless something is available for future reads.
             this.initialBlocking = false;
+            
+            //Condense the payload.
+            this.payloadFragments = new byte[fragmentCount][];
+            for(int i= 0; i < fragmentCount; i++) {
+                
+                this.payloadFragments[i] = new byte[rawPayloadFragments[i].length];
+                java.lang.System.arraycopy(rawPayloadFragments[i], 0, this.payloadFragments[i], 0, rawPayloadFragments[i].length);
+                
+            }
             
             //The initial read has been completed.
             return true;
@@ -324,7 +338,7 @@ public class FrameReader {
     /**
      * Begins waiting for a frame without blocking.
      */
-    public void startNonBlocking() {
+    public void stopBlocking() {
         
         if ( (this.eventThread == null) && (this.frame.getReader() != null) ) {
         
