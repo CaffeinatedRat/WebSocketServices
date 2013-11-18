@@ -32,6 +32,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.UUID;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
@@ -77,6 +78,7 @@ public class Handshake {
     private HashSet<String> whitelist;
     private String rawHandshakeRequest;
     private String securityWebSocketKey = "";
+    private String origin = "";
     
     // ----------------------------------------------
     // Properties
@@ -136,6 +138,14 @@ public class Handshake {
      */
     public String getSecurityWebSocketKey() {
         return this.securityWebSocketKey;
+    }
+    
+    /**
+     * Sets the origin for a handshake request.
+     * @param origin the origin sending the request.
+     */
+    public void setOrigin(String origin) {
+       this.origin = origin;
     }
     
     // ----------------------------------------------
@@ -491,6 +501,75 @@ public class Handshake {
         
         return false;
     }    
+    
+    public boolean createRequest() {
+        
+        PrintWriter outputStream = null;
+        int preserveOriginalTimeout = 0;
+        
+        try {
+            
+            String remoteAddress = ((InetSocketAddress)socket.getRemoteSocketAddress()).getAddress().getHostAddress();
+            int port = ((InetSocketAddress)socket.getRemoteSocketAddress()).getPort();
+            
+            Logger.debug(MessageFormat.format("Handshaking to {0}...", remoteAddress));
+            
+            //Set the timeout for the handshake.
+            preserveOriginalTimeout = this.socket.getSoTimeout();
+            this.socket.setSoTimeout(this.timeoutInMilliseconds);
+            
+            String key = UUID.randomUUID().toString();
+            
+            //Generate the client accept key.
+            this.securityWebSocketKey = "";
+            try {
+                MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
+                byte[] keyArray = key.getBytes(ENCODING_TYPE);
+                byte[] hashedKey = md.digest(keyArray);
+                this.securityWebSocketKey = Base64.encodeBytes(hashedKey);
+            }
+            catch (NoSuchAlgorithmException noAlgorithmException) {
+                Logger.severe(MessageFormat.format("Unable to find the hashing algorithm {0}.  The accept key cannot be created.", HASHING_ALGORITHM));
+                return false;
+            }
+            catch (java.lang.NoClassDefFoundError noClassException) {
+                Logger.severe(MessageFormat.format("Unable to find the vital class {0} to generate a Base64 value.", noClassException.getMessage()));
+                return false;
+            }
+            
+            outputStream = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), ENCODING_TYPE), true);
+            outputStream.print("GET / HTTP/1.1\r\n");
+            outputStream.print(MessageFormat.format("Host: {0}:{1,number,#}\r\n", remoteAddress, port));
+            outputStream.print(MessageFormat.format("Origin: {0}\r\n", this.origin));
+            outputStream.print(MessageFormat.format("{0}: websocket\r\n", UPGRADE_HEADER));
+            outputStream.print(MessageFormat.format("{0}: Upgrade\r\n", CONNECTION_HEADER));
+            outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_KEY_HEADER, this.securityWebSocketKey));
+            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+            outputStream.print("User-Agent: Custom Test Client\r\n");
+            outputStream.print("\r\n");
+            outputStream.flush();
+            
+            return true;
+        }
+        catch (SocketTimeoutException socketTimeout) {
+            Logger.verboseDebug(MessageFormat.format("A socket timeout has occured. {0}", socketTimeout.getMessage()));
+        }
+        catch (IOException ioException) {
+            Logger.verboseDebug(MessageFormat.format("Unable to read or write to the streams. {0}", ioException.getMessage()));
+        }
+        finally {
+            try {
+                //Reset the original timeout.
+                this.socket.setSoTimeout(preserveOriginalTimeout);
+            }
+            catch(IOException ie) {
+                //Do nothing...
+            }
+        }
+        
+        return false;
+        
+    }
     
     /**
      * Forwards a handshake request to a specific socket.
