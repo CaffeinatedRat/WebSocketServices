@@ -79,16 +79,19 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
      */
     public void onTextFrame(TextPayload textPayload, ConnectionData connectionData) {
         
+        //For now, we will use the first fragment in the payload...this is not a safe method as a client may un-evenly break the fragments
+        // along other boundaries rather than the 65K boundary that most browser break it along.
+        String firstFragment = textPayload.getString(0);
+        
         // --- CR (7/21/13) --- Force the serviceName to lower-case to get rid of all lower-case checking headaches.
         // --- CR (3/3/13) --- Prepare for handling arguments for text services.
         //Separate the service name and arguments from the incoming data.
-        String[] tokens = textPayload.toString().split(" ", 2);
+        String[] tokens = firstFragment.split(" ", 2);
         String serviceName = tokens[0].toLowerCase();
-        String arguments = null;
         
         if (tokens.length > 1) {
             
-            arguments = tokens[1];
+            textPayload.setString(0, tokens[1]);
             
         }
         
@@ -96,7 +99,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         Session session = null;
         
         // --- CR (6/22/13) --- We are separating extensions from built-in services.
-        //Determine if the service is available and if it is then generate a response.
+        //Determine if the service is available  and if it is then generate a response.
         Boolean service = config.isServiceEnabled(serviceName);
         
         //The built-in service was found in the configuration file and is not an extension.
@@ -110,7 +113,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
                 session = connectionData.startSession(serviceName);
                 
                 //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-                if(serviceLayer.executeText(serviceName, arguments, session)) {
+                if(serviceLayer.executeText(serviceName, textPayload, session)) {
                     
                     if (session.response instanceof TextResponse) {
                     
@@ -122,11 +125,20 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
                     }
                     
                 }
+                else {
+                    
+                    return;
+                    
+                }
+                //END OF if(serviceLayer.executeText(serviceName, textPayload, session)) {...
+                
+            }
+            else {
+                
+                Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", serviceName));
                 
             }
             //END OF if(service) {...
-            
-            Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", serviceName));
             
         }
         //The service was not found, determine if this is an extension and run it accordingly.
@@ -151,7 +163,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
                 IApplicationLayer applicationLayer = this.registeredApplicationLayers.get(extensionName);
                 if (applicationLayer != null) {
                     
-                    applicationLayer.onTextFrame(arguments, session);
+                    applicationLayer.onTextFrame(textPayload, session);
                     
                     if (session.response != null) {
                         

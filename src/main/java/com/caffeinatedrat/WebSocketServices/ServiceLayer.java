@@ -42,7 +42,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.caffeinatedrat.SimpleWebSockets.Session;
-import com.caffeinatedrat.SimpleWebSockets.Payload.Payload;
+import com.caffeinatedrat.SimpleWebSockets.Payload.*;
 import com.caffeinatedrat.SimpleWebSockets.Responses.*;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
@@ -80,7 +80,7 @@ public class ServiceLayer {
      * @param session The current session.
      * @return True if the service was successfully executed.
      */
-    public boolean executeText(String service, String arguments, Session session) {
+    public boolean executeText(String service, TextPayload arguments, Session session) {
         
         if (session == null) {
             
@@ -104,7 +104,7 @@ public class ServiceLayer {
                 // --- CR (7/21/13) --- We're still going to perform a lower-case check here in the event someone attempts to call this method explicitly.
                 if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
                     
-                    Method method = this.getClass().getDeclaredMethod(service, String.class, TextResponse.class);
+                    Method method = this.getClass().getDeclaredMethod(service, TextPayload.class, TextResponse.class);
                     method.setAccessible(true);
                     return (Boolean)method.invoke(this, arguments, session.response);
                     
@@ -139,18 +139,13 @@ public class ServiceLayer {
             
         }
         
-        byte[] data = payload.get(0);
-        
         try {
         
             session.response = new BinaryResponse();
             
-            if(data.length > 0) {
+            if(payload.getDepth() > 0) {
                 
-                byte controlByte = data[0];
-                if(controlByte == 0x01) {
-                    return binaryfragmentationtest(data, (BinaryResponse)session.response);
-                }
+                return binaryfragmentationtest(payload, (BinaryResponse)session.response);
                 
             }
             
@@ -170,7 +165,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean info(String arguments, TextResponse response) {
+    protected boolean info(TextPayload arguments, TextResponse response) {
 
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
@@ -204,7 +199,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */    
-    protected boolean plugins(String arguments, TextResponse response) {
+    protected boolean plugins(TextPayload arguments, TextResponse response) {
         
         Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
 
@@ -266,7 +261,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean who(String arguments, TextResponse response) {
+    protected boolean who(TextPayload arguments, TextResponse response) {
         
         Player[] players = this.minecraftServer.getOnlinePlayers();
         
@@ -341,7 +336,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean whitelist(String arguments, TextResponse response) {
+    protected boolean whitelist(TextPayload arguments, TextResponse response) {
     	
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
@@ -397,7 +392,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean offlineplayers(String arguments, TextResponse response) {
+    protected boolean offlineplayers(TextPayload arguments, TextResponse response) {
     	
         OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
         
@@ -452,20 +447,27 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean player(String arguments, TextResponse response) {
-        
-        if ( (arguments == null) || (arguments == "") )
-        {
-            return true;
-        }
+    protected boolean player(TextPayload arguments, TextResponse response) {
         
         Hashtable<String, Object> masterCollection = response.getCollection();
+        
+        //NOTE: A performance hit may occur here depending on how many fragments there are in the payload.
+        String playersName = (arguments == null) ? "" : arguments.toString();
+        
+        //Notify the client that the service was improperly called.
+        if (playersName == "") {
+            
+            masterCollection.put("STATUS", "FAILURE");
+            masterCollection.put("STATUS_MSG", "No defined player.");
+            return false;
+            
+        }
         
         // --- CR (6/22/13) --- Fixed how the JSON structure is nested.
         Hashtable<String, Object> locationInfo = new Hashtable<String, Object>();
         masterCollection.put("location", locationInfo);
         
-        OfflinePlayer offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(arguments);
+        OfflinePlayer offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(playersName);
         
         if (offlinePlayerInfo != null) {
             
@@ -479,7 +481,7 @@ public class ServiceLayer {
             
             if (offlinePlayerInfo.isOnline()) {
                 
-                Player onlinePlayerInfo = this.minecraftServer.getPlayer(arguments);
+                Player onlinePlayerInfo = this.minecraftServer.getPlayer(playersName);
                 
                 masterCollection.put("level", onlinePlayerInfo.getLevel());
                 masterCollection.put("health", onlinePlayerInfo.getHealth());
@@ -585,7 +587,7 @@ public class ServiceLayer {
      * @param responseBuffer The buffer that the JSON response data will be stored in.
      * @return True if the service was successfully executed.
      */
-    protected boolean ping(String arguments, TextResponse response) {
+    protected boolean ping(TextPayload arguments, TextResponse response) {
         
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
@@ -608,9 +610,13 @@ public class ServiceLayer {
      * @param session The current session.
      * @return True if the service was successfully executed.
      */
-    protected boolean fragmentationtest(String arguments, Session session) {
+    protected boolean fragmentationtest(TextPayload arguments, Session session) {
         
-        if (arguments.equalsIgnoreCase("binary")) {
+        //We're only going to scrape the first argument for the test type.
+        //If this argument is fragmented beyond the size of the argument the test will be cancelled.
+        String testType = (arguments == null) ? "" : arguments.getString(0);
+        
+        if (testType.equalsIgnoreCase("binary")) {
         
             session.response = new BinaryResponse();
             
@@ -661,19 +667,40 @@ public class ServiceLayer {
      * Performs a fragmentation test for a binary response.
      * @param response A binary response
      * @return True if the service was successfully executed.
-     */    
-    protected boolean binaryfragmentationtest(byte[] data, BinaryResponse response) {
+     */
+    protected boolean binaryfragmentationtest(Payload data, BinaryResponse response) {
         
-        if (data.length > 1) {
-            for (int i = 1; i < 4; i++) {
-                byte[] newData = new byte[data.length - 1];
-                for(int j = 0; j < data.length - 1; j++) {
-                    newData[j] = (byte)((int)data[j+1] * i);
-                }
+        if (data.getDepth() > 0) {
+            
+            byte[][] payload = data.getRawPayload();
+            
+            int fragmentCount = 0;
+            for(int i = 0; i < payload.length; i++) {
                 
-                response.enqueue(newData);
+                if (payload[i] != null ) {
+                    
+                    for (int j = 0; j < payload[i].length; i++) {
+
+                        //Prevent fragmentation from getting out of control.
+                        if (fragmentCount > 20) {
+                            return true;
+                        }
+                        
+                        response.enqueue(new byte[] { payload[i][j], (byte)fragmentCount });
+                        
+                        fragmentCount++;
+                        
+                    }
+                    //END OF for (int j = 0; j < payload[i].length; i++) {...
+                    
+                }
+                //END OF if (payload[i] != null ) {...
+                
             }
+            //END OF for(int i = 0; i < payload.length; i++) {...
+            
         }
+        //END OF if (data.getDepth() > 0) {...
         
         return true;
     }
