@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2013, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2013, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,11 @@ package com.caffeinatedrat.SimpleWebSockets.Payload;
 public class TextPayload extends Payload {
 
     // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    protected String[] transformedPayload;
+    
+    // ----------------------------------------------
     // Properties
     // ----------------------------------------------
     
@@ -42,29 +47,7 @@ public class TextPayload extends Payload {
      */
     public String[] getTextPayload() {
 
-        if (rawPayload != null) {
-        
-            String[] payload = new String[rawPayload.length];
-    
-            int count = 0;
-            for(byte[] payloadChunk : rawPayload) {
-                
-                if ( (payloadChunk != null && payloadChunk.length > 0) ) {
-                    
-                    payload[count++] = new String(payloadChunk, 0, payloadChunk.length);
-                    
-                }
-                
-            }
-            //END OF for(byte[] payloadChunk : rawPayload) {...
-            
-            return payload;
-            
-        }
-        //END OF if (rawPayload != null) {...
-
-        //Return a safe empty array rather than null.
-        return new String[0];
+        return (this.transformedPayload != null) ? this.transformedPayload: new String[0];
         
     }
     
@@ -72,8 +55,11 @@ public class TextPayload extends Payload {
     // Constructors
     // ----------------------------------------------
     
-    public TextPayload(byte[][] rawPayload) {
-        super(rawPayload);
+    public TextPayload(byte[][] payloadFragments) {
+        super(payloadFragments);
+        
+        transform();
+        
     }
     
     // ----------------------------------------------
@@ -82,6 +68,7 @@ public class TextPayload extends Payload {
     
     /**
      * Overrides the built in toString method to coalesce the payload data as one contiguous string.
+     * TimeComplexity: O(n) --- Where n is the number of fragments.
      * NOTE: Only use this method if you expect the payload to be small.
      * @return The payload data as one contiguous string.
      */
@@ -90,18 +77,14 @@ public class TextPayload extends Payload {
         
         StringBuilder stringbuilder = new StringBuilder();
         
-        if (rawPayload != null) {
+        if (this.transformedPayload != null) {
             
-            for(byte[] payloadChunk : rawPayload) {
+            for(String fragment : this.transformedPayload) {
                 
-                if ( (payloadChunk != null && payloadChunk.length > 0) ) {
-                    
-                    stringbuilder.append(new String(payloadChunk, 0, payloadChunk.length));
-                    
-                }
+                stringbuilder.append(fragment);
                 
             }
-            //END OF for(byte[] payloadChunk : rawPayload) {...
+            //END OF for(String fragment : this.transformedPayload) {...
             
             return stringbuilder.toString();
             
@@ -110,6 +93,79 @@ public class TextPayload extends Payload {
         
         //If the payload is empty then we will return an empty string.
         return "";
+    }
+    
+    /**
+     * Safely returns a string at the specified depth in the payload.
+     * @return a byte array at the specified depth in the payload.
+     */
+    public String getString(int index) {
+        
+        if (transformedPayload != null) {
+            
+            if (index < this.transformedPayload.length) {
+                
+                return transformedPayload[index];
+                
+            }
+            
+        }
+        
+        //Safely return an empty string.
+        return new String();
+    }
+    
+    /**
+     * Safely sets a string within the payload depending on the index.
+     * @param index The index in the payload.
+     * @param string The string to set.
+     */
+    public void setString(int index, String string) {
+        
+        if (this.transformedPayload != null) {
+            
+            if ( (index > 0) && (index < this.transformedPayload.length) ) {
+                
+                this.transformedPayload[index] = string;
+                
+            }
+            
+        }
+
+    }
+    
+    /**
+     * Performs a transformation on the payload type.
+     * TimeComplexity: O(n) --- Where n is the number of fragments.
+     * @return true if the transformation was successful.
+     */
+    @Override
+    protected void transform() {
+        
+        //Prevent reuse of transform.
+        if (this.transformedPayload != null) {
+            return;
+        }
+        
+        if (this.payloadFragments != null) {
+            
+            transformedPayload = new String[this.payloadFragments.length];
+    
+            int count = 0;
+            for(byte[] fragment : this.payloadFragments) {
+                
+                if ( (fragment != null && fragment.length > 0) ) {
+                    
+                    transformedPayload[count++] = new String(fragment, 0, fragment.length);
+                    
+                }
+                
+            }
+            //END OF for(byte[] payloadChunk : this.payloadFragments) {...
+            
+        }
+        //END OF if (this.payloadFragments != null) {...
+        
     }
     
 }
