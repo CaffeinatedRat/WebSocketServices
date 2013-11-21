@@ -95,6 +95,7 @@ public class FrameReader {
     
     private Frame frame = null;
     private boolean initialBlocking = true;
+    private boolean blocking = true;
     private int maxNumberOfFragmentedFrames = 2;
     private IFrameEvent frameEventLayer = null;
     
@@ -107,6 +108,14 @@ public class FrameReader {
     // ----------------------------------------------
     // Properties
     // ----------------------------------------------
+    
+    /**
+     * Read-Only property that determines if the FrameReader is blocking.
+     * @return true if the FrameReader is blocking.
+     */
+    public boolean isBlocking() {
+        return this.blocking || this.initialBlocking;
+    }
     
     /**
      * Read-Only property that determines the number of contiguous fragmented frames that will be accepted before a connection is severed.
@@ -195,8 +204,9 @@ public class FrameReader {
         @SuppressWarnings("unused")
         long totalCount = 0L;
         
-        // --- CR (7/20/13) --- Start blocking only if a frame is available or this is the initial connection.
-        if (isAvailable() || this.initialBlocking) {
+        // --- CR (7/20/13) --- Start blocking only if a frame is available or this is the initial request, which requires blocking.
+        // --- CR (11/18/13) --- The FrameReader will remain in blocking mode indefinitely unless told to stop by the method stopBlocking.
+        if (isAvailable() || this.initialBlocking || this.blocking) {
             
             //If we enter this block, we are either:
             //1) Blocking until we receive a frame during the initial opening of the connection.
@@ -336,7 +346,7 @@ public class FrameReader {
     }
     
     /**
-     * Begins waiting for a frame without blocking.
+     * Stops the FrameReader from blocking when it reads.
      */
     public void stopBlocking() {
         
@@ -347,6 +357,29 @@ public class FrameReader {
         
         }
 
+        this.blocking = false;
+        
+    }
+ 
+    /**
+     * This method will cause the FrameReader to start blocking again.
+     */
+    public void startBlocking() {
+
+        if (this.eventThread != null) {
+            try {
+                this.eventThread.join(10000);
+                
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            this.eventThread = null;
+        }
+        
+
+        this.blocking = true;
     }
     
 }
