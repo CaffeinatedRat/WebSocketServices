@@ -65,7 +65,7 @@ public class Handshake {
     private static final String SEC_WEBSOCKET_ACCEPT_HEADER = "SEC-WEBSOCKET-ACCEPT";
     private static final String UPGRADE_HEADER = "UPGRADE";
     private static final String CONNECTION_HEADER = "CONNECTION";
-    //private static final String SEC_WEBSOCKET_VERSION_HEADER = "SEC-WEBSOCKET-VERSION";
+    private static final String SEC_WEBSOCKET_VERSION_HEADER = "SEC-WEBSOCKET-VERSION";
     
     // ----------------------------------------------
     //  Member Vars (fields)
@@ -79,6 +79,7 @@ public class Handshake {
     private String rawHandshakeRequest;
     private String securityWebSocketKey = "";
     private String origin = "";
+    private String userAgent = "";
     
     // ----------------------------------------------
     // Properties
@@ -147,6 +148,30 @@ public class Handshake {
     public void setOrigin(String origin) {
        this.origin = origin;
     }
+    
+    /**
+     * Gets the origin for a handshake request.
+     * @return the origin sending the request.
+     */
+    public String getOrigin() {
+       return this.origin;
+    }    
+    
+    /**
+     * Sets the user agent field that is sent when making a request to a server end-point.
+     * @param userAgent the user agent field that is sent when making a request to a server end-point.
+     */
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    /**
+     * Gets the user agent field that is sent when making a request to a server end-point.
+     * @return timeout The time in milliseconds before the handshake fails.
+     */
+    public String getUserAgent() {
+        return this.userAgent;
+    }    
     
     // ----------------------------------------------
     // Constructors
@@ -321,7 +346,7 @@ public class Handshake {
                             outputStream.print("HTTP/1.1 101 Switching Protocols\r\n");
                             outputStream.print(MessageFormat.format("{0}: websocket\r\n", UPGRADE_HEADER));
                             outputStream.print(MessageFormat.format("{0}: Upgrade\r\n", CONNECTION_HEADER));
-                            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+                            outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_VERSION_HEADER, WEBSOCKET_SUPPORTED_VERSIONS));
                             outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_ACCEPT_HEADER, acceptKey));
                             outputStream.print("\r\n");
                             outputStream.flush();
@@ -345,7 +370,7 @@ public class Handshake {
             outputStream.print("HTTP/1.1 400 Bad Request\r\n");
             outputStream.print(MessageFormat.format("{0}: websocket\r\n", UPGRADE_HEADER));
             outputStream.print(MessageFormat.format("{0}: Upgrade\r\n", CONNECTION_HEADER));
-            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+            outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_VERSION_HEADER, WEBSOCKET_SUPPORTED_VERSIONS));
             outputStream.print("\r\n");
             outputStream.flush();
         }
@@ -540,11 +565,11 @@ public class Handshake {
             outputStream = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), ENCODING_TYPE), true);
             outputStream.print("GET / HTTP/1.1\r\n");
             outputStream.print(MessageFormat.format("Host: {0}:{1,number,#}\r\n", remoteAddress, port));
-            outputStream.print(MessageFormat.format("Origin: {0}\r\n", this.origin));
+            outputStream.print(MessageFormat.format("{0}: {1}\r\n", ORIGIN_HEADER, this.origin));
             outputStream.print(MessageFormat.format("{0}: websocket\r\n", UPGRADE_HEADER));
             outputStream.print(MessageFormat.format("{0}: Upgrade\r\n", CONNECTION_HEADER));
             outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_KEY_HEADER, this.securityWebSocketKey));
-            outputStream.print(MessageFormat.format("Sec-WebSocket-Version: {0}\r\n", WEBSOCKET_SUPPORTED_VERSIONS));
+            outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_VERSION_HEADER, WEBSOCKET_SUPPORTED_VERSIONS));
             outputStream.print("User-Agent: Custom Test Client\r\n");
             outputStream.print("\r\n");
             outputStream.flush();
