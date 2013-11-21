@@ -241,10 +241,12 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
      * @return true if the service is enabled.
      */
     public Boolean isServiceEnabled(String serviceName) {
-       
+        
+        fixIt();
+        
         // --- CR (7/21/13) --- Removed the lower-case check as this is now a precondition.
         return (Boolean)get("services." + serviceName, null);
-
+        
     }
     
     /**
@@ -273,8 +275,6 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
         try {
             load(new File(plugin.getDataFolder(), "config.yml"));
             
-            fixIt();
-            
         } catch (FileNotFoundException e) {
         } catch (IOException e) {
             Logger.severe("Cannot load config.yml");
@@ -292,7 +292,11 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
      */
     private void fixIt() {
         
-        this.addDefault("services.offlinePlayers", this.getString("services.offlineplayers"));
+        if (!this.contains("services.offlineplayers")) {
+
+            this.set("services.offlineplayers", this.getBoolean("services.offlinePlayers"));
+            
+        }
         
     }
 }
