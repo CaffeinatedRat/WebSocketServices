@@ -60,7 +60,7 @@ The following contains information about new features, bug fixes, and other vers
 * Added support for persistent connections.
 * Frame fragmentation fully supported.
 * Client-side websocket code now exists in the Frame & Handshake classes.
-* Upgraded to CraftBukkit 1.6.2-R1.0 (The plug-in is robust enough to have backwards & forwards compatibility + or - two versions).
+* Upgraded to CraftBukkit 1.6.2-R1.0.
 
 #### 1.3.0
 
