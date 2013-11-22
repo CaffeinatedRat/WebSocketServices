@@ -47,7 +47,7 @@ This project follows a lot of the standards that craftbukkit follows:
 * No CRLF line endings, LF only, put your gits 'core.autocrlf' on 'true'.
 * No 80 column limit or 'weird' midstatement newlines.
 * The pull request must contain code that builds without errors.
-* The pull request must contain code that has been united tested to some degree as to not fail on runtime.
+* The pull request must contain code that has been unit tested to some degree as to not fail on runtime.
 * The description of your pull request should provide detailed information on the pull along with justification of the changes where applicable.
 
 Change Log
