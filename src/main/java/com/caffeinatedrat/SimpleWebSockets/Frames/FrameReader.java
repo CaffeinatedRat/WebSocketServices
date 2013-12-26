@@ -91,19 +91,20 @@ public class FrameReader {
     // ----------------------------------------------
     // Member Vars (fields)
     // ----------------------------------------------
-    private EventThread eventThread = null;
-    
-    private Frame frame = null;
-    private boolean initialBlocking = true;
-    private boolean blocking = true;
+
+    //Frame & fragmentation management.
+    protected Frame frame = null;
+    protected Frame.OPCODE frameType;
+    private byte[][] payloadFragments;
     private int maxNumberOfFragmentedFrames = 2;
+
+    //Event management.
     private IFrameEvent frameEventLayer = null;
     
-    private Frame.OPCODE frameType;
-    
-    //Manage our own jagged array...
-    private byte[][] payloadFragments;
-    //private List<byte[]> payloadFragments; 
+    //Non-blocking & threading management. 
+    protected EventThread eventThread = null;
+    protected boolean initialBlocking = true;
+    protected boolean blocking = true;
     
     // ----------------------------------------------
     // Properties
@@ -135,7 +136,6 @@ public class FrameReader {
     
     /**
      * Read-Only property that returns the Payload.
-     * TODO: Eliminate the framecollection...and ToArray method.
      * @return The Payload.
      */
     public Payload getPayload() {
@@ -146,7 +146,6 @@ public class FrameReader {
     
     /**
      * Read-Only property that returns the TextPayload.
-     * TODO: Eliminate the framecollection...and ToArray method.
      * @return The TextPayload.
      */    
     public TextPayload getTextPayload() {
@@ -173,16 +172,15 @@ public class FrameReader {
             
         }
         
-        this.frame = new Frame(socket, timeout);
-        this.frameEventLayer = frameEventLayer;
-        
         //Restrict the fragmentation to a valid fragment value and to the total Maximum size supported.
         if ( (maxNumberOfFragmentedFrames < 1) && (maxNumberOfFragmentedFrames > MAX_SUPPORTED_FRAGEMENTATION_SIZE) ) {
          
             maxNumberOfFragmentedFrames = 2;
             
         }
-        
+
+        this.frame = new Frame(socket, timeout);
+        this.frameEventLayer = frameEventLayer;       
         this.maxNumberOfFragmentedFrames = maxNumberOfFragmentedFrames;
         
     }
@@ -325,7 +323,7 @@ public class FrameReader {
             return false;
             
         }
-        //END OF if (isAvailable() || this.initialBlocking) {...
+        //END OF if (isAvailable() || this.initialBlocking || this.blocking) {...
         
     }
     
@@ -333,7 +331,7 @@ public class FrameReader {
      * Returns true if there is data available for the frame.
      * @return true if there is data available for the frame.
      */
-    private boolean isAvailable() {
+    protected boolean isAvailable() {
         
         if ( (this.eventThread != null) && (this.eventThread.dataAvailable) ) {
             
