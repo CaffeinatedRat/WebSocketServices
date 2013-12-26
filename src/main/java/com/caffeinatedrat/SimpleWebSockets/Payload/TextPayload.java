@@ -124,7 +124,8 @@ public class TextPayload extends Payload {
         
         if (this.transformedPayload != null) {
             
-            if ( (index > 0) && (index < this.transformedPayload.length) ) {
+            // --- CR (11/28/13) --- Lower bounds restriction incorrect, changed to >= rather than >.
+            if ( (index >= 0) && (index < this.transformedPayload.length) ) {
                 
                 this.transformedPayload[index] = string;
                 
