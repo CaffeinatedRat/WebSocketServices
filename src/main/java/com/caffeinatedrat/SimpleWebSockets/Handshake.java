@@ -570,7 +570,7 @@ public class Handshake {
             outputStream.print(MessageFormat.format("{0}: Upgrade\r\n", CONNECTION_HEADER));
             outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_KEY_HEADER, this.securityWebSocketKey));
             outputStream.print(MessageFormat.format("{0}: {1}\r\n", SEC_WEBSOCKET_VERSION_HEADER, WEBSOCKET_SUPPORTED_VERSIONS));
-            outputStream.print("User-Agent: Custom Test Client\r\n");
+            outputStream.print(MessageFormat.format("User-Agent: {0}\r\n", this.userAgent));
             outputStream.print("\r\n");
             outputStream.flush();
             
