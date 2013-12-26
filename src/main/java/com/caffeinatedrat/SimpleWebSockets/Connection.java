@@ -226,11 +226,14 @@ public class Connection extends Thread implements IFrameEvent {
                                 masterApplicationLayer.onIdle(connectionData);
                                 
                                 try {
+                                    
                                     Thread.sleep(500);
+                                    
                                 }
                                 catch(InterruptedException ie) {
                                     
                                 }
+                                
                             }
                             //END OF if (applicationLayer != null) {...
                             
