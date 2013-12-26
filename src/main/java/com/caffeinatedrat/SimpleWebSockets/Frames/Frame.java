@@ -320,6 +320,21 @@ public class Frame {
         
     }
     
+    /**
+     * Copy constructor with new Socket.
+     */
+    public Frame(Frame frame, Socket socket) {
+        
+        this.socket = socket;
+        this.controlByte = frame.controlByte;
+        this.descriptorByte = frame.descriptorByte;
+        this.mask = frame.mask;
+        this.payloadLength = frame.payloadLength;
+        this.payload = frame.payload;
+        this.timeoutInMilliseconds = frame.timeoutInMilliseconds;
+        
+    }    
+    
     // ----------------------------------------------
     // Methods
     // ----------------------------------------------
