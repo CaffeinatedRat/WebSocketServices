@@ -313,9 +313,9 @@ public class Frame {
         this.socket = frame.socket;
         this.controlByte = frame.controlByte;
         this.descriptorByte = frame.descriptorByte;
-        this.mask = frame.mask;
+        this.mask = (frame.mask != null) ? frame.mask.clone() : null;
         this.payloadLength = frame.payloadLength;
-        this.payload = frame.payload;
+        this.payload = (frame.payload != null) ? frame.payload.clone() : null;
         this.timeoutInMilliseconds = frame.timeoutInMilliseconds;
         
     }
@@ -328,9 +328,9 @@ public class Frame {
         this.socket = socket;
         this.controlByte = frame.controlByte;
         this.descriptorByte = frame.descriptorByte;
-        this.mask = frame.mask;
+        this.mask = (frame.mask != null) ? frame.mask.clone() : null;
         this.payloadLength = frame.payloadLength;
-        this.payload = frame.payload;
+        this.payload = (frame.payload != null) ? frame.payload.clone() : null;
         this.timeoutInMilliseconds = frame.timeoutInMilliseconds;
         
     }    
@@ -523,10 +523,31 @@ public class Frame {
                 byteOffset = 4;
             }
 
-            for (int i = 0; i < this.payloadLength; i++) {
-                bufferedPayload[byteOffset + i] = this.payload[i];
+            if (this.isMasked()) {
+                
+                //Unrolled loop.
+                bufferedPayload[byteOffset++] = this.mask[0];
+                bufferedPayload[byteOffset++] = this.mask[1];
+                bufferedPayload[byteOffset++] = this.mask[2];
+                bufferedPayload[byteOffset++] = this.mask[3];
+                
             }
+            
+            for (int i = 0; i < this.payloadLength; i++) {
+                
+                if (this.isMasked()) {
 
+                    bufferedPayload[byteOffset + i] =  (byte)(this.payload[i] ^ this.mask[i % 4]);
+                    
+                }
+                else {
+                    
+                    bufferedPayload[byteOffset + i] = this.payload[i];
+                    
+                }
+                
+            }
+            
             outputStream.write(bufferedPayload, 0, (int)bufferedPayload.length);
             outputStream.flush();
         }
