@@ -96,10 +96,10 @@ public class FrameReader {
     protected Frame frame = null;
     protected Frame.OPCODE frameType;
     private byte[][] payloadFragments;
-    private int maxNumberOfFragmentedFrames = 2;
+    protected int maxNumberOfFragmentedFrames = 2;
 
     //Event management.
-    private IFrameEvent frameEventLayer = null;
+    protected IFrameEvent frameEventLayer = null;
     
     //Non-blocking & threading management. 
     protected EventThread eventThread = null;
@@ -180,7 +180,7 @@ public class FrameReader {
         }
 
         this.frame = new Frame(socket, timeout);
-        this.frameEventLayer = frameEventLayer;       
+        this.frameEventLayer = frameEventLayer;
         this.maxNumberOfFragmentedFrames = maxNumberOfFragmentedFrames;
         
     }
