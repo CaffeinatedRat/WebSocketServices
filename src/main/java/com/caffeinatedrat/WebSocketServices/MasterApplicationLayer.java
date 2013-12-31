@@ -79,8 +79,8 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
      */
     public void onTextFrame(TextPayload textPayload, ConnectionData connectionData) {
         
-        //For now, we will use the first fragment in the payload...this is not a safe method as a client may un-evenly break the fragments
-        // along other boundaries rather than the 65K boundary that most browser break it along.
+        //Precondition: The service name must be in the first frame.
+        //Arguments may be in any frame.
         String firstFragment = textPayload.getString(0);
         
         // --- CR (7/21/13) --- Force the serviceName to lower-case to get rid of all lower-case checking headaches.
