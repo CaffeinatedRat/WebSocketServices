@@ -104,6 +104,8 @@ public class FullFrameReader extends FrameReader {
         //Start blocking until indicated otherwise.
         if (isAvailable() || this.initialBlocking || this.blocking) {
             
+            this.frames = new ArrayList<Frame>();
+            
             //If we enter this block, we are either:
             //1) Blocking until we receive a frame during the initial opening of the connection.
             //2) Blocking to receive a new frame.
@@ -149,7 +151,7 @@ public class FullFrameReader extends FrameReader {
                         }
 
                         //Add a single frame.
-                        this.frames.add(new Frame(frame));
+                        this.frames.add(new Frame(this.frame));
                         
                         //Terminate the loop.
                         break;
@@ -170,7 +172,7 @@ public class FullFrameReader extends FrameReader {
                 }
                 else if (currentFrameType == Frame.OPCODE.CONTINUATION_DATA_FRAME){
                     
-                    this.frames.add(new Frame(frame));
+                    this.frames.add(new Frame(this.frame));
                     
                 }
                 else  {
@@ -184,8 +186,6 @@ public class FullFrameReader extends FrameReader {
                 
             }
             //END OF while( !this.frame.isFinalFragment() && fragmentCount < this.maxNumberOfFragmentedFrames ) {...
-            
-            Logger.verboseDebug(MessageFormat.format("Reading: {0}", frame.getPayloadAsString()));
             
             //Blocking has ended unless something is available for future reads.
             this.initialBlocking = false;
