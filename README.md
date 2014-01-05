@@ -139,7 +139,6 @@ The following contains information about new features, bug fixes, and other vers
 
 To-Do
 -----------
-* Add support for receiving fragmented frames.
 * Add necessary synchronization for threading; however, all services are read-only and the synch penalty is not currently worth it.
 * A security layer for possible individual websocket logins (This will have to be some sort of temporary token, as these services work off client-side scripting and all 'password' information is available for all to see).
 * Eventually add https support.
