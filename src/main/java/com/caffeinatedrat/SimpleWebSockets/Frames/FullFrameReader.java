@@ -31,7 +31,6 @@ import java.util.List;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
 import com.caffeinatedrat.SimpleWebSockets.Payload.*;
-import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
 
 public class FullFrameReader extends FrameReader {
 
