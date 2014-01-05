@@ -27,6 +27,8 @@ package com.caffeinatedrat.SimpleWebSockets.Util;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
 
@@ -38,6 +40,16 @@ import com.caffeinatedrat.SimpleWebSockets.Exceptions.EndOfStreamException;
  */
 public class WebSocketsReader extends BufferedInputStream {
 
+    // ----------------------------------------------
+    // Constants
+    // ----------------------------------------------
+    public static final long MAX_LOCK_WAIT_IN_MILLISECONDS = 5000;
+    
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    ReentrantLock lock = new ReentrantLock();
+    
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
@@ -85,21 +97,83 @@ public class WebSocketsReader extends BufferedInputStream {
     public void readFully(byte[] b, int off, int len)
         throws IOException, EndOfStreamException {
         
+        boolean isLocked = false;
+
         try {
-            //Continue to read until the total number of bytes defined in the len parameter have been read.
-            int totalLengthRead = 0;
-            int currentLenRead = 0;
-            while ( (totalLengthRead < len) && ((currentLenRead = super.read(b, off + totalLengthRead, len - totalLengthRead)) > 0) ) {
-                totalLengthRead += currentLenRead;
-            }
-            
-            if(currentLenRead == -1) {
-                throw new EndOfStreamException();
+            isLocked = this.lock.tryLock(MAX_LOCK_WAIT_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {}
+        
+        try {
+            if (isLocked) {
+                
+                //Continue to read until the total number of bytes defined in the len parameter have been read.
+                int totalLengthRead = 0;
+                int currentLenRead = 0;
+                while ( (totalLengthRead < len) && ((currentLenRead = super.read(b, off + totalLengthRead, len - totalLengthRead)) > 0) ) {
+                    totalLengthRead += currentLenRead;
+                }
+                
+                if(currentLenRead == -1) {
+                    throw new EndOfStreamException();
+                }
             }
         }
         catch(IOException io) {
             throw io;
         }
+        finally {
+            this.lock.unlock();
+        }
     }
     
+    /**
+     * Marks the current position in this input stream.
+     * @param readlimit tells this input stream to allow that many bytes to be read before the mark position gets invalidated.
+     * @see java.io.BufferedInputStream#mark()
+     */
+    @Override
+    public void mark(int readlimit) {
+
+        boolean isLocked = false;
+
+        try {
+            isLocked = this.lock.tryLock(MAX_LOCK_WAIT_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {}
+        
+        try {
+            if (isLocked) {
+                super.mark(readlimit);
+            }
+        }
+        finally {
+            this.lock.unlock();
+        }
+    }
+    
+    /**
+     * Repositions this stream to the position at the time the mark method was last called on this input stream.
+     * @throws IOException if the stream has not been marked or if the mark has been invalidated.
+     * @see java.io.BufferedInputStream#reset()
+     */
+    @Override
+    public void reset() throws IOException {
+
+        boolean isLocked = false;
+ 
+        try {
+            isLocked = this.lock.tryLock(MAX_LOCK_WAIT_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+        }
+        catch (InterruptedException e) {}
+        
+        try {
+            if(isLocked) {
+                super.reset();
+            }
+        }
+        finally {
+            this.lock.unlock();
+        }
+    }
 }

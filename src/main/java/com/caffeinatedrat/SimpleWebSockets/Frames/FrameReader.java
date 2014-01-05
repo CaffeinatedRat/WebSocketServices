@@ -43,8 +43,8 @@ public class FrameReader {
      */
     public class EventThread extends Thread {
         
-        WebSocketsReader reader;
-        boolean dataAvailable;
+        private WebSocketsReader reader;
+        private volatile boolean dataAvailable;
         
         public EventThread(WebSocketsReader reader) {
           
@@ -53,34 +53,36 @@ public class FrameReader {
             
         }
         
+        public synchronized boolean isDataAvailable() {
+            return this.dataAvailable;
+        }
+        
         @Override
         public void run() {
             
             try {
                 
-                Logger.verboseDebug(MessageFormat.format("A new thread {0} has spun up...", this.getName()));
+                Logger.verboseDebug(MessageFormat.format("A new EventThread {0} has spun up...", this.getName()));
                 
+                //Mark the beginning of the stream.
                 reader.mark(0);
-                
-                //Wait for data...
+            
                 reader.read();
                 
                 //Reset to the beginning of the stream.
                 reader.reset();
                 
                 //Note that data is available...we don't care if this value is dirty at the time we are checking...
-                this.dataAvailable = true;
+                synchronized(this){
+                    this.dataAvailable = true;
+                }
                 
-                Logger.verboseDebug(MessageFormat.format("Thread {0} has spun down...", this.getName()));
+                Logger.verboseDebug(MessageFormat.format("EventThread {0} has spun down...", this.getName()));
                 
             } catch (IOException e) {
-                
                 //Logger.verboseDebug(MessageFormat.format("Unable to monitor for frame data. {0}", e.getMessage()));
-                
             }
-            
         }
-        
     }
     
     // ----------------------------------------------
@@ -333,7 +335,7 @@ public class FrameReader {
      */
     protected boolean isAvailable() {
         
-        if ( (this.eventThread != null) && (this.eventThread.dataAvailable) ) {
+        if ( (this.eventThread != null) && (this.eventThread.isDataAvailable()) ) {
             
             this.eventThread = null;
             return true;
