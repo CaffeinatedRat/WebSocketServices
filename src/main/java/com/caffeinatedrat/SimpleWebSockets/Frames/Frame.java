@@ -48,7 +48,7 @@ public class Frame {
     // ----------------------------------------------
     // Constants
     // ----------------------------------------------
-    public static final long MAX_PAYLOAD_SIZE = 65536; 
+    public static final long MAX_PAYLOAD_SIZE = 65536;
     
     // ----------------------------------------------
     // Data Types

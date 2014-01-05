@@ -323,11 +323,13 @@ public class Connection extends Thread implements IFrameEvent {
     public void close() {
         try {
             if (this.socket != null) {
+                
                 this.socket.close();
+                
             }
         }
         catch(IOException io) {
-            //Do nothing...
+          //Do nothing...
         }
     }
     
