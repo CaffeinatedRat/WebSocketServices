@@ -122,7 +122,7 @@ public class FullFrameReader extends FrameReader {
             }
 
             //Add the first frame.
-            this.frames.add(new Frame(frame));
+            this.frames.add(new Frame(this.frame));
             
             //NOTE: We have already read one frame so we start the count at 1.
             //Continue to read frames until we find the final fragment or until we reach the maximum number of fragments.
