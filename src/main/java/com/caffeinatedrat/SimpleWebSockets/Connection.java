@@ -337,6 +337,11 @@ public class Connection extends Thread implements IFrameEvent {
     // Events
     // ----------------------------------------------
     
+    /**
+     * An event that occurs on a control frame.
+     * @param opcode the opcode of the frame being received.
+     * @param payload the payload of the frame being received. 
+     */
     public void onControlFrame(Frame.OPCODE opcode, Payload payload) throws InvalidFrameException  {
         
         switch(opcode) {

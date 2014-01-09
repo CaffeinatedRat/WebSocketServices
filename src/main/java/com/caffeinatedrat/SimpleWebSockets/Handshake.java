@@ -87,7 +87,7 @@ public class Handshake {
   
     /**
      * Returns an array of supported versions.
-     * @return An array of supported versions.
+     * @return an array of supported versions.
      */
     public static String[] getSupportedVersions() {
         return WEBSOCKET_SUPPORTED_VERSIONS.split(",");
@@ -95,7 +95,7 @@ public class Handshake {
     
     /**
      * Returns all of request headers found in the handshake.
-     * @return A map that contains the header and its value.
+     * @return a map that contains the header and its value.
      */
     public Map<String, String> getRequestHeaders() {
         return this.requestHeaderFields;
@@ -103,7 +103,7 @@ public class Handshake {
     
     /**
      * Sets the timeout value for the handshake.
-     * @param timeout The time in milliseconds before the handshake fails.
+     * @param the time in milliseconds before the handshake fails.
      */
     public void setTimeOut(int timeout) {
         this.timeoutInMilliseconds = timeout; 
@@ -111,7 +111,7 @@ public class Handshake {
 
     /**
      * Gets the timeout value for the handshake.
-     * @return timeout The time in milliseconds before the handshake fails.
+     * @return the time in milliseconds before the handshake fails.
      */
     public int getTimeOut() {
         return this.timeoutInMilliseconds;
@@ -119,7 +119,7 @@ public class Handshake {
 
     /**
      * Gets check origin flag.
-     * @return The check origin flag.
+     * @return the check origin flag.
      */
     public boolean getCheckOrigin() {
         return this.checkOrigin;
@@ -127,7 +127,7 @@ public class Handshake {
     
     /**
      * Returns the raw handshake request that was sent by the client.
-     * @return The raw handshake request that was sent by the client.
+     * @return the raw handshake request that was sent by the client.
      */
     public String getRawRequestRequest() {
         return this.rawHandshakeRequest;
@@ -159,7 +159,7 @@ public class Handshake {
     
     /**
      * Sets the user agent field that is sent when making a request to a server end-point.
-     * @param userAgent the user agent field that is sent when making a request to a server end-point.
+     * @param the user agent field that is sent when making a request to a server end-point.
      */
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
@@ -167,7 +167,7 @@ public class Handshake {
 
     /**
      * Gets the user agent field that is sent when making a request to a server end-point.
-     * @return timeout The time in milliseconds before the handshake fails.
+     * @return the user agent field that was sent when a request was made.
      */
     public String getUserAgent() {
         return this.userAgent;
@@ -213,8 +213,8 @@ public class Handshake {
     // ----------------------------------------------
     
     /**
-     * Performs the actual handshake and will return false if the handshake has failed.
-     * @return Returns true if the handshake was successful. 
+     * Negotiates a handshake request from an endpoint and will return true if successful.
+     * @return true if the handshake request was successfully negotiated. 
      */
     //Suppress this warning as closing the stream after the event is completed will also close the socket.
     @SuppressWarnings("resource")
@@ -398,8 +398,8 @@ public class Handshake {
     }
     
     /**
-     * Verifies that the handshake response from the client is valid.
-     * @return Returns true if the handshake was successful. 
+     * Negotiates a handshake response from an endpoint and will return true if successful.
+     * @return true if the handshake was negotiated successful.
      */
     @SuppressWarnings("resource")
     public boolean negotiateResponse() {
@@ -527,6 +527,10 @@ public class Handshake {
         return false;
     }    
     
+    /**
+     * Attempts to perform a handshake request with an endpoint.
+     * @return true if the request was successfully created and negotiated by the endpoint.
+     */
     public boolean createRequest() {
         
         PrintWriter outputStream = null;
@@ -621,6 +625,8 @@ public class Handshake {
     
     /**
      * Clones a handshake using the same request information but a different socket.
+     * @param socket the socket to apply to the cloned handshake.
+     * @return a cloned handshake with a new socket.
      */
     public Handshake cloneHandshake(Socket socket) {
         
