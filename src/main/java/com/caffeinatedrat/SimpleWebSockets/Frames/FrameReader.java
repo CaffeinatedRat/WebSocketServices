@@ -371,8 +371,8 @@ public class FrameReader {
                 this.eventThread.join(10000);
                 
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                //Do nothing with this exception.
+                //Timing out has no significant effect on this method.
             }
             
             this.eventThread = null;

@@ -227,7 +227,7 @@ public class Server extends Thread {
             this.whitelist = new HashSet<String>();
             if(!loadWhiteList())
             {
-                //TO-DO: Create the white-list.txt and bail.
+                //TODO: Create the white-list.txt and bail.
                 Logger.severe("The white-list was not found...");
             }
         }

@@ -187,7 +187,7 @@ public class Handshake {
         this.checkOrigin = checkOrigin;
         this.whitelist = whitelist;
         
-        //To-Do: Generate this key.
+        //TODO: Generate this key.
         //If we are negotiating a request then the key is provided by the client.
         //That key will be retained for the lifetime of that handshake.
         //If we are negotiating a response then the key is provided by us.
@@ -312,8 +312,7 @@ public class Handshake {
                     
                     if (verified) {
                         
-                        //TODO
-                        //Add Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
+                        //TODO Version Negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
                         
                         //Generate the accept key.
                         String acceptKey = "";
@@ -455,8 +454,7 @@ public class Handshake {
                         }
                     }
                     
-                    //TODO
-                    //Add Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
+                    //TODO Version negotiation: http://tools.ietf.org/html/rfc6455#section-4.4
                     String upgradeHeader = responseHeaderFields.get(UPGRADE_HEADER).toString();
                     String connectionHeader = responseHeaderFields.get(CONNECTION_HEADER).toString();
                     
@@ -615,11 +613,9 @@ public class Handshake {
             outputStream.flush();
             
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Logger.verboseDebug(MessageFormat.format("The encoding type {0} is not supported.  Handshake failed.", ENCODING_TYPE));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //Do nothing...
         }
     }
     
