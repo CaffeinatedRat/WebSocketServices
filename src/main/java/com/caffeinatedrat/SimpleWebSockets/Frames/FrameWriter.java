@@ -135,6 +135,7 @@ public class FrameWriter {
      * @param payload The payload to write.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the endpoint.
      */
+    @SuppressWarnings("unused")
     private static void writeText(Socket socket, TextPayload payload) throws InvalidFrameException {
         
         int payloadDepth = payload.getDepth();
