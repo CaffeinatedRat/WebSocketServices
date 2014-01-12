@@ -120,7 +120,7 @@ public class FullFrameReader extends FrameReader {
                 throw new InvalidFrameException("A control frame cannot be fragmented.");
                 
             }
-
+            
             //Add the first frame.
             this.frames.add(new Frame(this.frame));
             
@@ -148,7 +148,7 @@ public class FullFrameReader extends FrameReader {
                         if (this.frames.size() > 1) {
                             this.frames = new ArrayList<Frame>();
                         }
-
+                        
                         //Add a single frame.
                         this.frames.add(new Frame(this.frame));
                         
@@ -158,7 +158,7 @@ public class FullFrameReader extends FrameReader {
                     }
                     //Some other control frame has occurred, so invoke the FrameEventLayer if one was provided.
                     else {
-
+                        
                         if (frameEventLayer != null) {
                             
                             frameEventLayer.onControlFrame(currentFrameType, new Payload(new byte[][] {this.frame.getPayloadAsBytes()} ));
