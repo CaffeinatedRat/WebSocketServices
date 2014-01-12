@@ -460,17 +460,18 @@ public class Frame {
     
     /**
      * Writes a websocket frame.
+     * @param socket The socket to write the frame to.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
      */
-    public void write()
+    public void write(Socket socket)
         throws InvalidFrameException {
         
         int preserveOriginalTimeout = 0;
         
         try {
             //Set the timeout for the frame.
-            preserveOriginalTimeout = this.socket.getSoTimeout();
-            this.socket.setSoTimeout(this.timeoutInMilliseconds);
+            preserveOriginalTimeout = socket.getSoTimeout();
+            socket.setSoTimeout(this.timeoutInMilliseconds);
 
             OutputStream outputStream = socket.getOutputStream();
 
@@ -563,12 +564,21 @@ public class Frame {
 
             try {
                 //Reset the original timeout.
-                this.socket.setSoTimeout(preserveOriginalTimeout);
+                socket.setSoTimeout(preserveOriginalTimeout);
             }
             catch(IOException ie) {
                //Do nothing...
             }
         }
+    }
+    
+    /**
+     * Writes a websocket frame.
+     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the client.
+     */
+    public void write()
+        throws InvalidFrameException {
+        write(this.socket);
     }
     
 }
