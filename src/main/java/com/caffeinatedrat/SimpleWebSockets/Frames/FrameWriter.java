@@ -27,6 +27,7 @@ package com.caffeinatedrat.SimpleWebSockets.Frames;
 import java.net.Socket;
 
 import com.caffeinatedrat.SimpleWebSockets.Exceptions.InvalidFrameException;
+import com.caffeinatedrat.SimpleWebSockets.Payload.TextPayload;
 import com.caffeinatedrat.SimpleWebSockets.Responses.BinaryResponse;
 
 public class FrameWriter {
@@ -131,10 +132,34 @@ public class FrameWriter {
     /**
      * Writes a text response frame to the endpoint.
      * @param socket A valid socket.
-     * @param fragment The string value to return the endpoint.
+     * @param payload The payload to write.
      * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the endpoint.
      */
-    public static void writeText(Socket socket, String fragment) throws InvalidFrameException {
+    private static void writeText(Socket socket, TextPayload payload) throws InvalidFrameException {
+        
+        int payloadDepth = payload.getDepth();
+        
+        //If there are no fragments then do not write.
+        if (payloadDepth == 0) {
+            return;
+        }
+        
+        for (int i = 0; i < payloadDepth; i++) {
+            
+            writeText(socket, payload.getString(i), (i == payloadDepth - 1));
+            
+        }
+        
+    }
+    
+    /**
+     * Writes a text response frame to the endpoint.
+     * @param socket A valid socket.
+     * @param fragment The string value to return the endpoint.
+     * @param lastFragment True if this is the last fragment in the payload.
+     * @throws InvalidFrameException occurs when the frame is invalid due to an incomplete frame being sent by the endpoint.
+     */
+    public static void writeText(Socket socket, String fragment, Boolean lastFragment) throws InvalidFrameException {
     
         // --- CR (8/10/13) --- Do not write an empty fragment.
         if (fragment.length() == 0) {
@@ -160,7 +185,11 @@ public class FrameWriter {
 
         //Send the final frame.
         Frame responseFrame = new Frame(socket);
-        responseFrame.setFinalFragment();
+        
+        if (lastFragment) {
+            responseFrame.setFinalFragment();
+        }
+        
         responseFrame.setOpCode( firstFrame ? Frame.OPCODE.TEXT_DATA_FRAME : Frame.OPCODE.CONTINUATION_DATA_FRAME);
         responseFrame.setPayload(fragment);
         responseFrame.write();

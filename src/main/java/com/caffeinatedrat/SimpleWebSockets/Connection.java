@@ -249,7 +249,7 @@ public class Connection extends Thread implements IFrameEvent {
                                 
                                 if (session.response instanceof TextResponse){
                                     
-                                    FrameWriter.writeText(this.socket, session.response.toString());
+                                    FrameWriter.writeText(this.socket, session.response.toString(), true);
                                     
                                 }
                                 else if (session.response instanceof BinaryResponse) {
