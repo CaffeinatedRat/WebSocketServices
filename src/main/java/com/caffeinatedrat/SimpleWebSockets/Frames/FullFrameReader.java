@@ -99,11 +99,11 @@ public class FullFrameReader extends FrameReader {
     @Override
     public boolean read()
             throws InvalidFrameException {
+
+        this.frames = new ArrayList<Frame>();
         
         //Start blocking until indicated otherwise.
         if (isAvailable() || this.initialBlocking || this.blocking) {
-            
-            this.frames = new ArrayList<Frame>();
             
             //If we enter this block, we are either:
             //1) Blocking until we receive a frame during the initial opening of the connection.
