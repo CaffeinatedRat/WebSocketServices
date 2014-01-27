@@ -74,6 +74,7 @@ public class Connection extends Thread implements IFrameEvent {
     // ----------------------------------------------
     
     public Connection(Socket socket, IMasterApplicationLayer masterApplicationLayer, com.caffeinatedrat.SimpleWebSockets.Server webSocketServer) {
+        
         if (masterApplicationLayer == null) {
             throw new IllegalArgumentException("The masterApplicationLayer is invalid (null).");
         }
