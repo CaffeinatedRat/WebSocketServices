@@ -93,6 +93,9 @@ public class WebSocketServices extends JavaPlugin {
 
         // save the configuration file, if there are no values, write the defaults.
         server.Shutdown();
+        
+        // --- CR (1/26/14) --- The configuration can now be saved due to the comments all being moved into the header.
+        this.saveConfig();
 
     }
     

@@ -1,29 +1,38 @@
-#Configuration for the websocket server.
-#In depth configuration information can be found here: http://dev.bukkit.org/bukkit-plugins/websocketservices/pages/configuration/
+# ----------------------------------------------------------------------------
+# websocket: Configuration for the websocket server.
+# In depth configuration information can be found here: http://dev.bukkit.org/bukkit-plugins/websocketservices/pages/configuration/
+#   portNumber: The port number your bridge will be running on.
+#   logging: Logs to the console (0 = off, 1 = simple, 2 = verbose).
+#   maximumConnections: Sets the maximum number of connections the server can handle concurrently.
+#   handshakeTimeOutTolerance: Sets the number of milliseconds that the server will wait for a handshake to complete.
+#   frameTimeOutTolerance: Sets the number of milliseconds that the server will wait for a frame to complete before terminating the connection.
+#   maximumFragmentationSize: Sets the maximum number of frames that can be sent in a single request to your server.  The higher this value is the more likely someone can reduce your servers performance if they flood you with large size requests.
+#   idleConnectionTimeOut: Sets the number of milliseconds that the server will wait before terminating an idle connection.  If this is zero the connection will wait indefinitely.
+#   checkOrigin: Determines if the origin is valid during the handshake.  If the origin is null, it is invalid and the connection is rejected.
+#   whitelist: Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.
+#   pingable: Determines if the server is pingable via websockets (This is reserved as a future feature as most browers do not support a websocket ping method).
+#   muteDisabledServices: Silences the response from all services and extensions that are disabled.
+# services: Configuration for the commands (services) that are supported.
+#   #WARNING: Service names are case sensitive.
+#   nameOfService: (true -- service is available / false -- service is unavailable).
+# extensions: Configuration for WebSocketServices' extensions.
+#   If an extension is not listed here it will not be enabled.
+#   WARNING: Plugin names are case sensitive.
+#   extensionName: NameOfThePlugin (IE: chat: WebSocketChatbox).
+# ----------------------------------------------------------------------------
+
 websocket:
   portNumber: 25564
-  #Logs to the console (0 = off, 1 = simple, 2 = verbose).
   logging: 0
-  #Sets the maximum number of connections the server can handle concurrently.
   maximumConnections: 32
-  #Sets the number of milliseconds that the server will wait for a handshake to complete.
   handshakeTimeOutTolerance: 1000
-  #Sets the number of milliseconds that the server will wait for a frame to complete before terminating the connection.
   frameTimeOutTolerance: 3000
-  #Sets the maximum number of frames that can be sent in a single request to your server.  The higher this value is the more likely someone can reduce your servers performance if they flood you with large size requests.
   maximumFragmentationSize: 2
-  #Sets the number of milliseconds that the server will wait before terminating an idle connection.  If this is zero the connection will wait indefinitely.
   idleConnectionTimeOut: 30000
-  #Determines if the origin is valid during the handshake.  If the origin is null, it is invalid and the connection is rejected.
   checkOrigin: true
-  #Determines if the websocket services are only available to certain ips.  Note that this checks the origin header field during the handshake and can be spoofed by non-browser clients.
   whitelist: false
-  #Determines if the server is pingable via websockets (This is reserved as a future feature as most browers do not support a websocket ping method).
   pingable: false
-  #Silences the response from all services and extensions that are disabled.
   muteDisabledServices: false 
-#Configuration for the commands (services) that are supported.
-#WARNING: Service names are case sensitive.
 services:
   who: true
   plugins: true
@@ -34,8 +43,5 @@ services:
   player: true
   fragmentationtest: false
   binaryfragmentationtest: false
-#Configuration for WebSocketServices' extensions.
-#If an extension is not listed here it will not be enabled.
-#WARNING: Plugin names are case sensitive.
 extensions:
   #ExtensionsName: pluginname
