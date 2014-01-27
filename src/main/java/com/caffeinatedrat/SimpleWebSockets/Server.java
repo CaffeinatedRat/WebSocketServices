@@ -245,7 +245,7 @@ public class Server extends Thread {
         
         try {
             
-            Logger.info(MessageFormat.format("WebSocket server listening on port {0}...", this.port));
+            Logger.info(MessageFormat.format("WebSocketServices server listening on port {0}...", this.port));
             
             serverSocket = new ServerSocket(this.port);
             
@@ -282,7 +282,7 @@ public class Server extends Thread {
             }
             //END OF while ( (this.isServerRunning) && (!serverSocket.isClosed()) )...
             
-            Logger.info("WebSocket server stopping...");
+            Logger.info("WebSocketServices server stopping...");
             
         }
         catch (IOException ioException) {
@@ -313,7 +313,9 @@ public class Server extends Thread {
         
         this.isServerRunning = false;
         try {
-            this.serverSocket.close();
+            if (this.serverSocket != null) {
+                this.serverSocket.close();
+            }
         }
         catch(IOException io) {
             //Do nothing...

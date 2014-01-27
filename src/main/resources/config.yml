@@ -1,6 +1,7 @@
 # ----------------------------------------------------------------------------
 # websocket: Configuration for the websocket server.
 # In depth configuration information can be found here: http://dev.bukkit.org/bukkit-plugins/websocketservices/pages/configuration/
+#   active: True if the WebSocketServer is running.
 #   portNumber: The port number your bridge will be running on.
 #   logging: Logs to the console (0 = off, 1 = simple, 2 = verbose).
 #   maximumConnections: Sets the maximum number of connections the server can handle concurrently.
@@ -22,6 +23,7 @@
 # ----------------------------------------------------------------------------
 
 websocket:
+  active: true
   portNumber: 25564
   logging: 0
   maximumConnections: 32

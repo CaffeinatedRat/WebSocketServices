@@ -63,12 +63,18 @@ public class WebSocketServices extends JavaPlugin {
         //Save the default configuration.
         saveDefaultConfig();
 
-        //Register the listeners...
-        getServer().getPluginManager().registerEvents(new PlayerListener(loginTimes), this);
-        
         //Manage the configuration...
         WebSocketServicesConfiguration config = new WebSocketServicesConfiguration(this);
         Logger.debugLevel = config.getDebugLevel();
+        
+        //Do not run if the server is not active.
+        if (!config.isActive()) {
+            Logger.info("The WebSocketServices server is disabled.");
+            return;
+        }
+
+        //Register the listeners...
+        getServer().getPluginManager().registerEvents(new PlayerListener(loginTimes), this);
         
         IMasterApplicationLayer masterApplicationLayer = new MasterApplicationLayer(getServer(), loginTimes, config, registeredApplicationLayers);
         
@@ -92,7 +98,9 @@ public class WebSocketServices extends JavaPlugin {
     public void onDisable() {
 
         // save the configuration file, if there are no values, write the defaults.
-        server.Shutdown();
+        if (this.server != null) {
+            server.Shutdown();
+        }
         
         // --- CR (1/26/14) --- The configuration can now be saved due to the comments all being moved into the header.
         this.saveConfig();

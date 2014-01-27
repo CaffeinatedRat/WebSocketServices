@@ -58,6 +58,14 @@ public class WebSocketServicesConfiguration extends YamlConfiguration {
     }
     
     /**
+     * Returns true if the server is active.
+     * @return true if the server is active.
+     */    
+    public boolean isActive() {
+        return getBoolean("websocket.active", false);
+    }
+    
+    /**
      * Safely returns the port number.
      * @return Safely returns the port number.
      */
