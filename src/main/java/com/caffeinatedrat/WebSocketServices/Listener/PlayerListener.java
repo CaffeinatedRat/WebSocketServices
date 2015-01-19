@@ -26,6 +26,7 @@ package com.caffeinatedrat.WebSocketServices.Listener;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,13 +39,17 @@ public class PlayerListener implements Listener {
     // ----------------------------------------------
     // Member Vars (fields)
     // ----------------------------------------------
-    private Map<String, Long> loginTimes = null;
+    //private Map<String, Long> loginTimes = null;
+
+    // --- CR (1/18/15) --- Switching to UUID.
+    private Map<UUID, Long> loginTimes = null;
     
     // ----------------------------------------------
     // Constructors
     // ----------------------------------------------
     
-    public PlayerListener(Map<String, Long> loginTimes) {
+    //public PlayerListener(Map<String, Long> loginTimes) {
+    public PlayerListener(Map<UUID, Long> loginTimes) {
         
         this.loginTimes = loginTimes;
         
@@ -61,7 +66,9 @@ public class PlayerListener implements Listener {
 
             // --- CR (4/28/13) --- We will now manage the amount of time a player has been online since the server does not do this.
             // NOTE: There may be synchronization issues, but we do not really care as these requests can be 'dirty'.
-            loginTimes.put(event.getPlayer().getName(), new Date().getTime());
+            //loginTimes.put(event.getPlayer().getName(), new Date().getTime());
+            // --- CR (1/18/15) --- Switching to UUID.
+            loginTimes.put(event.getPlayer().getUniqueId(), new Date().getTime());
         
         }
     }

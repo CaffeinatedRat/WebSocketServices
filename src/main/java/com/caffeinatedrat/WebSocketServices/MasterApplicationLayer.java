@@ -28,6 +28,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import com.caffeinatedrat.SimpleWebSockets.IMasterApplicationLayer;
 import com.caffeinatedrat.SimpleWebSockets.IApplicationLayer;
@@ -59,7 +60,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
     // Constructors
     // ----------------------------------------------
     
-    public MasterApplicationLayer(org.bukkit.Server minecraftServer, Map<String, Long> loginTimes, WebSocketServicesConfiguration config, Map<String, IApplicationLayer> applicationLayers) {
+    public MasterApplicationLayer(org.bukkit.Server minecraftServer, Map<UUID, Long> loginTimes, WebSocketServicesConfiguration config, Map<String, IApplicationLayer> applicationLayers) {
         
         this.minecraftServer = minecraftServer;
         this.config = config;

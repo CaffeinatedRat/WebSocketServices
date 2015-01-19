@@ -48,7 +48,8 @@ public class WebSocketServices extends JavaPlugin {
 	
     private Server server = null;
     private static Map<String, IApplicationLayer> registeredApplicationLayers = new HashMap<String, IApplicationLayer>();
-    private static Map<String, Long> loginTimes = new HashMap<String, Long>();
+    //private static Map<String, Long> loginTimes = new HashMap<String, Long>();
+    private static Map<java.util.UUID, Long> loginTimes = new HashMap<java.util.UUID, Long>();
     
     // ----------------------------------------------
     // Events

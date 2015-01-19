@@ -55,12 +55,12 @@ Change Log
 
 The following contains information about new features, bug fixes, and other version changes.
 
-#### 1.3.1
+#### 2.0.0
 
+* Major upgrade to support Spigot/CraftBukkit 1.8.
 * Added support for persistent connections.
 * Frame fragmentation fully supported.
 * Client-side websocket code now exists in the Frame & Handshake classes.
-* Upgraded to CraftBukkit 1.6.2-R1.0.
 
 #### 1.3.0
 
