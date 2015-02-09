@@ -39,6 +39,7 @@ services:
   who: true
   plugins: true
   info: true
+  seed: true
   whitelist: true
   offlineplayers: true
   ping: true

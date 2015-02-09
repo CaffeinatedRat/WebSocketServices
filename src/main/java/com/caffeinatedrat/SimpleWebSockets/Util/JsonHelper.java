@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2014, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2015, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class JsonHelper {
-
+    
     public static String serialize(Hashtable<String, Object> collection) {
         
         StringBuilder jsonBuffer = new StringBuilder();
@@ -83,6 +83,7 @@ public class JsonHelper {
                 
                 try {
                     
+                    @SuppressWarnings("rawtypes")
                     Collection internalCollection = (Collection)element.getValue();
                     
                     jsonBuffer.append("[");
@@ -94,6 +95,7 @@ public class JsonHelper {
                             
                             // --- CR (2/7/13) --- A flag has been added indicating whether the max depth has been reached.
                             // If the maximum depth has been reached then we want to omit the delimiter for this instance.
+                            @SuppressWarnings("unchecked")
                             Hashtable<String, Object> internalElement = (Hashtable<String, Object>)object;
                             boolean completed = internalSerialization(internalElement, jsonBuffer, depth + 1, maxDepth);
                             
@@ -118,6 +120,7 @@ public class JsonHelper {
             else if (element.getValue() instanceof Hashtable){
                 
                 // If the maximum depth has been reached then we want to omit the delimiter for this instance.
+                @SuppressWarnings("unchecked")
                 Hashtable<String, Object> internalElement = (Hashtable<String, Object>)element.getValue();
                 internalSerialization(internalElement, jsonBuffer, depth + 1, maxDepth);
                 

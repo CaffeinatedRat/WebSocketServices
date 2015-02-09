@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2015, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2015, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -22,22 +22,49 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.caffeinatedrat.SimpleWebSockets.Exceptions;
+package com.caffeinatedrat.WebSocketServices;
 
-public class EndOfStreamException extends Exception {
-    
-    /**
-     * An exception thrown when the end of the stream has been reached.
-     *
-     * @version 1.0.0.0
-     * @author CaffeinatedRat
-     */
-    private static final long serialVersionUID = 8949430179267127830L;
+/**
+ * Contains the status of the service.
+ *
+ * @version 1.0.0.0
+ * @author CaffeinatedRat
+ */
+public class ServiceStatus {
 
     // ----------------------------------------------
-    // Constructors
-    // ----------------------------------------------    
-    public EndOfStreamException() {
-        super("The end of the stream has been encountered.");
+    // Data Types
+    // ----------------------------------------------
+    
+    public enum StatusState {
+        SUCCESS,
+        FAILURE,
+        NOT_AVAILABLE
     }
+    
+    // ----------------------------------------------
+    // Member Vars (fields)
+    // ----------------------------------------------
+    private StatusState statusState;
+    private String message;
+    
+    // ----------------------------------------------
+    // Properties
+    // ----------------------------------------------
+    public StatusState getStatusState() {
+        return this.statusState;
+    }
+    
+    public String getMessage() {
+        return this.message;
+    }
+    
+    // ----------------------------------------------
+    // Constructors
+    // ----------------------------------------------
+    public ServiceStatus(StatusState statusState, String message) {
+        this.statusState = statusState;
+        this.message = message;
+    }
+    
 }

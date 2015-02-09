@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2014, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2015, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -29,7 +29,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,7 @@ import com.caffeinatedrat.SimpleWebSockets.Session;
 import com.caffeinatedrat.SimpleWebSockets.Payload.*;
 import com.caffeinatedrat.SimpleWebSockets.Responses.*;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
+import com.caffeinatedrat.WebSocketServices.ServiceStatus.StatusState;
 
 public class ServiceLayer {
 
@@ -81,9 +81,9 @@ public class ServiceLayer {
      * @param service The name of the requested service.  If the service does not exist then nothing is done.
      * @param arguments Any arguments included with the service.
      * @param session The current session.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    public boolean executeText(String service, TextPayload arguments, Session session) {
+    public ServiceStatus executeText(String service, TextPayload arguments, Session session) {
         
         if (session == null) {
             
@@ -101,15 +101,17 @@ public class ServiceLayer {
             }
             else
             {
-                
-                session.response = new TextResponse();
+                // --- CR (2/8/15) --- Do not overwrite an existing session.
+                if (session.response == null) {
+                    session.response = new TextResponse();
+                }
                 
                 // --- CR (7/21/13) --- We're still going to perform a lower-case check here in the event someone attempts to call this method explicitly.
                 if (!service.equalsIgnoreCase("executeText") && !service.equalsIgnoreCase("executeBinary")) {
                     
                     Method method = this.getClass().getDeclaredMethod(service, TextPayload.class, TextResponse.class);
                     method.setAccessible(true);
-                    return (Boolean)method.invoke(this, arguments, session.response);
+                    return (ServiceStatus)method.invoke(this, arguments, session.response);
                     
                 }
                 
@@ -125,7 +127,7 @@ public class ServiceLayer {
             Logger.verboseDebug(ex.getMessage());
         }
         
-        return false;
+        return new ServiceStatus(StatusState.NOT_AVAILABLE, "Not Available");
     }
     
     /**
@@ -144,7 +146,10 @@ public class ServiceLayer {
         
         try {
         
-            session.response = new BinaryResponse();
+            // --- CR (2/8/15) --- Do not overwrite an existing session.
+            if (session.response == null) {
+                session.response = new BinaryResponse();
+            }
             
             if(payload.getDepth() > 0) {
                 
@@ -160,97 +165,65 @@ public class ServiceLayer {
         return false;
     }
     
-
-    
     /**
      * Provides information about the server.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean info(TextPayload arguments, TextResponse response) {
-
-        //We now support multiple arguments.
-        String args = arguments.toString().trim();
+    protected ServiceStatus info(TextPayload arguments, TextResponse response) {
         
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
         World world = worlds.get(0);
 
         Hashtable<String, Object> collection = response.getCollection();
-        
-        String[] tokens = args.split(" ");
-        if (tokens.length > 0) {
-            HashSet<String> knowntokens = new HashSet<String>();
 
-            for(String token : tokens) {
-                
-                if (!knowntokens.contains(token)){
-                    
-                    knowntokens.add(token);
-                    
-                    if (token.equalsIgnoreCase("info")) {
-                        
-                        collection.put("name", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
-                        collection.put("serverTypeName", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
-                        collection.put("serverName", this.minecraftServer.getServerName());
-                        collection.put("version", this.minecraftServer.getVersion());
-                        collection.put("bukkitVersion", this.minecraftServer.getBukkitVersion());
-                        collection.put("worldType", this.minecraftServer.getWorldType());
-                        collection.put("allowsNether", this.minecraftServer.getAllowNether());
-                        collection.put("allowsEnd", this.minecraftServer.getAllowEnd());
-                        collection.put("allowsFlight", this.minecraftServer.getAllowFlight());
-                        collection.put("isWhiteListed", this.minecraftServer.hasWhitelist());
-                        collection.put("motd", this.minecraftServer.getMotd());
-                        collection.put("gameMode", this.minecraftServer.getDefaultGameMode().toString());
-                        collection.put("port", this.minecraftServer.getPort());
-                        collection.put("ipAddress", this.minecraftServer.getIp());
-                        collection.put("serverTime", world.getTime());
-                        
-                    }
-                    else if (token.equalsIgnoreCase("seed")) {
-                        
-                        collection.put("seed", world.getSeed());
-                        
-                    }
-                    
-                }
-                
-            }
-            
-        }
-        //Default to the regular information if no arguments are provided.
-        else  {
-            
-            collection.put("name", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
-            collection.put("serverTypeName", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
-            collection.put("serverName", this.minecraftServer.getServerName());
-            collection.put("version", this.minecraftServer.getVersion());
-            collection.put("bukkitVersion", this.minecraftServer.getBukkitVersion());
-            collection.put("worldType", this.minecraftServer.getWorldType());
-            collection.put("allowsNether", this.minecraftServer.getAllowNether());
-            collection.put("allowsEnd", this.minecraftServer.getAllowEnd());
-            collection.put("allowsFlight", this.minecraftServer.getAllowFlight());
-            collection.put("isWhiteListed", this.minecraftServer.hasWhitelist());
-            collection.put("motd", this.minecraftServer.getMotd());
-            collection.put("gameMode", this.minecraftServer.getDefaultGameMode().toString());
-            collection.put("port", this.minecraftServer.getPort());
-            collection.put("ipAddress", this.minecraftServer.getIp());
-            collection.put("serverTime", world.getTime());
-            
-        }
+        collection.put("name", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
+        collection.put("serverTypeName", this.minecraftServer.getName().replaceAll("(\r\n|\n)", ""));
+        collection.put("serverName", this.minecraftServer.getServerName());
+        collection.put("version", this.minecraftServer.getVersion());
+        collection.put("bukkitVersion", this.minecraftServer.getBukkitVersion());
+        collection.put("worldType", this.minecraftServer.getWorldType());
+        collection.put("allowsNether", this.minecraftServer.getAllowNether());
+        collection.put("allowsEnd", this.minecraftServer.getAllowEnd());
+        collection.put("allowsFlight", this.minecraftServer.getAllowFlight());
+        collection.put("isWhiteListed", this.minecraftServer.hasWhitelist());
+        collection.put("motd", this.minecraftServer.getMotd());
+        collection.put("gameMode", this.minecraftServer.getDefaultGameMode().toString());
+        collection.put("port", this.minecraftServer.getPort());
+        collection.put("ipAddress", this.minecraftServer.getIp());
+        collection.put("serverTime", world.getTime());
 
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
         
+    }
+    
+    /**
+     * Provides the seed for the server.
+     * @param arguments Any arguments included with the service.
+     * @param responseBuffer The buffer that the JSON response data will be stored in.
+     * @return the status of the service.
+     */
+    protected ServiceStatus seed(TextPayload arguments, TextResponse response) {
+        
+        //Get the normal world and assume it is the first in the list.
+        List<World> worlds = this.minecraftServer.getWorlds();
+        World world = worlds.get(0);
+
+        Hashtable<String, Object> collection = response.getCollection();
+        collection.put("seed", world.getSeed());
+        
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
     }
     
     /**
      * Provides a list of all available plug-ins.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */    
-    protected boolean plugins(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus plugins(TextPayload arguments, TextResponse response) {
         
         Plugin[] plugins = this.minecraftServer.getPluginManager().getPlugins();
 
@@ -302,7 +275,7 @@ public class ServiceLayer {
         }
         //END OF for (int i = 0; i < plugins.length; i++) {...
         
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
         
     }
     
@@ -310,15 +283,14 @@ public class ServiceLayer {
      * Provides a list of the players that are currently online and the maximum number of players allowed.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean who(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus who(TextPayload arguments, TextResponse response) {
         
         Collection<? extends Player> players = this.minecraftServer.getOnlinePlayers();
         
         Hashtable<String, Object> masterCollection = response.getCollection();
         List<Hashtable<String, Object>> listofPlayers = new ArrayList<Hashtable<String, Object>>();
-        
         masterCollection.put("MaxPlayers", this.minecraftServer.getMaxPlayers());
         masterCollection.put("Players", listofPlayers);
         
@@ -369,7 +341,7 @@ public class ServiceLayer {
             listofPlayers.add(collection);
         }
 
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
         
     }
     
@@ -377,9 +349,9 @@ public class ServiceLayer {
      * Provides a list of all white-listed players.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean whitelist(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus whitelist(TextPayload arguments, TextResponse response) {
     	
         Set<OfflinePlayer> whiteListedPlayers = this.minecraftServer.getWhitelistedPlayers();
         
@@ -428,7 +400,7 @@ public class ServiceLayer {
         }
         //END OF for(OfflinePlayer offlinePlayer : whiteListedPlayers) {...
 
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
         
     }
     
@@ -436,9 +408,9 @@ public class ServiceLayer {
      * Provides a list of all offline players
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean offlineplayers(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus offlineplayers(TextPayload arguments, TextResponse response) {
     	
         OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
         
@@ -490,16 +462,16 @@ public class ServiceLayer {
         }
         //END OF for(OfflinePlayer offlinePlayer : offlinePlayers) {...
         
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
     }
     
     /**
      * Queries information about a single player.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean player(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus player(TextPayload arguments, TextResponse response) {
         
         Hashtable<String, Object> masterCollection = response.getCollection();
         
@@ -510,32 +482,42 @@ public class ServiceLayer {
         //Notify the client that the service was improperly called.
         if (playersId == "") {
             
-            masterCollection.put("STATUS", "FAILURE");
-            masterCollection.put("STATUS_MSG", "No defined player.");
-            return false;
+            return new ServiceStatus(StatusState.FAILURE, "No defined player.");
             
         }
         
         // --- CR (1/18/15) --- Spigot changed the API so that the name cannot be retrieved if the server has not seen that person but an UUID still exists for some reason.
         // We're going to need the UUID to proceed from this point.  If there is no name associated with the UUID we will not show it.
-        UUID playerUUID = UUID.fromString(playersId);
-        OfflinePlayer offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(playerUUID);
+        OfflinePlayer offlinePlayerInfo = null;
+        try
+        {
+            UUID playerUUID = UUID.fromString(playersId);
+            offlinePlayerInfo = this.minecraftServer.getOfflinePlayer(playerUUID);
+        }
+        //If we reach this point then an invalid UUID was passed, try searching for the player's name.
+        catch(IllegalArgumentException ex) {
+            
+            //Search in the offlinePlayer's collection and find the first match only.
+            OfflinePlayer[] offlinePlayers = this.minecraftServer.getOfflinePlayers();
+            for(OfflinePlayer offlinePlayer : offlinePlayers) {
+                if (offlinePlayer.getName().equalsIgnoreCase(playersId) ) {
+                    offlinePlayerInfo = offlinePlayer;
+                    break;
+                }
+            }
+        }
         
         //In the event that the UUID is invalid then return an ambiguous error message.
         if (offlinePlayerInfo == null) {
             
-            masterCollection.put("STATUS", "FAILURE");
-            masterCollection.put("STATUS_MSG", "No defined player.");
-            return false;
+            return new ServiceStatus(StatusState.FAILURE, "No defined player.");
             
         }
 
         //In the event that there is no player name for the UUID then return an ambiguous error message.
         if ((offlinePlayerInfo.getName() == null) || (offlinePlayerInfo.getName() == "")) {
             
-            masterCollection.put("STATUS", "FAILURE");
-            masterCollection.put("STATUS_MSG", "No defined player.");
-            return false;
+            return new ServiceStatus(StatusState.FAILURE, "No defined player.");
             
         }
         
@@ -545,7 +527,7 @@ public class ServiceLayer {
         // --- CR (6/22/13) --- Fixed how the JSON structure is nested.
         Hashtable<String, Object> locationInfo = new Hashtable<String, Object>();
         masterCollection.put("location", locationInfo);
-                
+        masterCollection.put("Name", offlinePlayerInfo.getName());
         masterCollection.put("isWhiteListed", offlinePlayerInfo.isWhitelisted());
         masterCollection.put("isBanned", offlinePlayerInfo.isBanned());
         masterCollection.put("isOnline", offlinePlayerInfo.isOnline());
@@ -556,7 +538,7 @@ public class ServiceLayer {
         
         if (offlinePlayerInfo.isOnline()) {
             
-            Player onlinePlayerInfo = this.minecraftServer.getPlayer(playerUUID);
+            Player onlinePlayerInfo = this.minecraftServer.getPlayer(offlinePlayerInfo.getUniqueId());
             
             masterCollection.put("level", onlinePlayerInfo.getLevel());
             masterCollection.put("health", onlinePlayerInfo.getHealth());
@@ -641,7 +623,7 @@ public class ServiceLayer {
             
         }
         
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
     }    
 
     /**
@@ -649,9 +631,9 @@ public class ServiceLayer {
      * Currently the browsers do not support the websocket ping operation so this is the current substitute.
      * @param arguments Any arguments included with the service.
      * @param responseBuffer The buffer that the JSON response data will be stored in.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean ping(TextPayload arguments, TextResponse response) {
+    protected ServiceStatus ping(TextPayload arguments, TextResponse response) {
         
         //Get the normal world and assume it is the first in the list.
         List<World> worlds = this.minecraftServer.getWorlds();
@@ -665,16 +647,16 @@ public class ServiceLayer {
         collection.put("serverTime", world.getTime());
         collection.put("wssVersion", version);
 
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
     }
     
     /**
      * Performs a fragmentation test for a text response.
      * @param arguments Any arguments included with the service.
      * @param session The current session.
-     * @return True if the service was successfully executed.
+     * @return the status of the service.
      */
-    protected boolean fragmentationtest(TextPayload arguments, Session session) {
+    protected ServiceStatus fragmentationtest(TextPayload arguments, Session session) {
         
         //We're only going to scrape the first argument for the test type.
         //If this argument is fragmented beyond the size of the argument the test will be cancelled.
@@ -724,7 +706,7 @@ public class ServiceLayer {
             
         }
 
-        return true;
+        return new ServiceStatus(StatusState.SUCCESS, "SUCCESSFUL");
     }
 
     /**

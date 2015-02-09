@@ -1,5 +1,5 @@
 /**
-* Copyright (c) 2012-2014, Ken Anderson <caffeinatedrat at gmail dot com>
+* Copyright (c) 2012-2015, Ken Anderson <caffeinatedrat at gmail dot com>
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -26,6 +26,7 @@ package com.caffeinatedrat.WebSocketServices;
 
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -37,6 +38,7 @@ import com.caffeinatedrat.SimpleWebSockets.Session;
 import com.caffeinatedrat.SimpleWebSockets.Payload.*;
 import com.caffeinatedrat.SimpleWebSockets.Responses.TextResponse;
 import com.caffeinatedrat.SimpleWebSockets.Util.Logger;
+import com.caffeinatedrat.WebSocketServices.ServiceStatus.StatusState;
 
 /**
  * The application layer that manages the available web services.
@@ -75,7 +77,7 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
     
     /**
      * Performs an action on a text based frame.
-     * @param text The action being requested.
+     * @param textPayload The playload containing the requested action.
      * @param connectionData The connection data associated with this connection.
      */
     public void onTextFrame(TextPayload textPayload, ConnectionData connectionData) {
@@ -84,136 +86,33 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         //Arguments may be in any frame.
         String firstFragment = textPayload.getString(0);
         
-        // --- CR (7/21/13) --- Force the serviceName to lower-case to get rid of all lower-case checking headaches.
-        // --- CR (3/3/13) --- Prepare for handling arguments for text services.
-        //Separate the service name and arguments from the incoming data.
-        String[] tokens = firstFragment.split(" ", 2);
-        String serviceName = tokens[0].toLowerCase();
+        // -----------------------------------------------------------------
+        // --- CR (2/8/15) --- Begin the ability to manage batched commands.
+        // -----------------------------------------------------------------
+        List<ServiceCommand> commands = ServiceCommand.parseServiceCommands(firstFragment);
         
-        if (tokens.length > 1) {
+        Boolean successfulServiceCall = false;
+        for(ServiceCommand command : commands) {
             
-            textPayload.setString(0, tokens[1]);
+            if (command.getArgument() != "") {
+                textPayload.setString(0, command.getArgument());
+            }
             
+            // --- CR (2/8/15) --- Created the serviceManager method since we can have multiple extensions & services called now.
+            if (serviceManager(command.getCommand(), textPayload, connectionData)) {
+                successfulServiceCall = true;
+            }
         }
-        
-        //Reference to our session if one is ever established.
-        Session session = null;
-        
-        // --- CR (6/22/13) --- We are separating extensions from built-in services.
-        //Determine if the service is available  and if it is then generate a response.
-        Boolean service = config.isServiceEnabled(serviceName);
-        
-        //The built-in service was found in the configuration file and is not an extension.
-        if(service != null) {
-            
-            //Execute the built-in services.
-            if(service) {
-                
-                // --- CR (7/21/13) --- We're now dealing with session data based on the service name.
-                // Do not create session data if we do not support the service that is calling.
-                session = connectionData.startSession(serviceName);
-                
-                //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
-                if(serviceLayer.executeText(serviceName, textPayload, session)) {
-                    
-                    if (session.response instanceof TextResponse) {
-                    
-                        //This is temporary until actual states can be defined.  Set the connection as active.
-                        connectionData.setState();
-                        
-                        ((TextResponse)session.response).getCollection().put("Status", "SUCCESSFUL");
-                        return;
-                    }
-                    
-                }
-                else {
-                    
-                    return;
-                    
-                }
-                //END OF if(serviceLayer.executeText(serviceName, textPayload, session)) {...
-                
-            }
-            else {
-                
-                Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", serviceName));
-                
-            }
-            //END OF if(service) {...
-            
-        }
-        //The service was not found, determine if this is an extension and run it accordingly.
-        else {
-            
-            // --- CR (6/23/2013) --- Major change in the way the extensions are handled.
-            // Extensions are no longer handled by default, they must be listed in the config.yml.
-            // This allows the administrator to control what extensions can run and even control the names of the services invoked for an extension.
-            // This can prevent service names from conflicting from two or more extensions that use the same service name.
-            // For example, if two extensions use the service name "Map" to invoke both extensions then the extension name can be changed.
-            // extensions.Map: Plugin1
-            // extensions.Map1: Plugin2
-            
-            // --- CR (7/21/13) --- The null check is unnecessary since we have a default value of an empty string.
-            String extensionName = config.getExtensionName(serviceName);
-            if (extensionName != "") {
-                
-                // --- CR (7/21/13) --- We're now dealing with session data based on the service name.
-                // Do not create session data if we do not support the service that is calling.
-                session = connectionData.startSession(serviceName);
-                
-                IApplicationLayer applicationLayer = this.registeredApplicationLayers.get(extensionName);
-                if (applicationLayer != null) {
-                    
-                    applicationLayer.onTextFrame(textPayload, session);
-                    
-                    if (session.response != null) {
-                        
-                        //The plug-in name is appended to all other data.
-                        if (session.response instanceof TextResponse) {
-                            
-                            //This is temporary until actual states can be defined.  Set the connection as active.
-                            connectionData.setState();
-                            
-                            ((TextResponse)session.response).getCollection().put("ExtensionName", extensionName);
-                            return;
-                            
-                        }
-                        
-                    }
-                    else {
-                        
-                        Logger.verboseDebug(MessageFormat.format("Extension {0} has a null response.", serviceName));
-                        
-                    }
-                    //END OF if (session.response != null) {...
-                    
-                }
-                else {
-                    
-                    Logger.verboseDebug(MessageFormat.format("Extension {0} has not registered its application layer.", serviceName));
-                    
-                }
-                //END OF if (applicationLayer != null) {...
-                
-            }
-            else {
-                
-                Logger.verboseDebug(MessageFormat.format("Extension {0} has not been defined.", serviceName));
-                
-            }
-            //END OF if (extensionName != "") {...
-            
-        }
-        //END OF if(service != null) {...
-        
+
         //--- CR (6/22/13) --- Mute or hide responses from a disabled service.
-        if(!config.getMuteDisabledServices()) {
+        if ((!successfulServiceCall) && (!config.getMuteDisabledServices())) {
             
             //Verify the session is valid before attempting to modify the response.
-            if (session != null) {
+            if (connectionData.getSession() != null) {
                 
+                Session session = connectionData.getSession();
                 session.response = new TextResponse();
-                ((TextResponse)session.response).getCollection().put("Status", "NOT AVAILABLE");
+                ((TextResponse)session.response).getCollection().put("status", "NOT AVAILABLE");
                 
             }
             //END OF if (session != null) {...
@@ -260,7 +159,6 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
 
     public void onPing(Payload payload) {
         // TODO Auto-generated method stub
-
     }
 
     public void onPong() {
@@ -322,5 +220,160 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         //END OF if (session != null) {...
         
     }
+    
+    private Boolean serviceManager(String serviceName, TextPayload textPayload, ConnectionData connectionData) {
+        
+     // --- CR (6/22/13) --- We are separating extensions from built-in services.
+        //Determine if the service is available  and if it is then generate a response.
+        Boolean service = config.isServiceEnabled(serviceName);
+        
+        //The built-in service was found in the configuration file and is not an extension.
+        if(service != null) {
+            
+            //Execute the built-in services.
+            if(service) {
+                
+                // --- CR (2/8/15) --- Added the invokeService method.
+                // If the service is invoked return, otherwise let it trickle down to the NA status.
+                if (invokeService(serviceName, textPayload, connectionData)) {
+                    return true;
+                }
+                
+            }
+            else {
+                
+                Logger.verboseDebug(MessageFormat.format("Service {0} has been disabled.", serviceName));
+                
+            }
+            //END OF if(service) {...
+            
+        }
+        //The service was not found, determine if this is an extension and run it accordingly.
+        else {
+            
+            // --- CR (6/23/2013) --- Major change in the way the extensions are handled.
+            // Extensions are no longer handled by default, they must be listed in the config.yml.
+            // This allows the administrator to control what extensions can run and even control the names of the services invoked for an extension.
+            // This can prevent service names from conflicting from two or more extensions that use the same service name.
+            // For example, if two extensions use the service name "Map" to invoke both extensions then the extension name can be changed.
+            // extensions.Map: Plugin1
+            // extensions.Map1: Plugin2
+            
+            // --- CR (7/21/13) --- The null check is unnecessary since we have a default value of an empty string.
+            String extensionName = config.getExtensionName(serviceName);
+            if (extensionName != "") {
+                
+                // --- CR (2/8/15) --- Added the invokeExtension method.
+                // If the extension is invoked return, otherwise let it trickle down to the NA status.
+                if (invokeExtension(extensionName, textPayload, connectionData)) {
+                    return true;
+                }
+                
+            }
+            else {
+                
+                Logger.verboseDebug(MessageFormat.format("Extension {0} has not been defined.", serviceName));
+                
+            }
+            //END OF if (extensionName != "") {...
+            
+        }
+        //END OF if(service != null) {...
+        
+        return false;
+    }
+    
+    /**
+     * Invokes one of the internal services.
+     * @param serviceName The name of the service to invoke.
+     * @param textPayload The playload containing the requested service.
+     * @param connectionData The connection data associated with this connection.
+     * @return True if the service was invoked, false if the service was disabled or does not exist.
+     */
+    private Boolean invokeService(String serviceName, TextPayload textPayload, ConnectionData connectionData) {
+        
+        // --- CR (7/21/13) --- We're now dealing with session data based on the service name.
+        // Do not create session data if we do not support the service that is calling.
+        Session session = connectionData.startSession(serviceName);
+        
+        //Right now the webservices will be treated as first-class services, while other plug-ins will only be handled if the webservice does not exist.
+        // --- CR (2/9/15) --- Changed the return state to a ServiceStatus so that we can determine the difference between a successful service call, a failed service call, and a failure to invoke a service.
+        ServiceStatus serviceStatus = serviceLayer.executeText(serviceName, textPayload, session);
+        if (serviceStatus.getStatusState() != StatusState.NOT_AVAILABLE) {
+        
+            if (session.response instanceof TextResponse) {
+            
+                //This is temporary until actual states can be defined.  Set the connection as active.
+                connectionData.setState();
+                
+                if (serviceStatus.getStatusState() == StatusState.SUCCESS) {
+                    ((TextResponse)session.response).getCollection().put("status", "SUCCESSFUL");
+                }
+                else {
+                    ((TextResponse)session.response).getCollection().put("status", "FAILURE");
+                    ((TextResponse)session.response).getCollection().put("statusMsg", serviceStatus.getMessage());
+                }
+                
+                return true;
+                
+            }
+            
+        }
+        //END OF if (serviceStatus.getStatusState() != StatusState.NOT_AVAILABLE) {...
+        
+        return false;
 
+    }
+    
+    /**
+     * Invokes one of the extensions.
+     * @param extensionName The name of the extension to invoke.
+     * @param textPayload The playload containing the requested service.
+     * @param connectionData The connection data associated with this connection.
+     * @return True if the extension was invoked, false if the extension was disabled or does not exist.
+     */
+    private Boolean invokeExtension(String extensionName, TextPayload textPayload, ConnectionData connectionData) {
+    
+        // --- CR (7/21/13) --- We're now dealing with session data based on the extension name.
+        // Do not create session data if we do not support the service that is calling.
+        Session session = connectionData.startSession(extensionName);
+        
+        IApplicationLayer applicationLayer = this.registeredApplicationLayers.get(extensionName);
+        if (applicationLayer != null) {
+            
+            applicationLayer.onTextFrame(textPayload, session);
+            
+            if (session.response != null) {
+                
+                //The plug-in name is appended to all other data.
+                if (session.response instanceof TextResponse) {
+                    
+                    //This is temporary until actual states can be defined.  Set the connection as active.
+                    connectionData.setState();
+                    
+                    ((TextResponse)session.response).getCollection().put("ExtensionName", extensionName);
+                    return true;
+                    
+                }
+                
+            }
+            else {
+                
+                Logger.verboseDebug(MessageFormat.format("Extension {0} has a null response.", extensionName));
+                
+            }
+            //END OF if (session.response != null) {...
+            
+        }
+        else {
+            
+            Logger.verboseDebug(MessageFormat.format("Extension {0} has not registered its application layer.", extensionName));
+            
+        }
+        //END OF if (applicationLayer != null) {...
+
+        return false;
+    
+    }
+    
 }
