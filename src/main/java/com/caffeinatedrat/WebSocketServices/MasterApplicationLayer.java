@@ -84,7 +84,9 @@ public class MasterApplicationLayer implements IMasterApplicationLayer {
         
         //Precondition: The service name must be in the first frame.
         //Arguments may be in any frame.
-        String firstFragment = textPayload.getString(0);
+        // --- CR (2/18/15) --- The bottleneck is still here, where the entire payload has to be flattened into a string for the JSON parser...
+        // The problem here is that this could become a large contiguous string and we could end up with an out of memory exception.
+        String firstFragment = textPayload.toString();
         
         // -----------------------------------------------------------------
         // --- CR (2/8/15) --- Begin the ability to manage batched commands.
