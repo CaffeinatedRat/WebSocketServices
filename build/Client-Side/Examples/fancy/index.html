@@ -45,64 +45,90 @@
         <div id="websocketSupported" style="display: none;">
             <div id="tabs">
                 <ul>
-                    <li><a id="serverTab" href="#tabs-1">Server Information</a></li>
-                    <li><a id="playerTab" href="#tabs-2">WHO's Online</a></li>
-                    <li><a id="whitelistTab" href="#tabs-3">Whitelist</a></li>
-                    <li><a id="offlinePlayersTab" href="#tabs-4">Offline</a></li>
-                    <li><a id="pluginsTab" href="#tabs-5">Plugins</a></li>
+                    <li><a id="welcomeTab" href="#tabs-1">Welcome</a></li>
+                    <li><a id="serverTab" href="#tabs-2">Server Information</a></li>
+                    <li><a id="playerTab" href="#tabs-3">WHO's Online</a></li>
+                    <li><a id="whitelistTab" href="#tabs-4">Whitelist</a></li>
+                    <li><a id="offlinePlayersTab" href="#tabs-5">Offline</a></li>
+                    <li><a id="pluginsTab" href="#tabs-6">Plugins</a></li>
+                    <li style="display:none;"><a id="spectatorTab" href="#tabs-7">Spectator</a></li>
                 </ul>
                 <div id="tabs-1" class="tabContainer">
                     <div class="container scrollContainer">
+                        <h1>
+                            Welcome
+                        </h1>
                         <div>
-                            <strong>Minecraft Server Name:</strong> <span class="wssMinecraftServerName"></span>
-                        </div>
-                        <div>
-                            <strong>Name:</strong> <span class="wssMinecraftServerType"></span>
-                        </div>
-                        <div>
-                            <strong>IPAddress:</strong> <span class="wssMinecraftIPAddress"></span>
-                        </div>
-                        <div>
-                            <strong>Port:</strong> <span class="wssMinecraftPort"></span>
-                        </div>
-                        <div>
-                            <strong>MOTD:</strong> <span class="wssMinecraftMOTD"></span>
-                        </div>
-                        <div>
-                            <strong>Time: </strong><span class="wssMinecraftTime"></span>
-                        </div>
-                        <div>
-                            <strong>Minecraft Version:</strong> <span class="wssMinecraftVersion"></span>
-                        </div>
-                        <div>
-                            <strong>Bukkit Version:</strong> <span class="wssMinecraftBukkitVersion"></span>
-                        </div>
-                        <div>
-                            <strong>World Type:</strong> <span class="wssMinecraftWorldType"></span>
-                        </div>
-                        <div>
-                            <strong>Game Mode:</strong> <span class="wssMinecraftGameMode"></span>
-                        </div>
-                        <div>
-                            <strong>Is WhiteListed:</strong> <span class="wssMinecraftIsWhiteListed"></span>
-                        </div>
-                        <div>
-                            <strong>Allow Nether:</strong> <span class="wssMinecraftAllowsNether"></span>
-                        </div>
-                        <div>
-                            <strong>Allow End:</strong> <span class="wssMinecraftAllowsEnd"></span>
-                        </div>
-                        <div>
-                            <strong>Allow Flight:</strong> <span class="wssMinecraftAllowsFlight"></span>
+                            Your welcome info, if any.
                         </div>
                     </div>
                 </div>
                 <div id="tabs-2" class="tabContainer">
+                    <div class="container scrollContainer">
+                        <div class="wssMinecraftServerInfo">
+                            <div class="wssListItemTemplate">
+                                <div class="fieldset">
+                                    <div>
+                                        <strong>Minecraft Server Name:</strong> <span class="wssMinecraftServerName"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Name:</strong> <span class="wssMinecraftServerType"></span>
+                                    </div>
+                                    <div>
+                                        <strong>IPAddress:</strong> <span class="wssMinecraftIPAddress"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Port:</strong> <span class="wssMinecraftPort"></span>
+                                    </div>
+                                    <div>
+                                        <strong>MOTD:</strong> <span class="wssMinecraftMOTD"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Time: </strong><span class="wssMinecraftTime"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Minecraft Version:</strong> <span class="wssMinecraftVersion"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Bukkit Version:</strong> <span class="wssMinecraftBukkitVersion"></span>
+                                    </div>
+                                    <div>
+                                        <strong>World Type:</strong> <span class="wssMinecraftWorldType"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Game Mode:</strong> <span class="wssMinecraftGameMode"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Is WhiteListed:</strong> <span class="wssMinecraftIsWhiteListed"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Allow Nether:</strong> <span class="wssMinecraftAllowsNether"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Allow End:</strong> <span class="wssMinecraftAllowsEnd"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Allow Flight:</strong> <span class="wssMinecraftAllowsFlight"></span>
+                                    </div>
+                                    <div>
+                                        <strong>Seed:</strong> <span class="wssMinecraftSeed"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wssEmptyListTemplate">
+                                <div>
+                                    No server info available.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="tabs-3" class="tabContainer">
                     <div class="container">
-                         <div class="playerContainer scrollContainer">
+                        <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftPlayerList">
                                 <div>
-                                    <strong>Players online: </strong><span class="wssMinecraftTotalPlayersOnline"></span>
+                                    <strong>Players online: </strong> <span class="wssMinecraftTotalPlayersOnline"></span>
                                     out of <span class="wssMinecraftMaxNumberOfPlayers"></span>
                                 </div>
                                 <ul class="wssListItemTemplate">
@@ -122,8 +148,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
-                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#" data-playerid="#wssPlayerId#"
+                                                   title="Click to view #wssPlayerName#'s skin">
+                                                    <strong>#wssPlayerName# </strong>
                                                 </a>
                                             </div>
                                             <div class="inline">
@@ -143,12 +170,12 @@
                         </div>
                     </div>
                 </div>
-                <div id="tabs-3" class="tabContainer">
+                <div id="tabs-4" class="tabContainer">
                     <div class="container">
                         <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftWhiteList">
                                 <div>
-                                    <strong>White-listed Players: </strong><span class="wssTotalWhitelistedPlayers">
+                                    <strong>White-listed Players: </strong> <span class="wssTotalWhitelistedPlayers">
                                     </span>
                                 </div>
                                 <ul class="wssListItemTemplate">
@@ -168,8 +195,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
-                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#" data-playerid="#wssPlayerId#"
+                                                   title="Click to view #wssPlayerName#'s skin">
+                                                    <strong>#wssPlayerName# </strong>
                                                 </a>
                                             </div>
                                             <div class="inline">
@@ -185,12 +213,12 @@
                         </div>
                     </div>
                 </div>
-                <div id="tabs-4" class="tabContainer">
+                <div id="tabs-5" class="tabContainer">
                     <div class="container">
                         <div class="playerContainer scrollContainer">
                             <div class="wssMinecraftOfflineList">
                                 <div>
-                                    <strong>Offline Players: </strong><span id="wssTotalOfflinePlayers"></span>
+                                    <strong>Offline Players: </strong> <span id="wssTotalOfflinePlayers"></span>
                                 </div>
                                 <ul class="wssListItemTemplate">
                                     <li>
@@ -209,8 +237,9 @@
                                                 #wssPlayerFace#
                                             </div>
                                             <div class="inline">
-                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#"
-                                                    title="Click to view #wssPlayerName#'s skin"><strong>#wssPlayerName# </strong>
+                                                <a class="playerName" href="#" data-name="#wssPlayerName#" data-environment="#wssPlayerEnvironment#" data-playerid="#wssPlayerId#"
+                                                   title="Click to view #wssPlayerName#'s skin">
+                                                    <strong>#wssPlayerName# </strong>
                                                 </a>
                                             </div>
                                             <div class="inline">
@@ -226,7 +255,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="tabs-5" class="tabContainer">
+                <div id="tabs-6" class="tabContainer">
                     <div class="container scrollContainer">
                         <table class="wssMinecraftPluginList">
                             <thead>
@@ -271,6 +300,8 @@
                         </table>
                     </div>
                 </div>
+                <div id="tabs-7" class="tabContainer">
+                </div>
             </div>
         </div>
     </section>
@@ -295,7 +326,7 @@
         </div>
         <div class="buffer">
             <div class="inline">
-                Minecraft Copyright (c) 2014
+                Minecraft Copyright (c) 2015
             </div>
             <a href="http://www.mojang.com/">
                 <div class="inline" style="vertical-align: top;">
@@ -309,13 +340,14 @@
         </div>
         <div class="buffer">
             <div class="inline">
-                Crown Image</div>
+                Crown Image
+            </div>
             <div class="inline" style="vertical-align: top;">
                 <div title="Crown" class="tiles modTile">
                 </div>
             </div>
             <div class="inline">
-                Copyright (c) 2012-2014 <a href="http://painterlypack.net/">Painterly Pack</a>
+                Copyright (c) 2012-2015 <a href="http://painterlypack.net/">Painterly Pack</a>
             </div>
         </div>
     </footer>

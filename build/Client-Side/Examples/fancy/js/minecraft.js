@@ -166,7 +166,7 @@ $(document).ready(function () {
                 profile = new CaffeinatedRat.Minecraft.SkinProfile({
                     container: $('#skinWrapper'),
                     skinImage: wss.getImage(playersName),
-                    useWebGL: false,
+                    useWebGL: true,
                     scale: 50,
                     positionVector3: new THREE.Vector3(0.0, 75.0, 0.0)
                 });

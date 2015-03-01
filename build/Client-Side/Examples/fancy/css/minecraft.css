@@ -36,13 +36,6 @@ Page Classes
 ------------------------------------
 */
 
-/*
-.titlebar
-{
-    margin: 10px 15px;
-    height: 75px;
-}
-*/
 header
 {
     margin: 10px 15px;
@@ -114,7 +107,7 @@ section
     padding: 15px;
 }
 
-.container > div
+.container > div, .container fieldset > div, .container .fieldset > div
 {
     padding: 5px;
 }
@@ -312,6 +305,17 @@ Offline Classes
 #offlineDiv
 {
     height: 630px;
+}
+
+/*
+------------------------------------
+WSSB ServerInfo
+------------------------------------
+*/
+
+.wssMinecraftServerInfo fieldset, .wssMinecraftServerInfo .fieldset
+{
+    margin-bottom: 10px;
 }
 
 /*
