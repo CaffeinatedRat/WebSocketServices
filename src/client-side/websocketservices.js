@@ -55,6 +55,8 @@
 * 1) Support for Spigot 1.8.  BungeeCord support is incomplete and has been disabled.
 * 2) Support for the seed service added.
 * 3) Added undocumented JSON support for mutliple commands & arguments at once, such as '{ "commands": [{ "command": "info"}, { "command": "seed"}]}'
+* Revision 13 (9/22/18)
+* 1) Remove the *.png extension when calling the image handler due to Mojang moving the skins off the Amazon S3 servers and onto their own API infrastructure.
 * -----------------------------------------------------------------
 */
 
@@ -75,7 +77,7 @@ CaffeinatedRat.Minecraft.WebSocketServices = function (parameters) {
     // Versioning
     //-----------------------------------------------------------------
     CaffeinatedRat.Minecraft.WebSocketServices.SERVER_VERSION = new CaffeinatedRat.Version(2, 0, 0);
-    CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION = '12';
+    CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION = '13';
 
     console.log('CaffeinatedRat.Minecraft.WebSocketServices.Version: ' + CaffeinatedRat.Minecraft.WebSocketServices.SERVER_VERSION.toString() + '-R.' + CaffeinatedRat.Minecraft.WebSocketServices.CLIENT_VERSION);
 
@@ -522,7 +524,9 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
                         imgNoCORS.src = that._defaultSkin;
                     }
                     else {
-                        imgNoCORS.src = that._imageServerURL + playersName + '.png';
+                        // --- CR (9/22/18) --- Due to the Mojang changing the location of the skins, we will now call our image server without a file extension.
+                        //imgNoCORS.src = that._imageServerURL + playersName + '.png';
+                        imgNoCORS.src = that._imageServerURL + playersName;
                     }
                     //END OF if (this._forceDefaultSkin) {...
 
@@ -534,7 +538,9 @@ CaffeinatedRat.Minecraft.WebSocketServices.prototype = {
                     img.src = that._defaultSkin;
                 }
                 else {
-                    img.src = that._imageServerURL + playersName + '.png';
+                    // --- CR (9/22/18) --- Due to the Mojang changing the location of the skins, we will now call our image server without a file extension.
+                    //img.src = that._imageServerURL + playersName + '.png';
+                    img.src = that._imageServerURL + playersName;
                 }
                 //END OF if (this._forceDefaultSkin) {...
 
